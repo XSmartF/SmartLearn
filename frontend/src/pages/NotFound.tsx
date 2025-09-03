@@ -1,0 +1,41 @@
+import { Link } from 'react-router-dom'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Home, Search } from 'lucide-react'
+
+export default function NotFound() {
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Card className="w-full max-w-md text-center">
+        <CardHeader>
+          <div className="mx-auto w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+            <Search className="w-10 h-10 text-gray-400" />
+          </div>
+          <CardTitle className="text-2xl">404 - Không tìm thấy trang</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="text-muted-foreground">
+            <p className="mb-2">
+              Xin lỗi, trang bạn đang tìm kiếm không tồn tại.
+            </p>
+            <p className="text-sm">
+              Có thể đường dẫn đã bị thay đổi hoặc bạn đã nhập sai địa chỉ.
+            </p>
+          </div>
+          
+          <div className="flex flex-col gap-2">
+            <Button asChild className="w-full">
+              <Link to="/dashboard">
+                <Home className="w-4 h-4 mr-2" />
+                Về trang chủ
+              </Link>
+            </Button>
+            <Button variant="outline" onClick={() => window.history.back()} className="w-full">
+              Quay lại trang trước
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
