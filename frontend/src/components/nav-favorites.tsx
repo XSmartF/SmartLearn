@@ -24,10 +24,12 @@ import {
   SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/components/ui/sidebar"
+import { useSidebar } from '@/hooks/useSidebar';
 
-export function NavFavorites({
+import React from 'react'
+
+function NavFavoritesBase({
   favorites,
   loading = false,
 }: {
@@ -117,3 +119,5 @@ export function NavFavorites({
     </SidebarGroup>
   )
 }
+
+export const NavFavorites = React.memo(NavFavoritesBase);

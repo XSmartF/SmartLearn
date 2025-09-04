@@ -1,4 +1,4 @@
-import * as React from "react"
+// React import removed; not needed with modern JSX transform since no hooks used.
 import {
   ArrowDown,
   ArrowUp,
@@ -96,15 +96,9 @@ const data = [
 ]
 
 export function NavActions() {
-  const [isOpen, setIsOpen] = React.useState(false)
-
-  React.useEffect(() => {
-    setIsOpen(true)
-  }, [])
-
   return (
     <div className="flex items-center gap-2 text-sm">
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
+  <Popover>
         <PopoverTrigger asChild>
           <Button
             variant="ghost"

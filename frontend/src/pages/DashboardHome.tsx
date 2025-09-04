@@ -1,13 +1,16 @@
 import { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar } from '@/components/ui/avatar';
 import { Button } from "@/components/ui/button";
 import { BookOpen, Clock, Star, Users, Zap, Brain, Plus } from "lucide-react";
 import { useUserLibraries } from '@/hooks/useLibraries';
 import { useFavoriteLibraries } from '@/hooks/useFavorites';
 import { useEffect, useState } from 'react';
+import { H1 } from '@/components/ui/typography';
 import { loadProgressSummary, listenProgressSummary, type ProgressSummaryLite } from '@/lib/firebaseProgressService';
-import { listenUserSharedLibraries, fetchLibrariesByIds, getUserProfile } from '@/lib/firebaseLibraryService';
+import { useGetSharedLibrariesQuery } from '@/store/api';
+import { userRepository } from '@/lib/repositories/UserRepository';
 import type { LibraryMeta } from '@/lib/models';
 
 // NOTE: Real progress & accuracy would come from progress documents; placeholder calculations here.
@@ -15,21 +18,10 @@ export default function DashboardHome() {
   const { libraries, loading: libsLoading } = useUserLibraries(); // owned
   const { favorites } = useFavoriteLibraries();
   const [summaries, setSummaries] = useState<Record<string, ProgressSummaryLite>>({});
-  const [shared, setShared] = useState<LibraryMeta[]>([]);
+  const { data: shared = [] } = useGetSharedLibrariesQuery();
   const [ownerProfiles, setOwnerProfiles] = useState<Record<string, { id: string; displayName?: string; email?: string; avatarUrl?: string }>>({});
 
-  // Subscribe to shared libraries
-  useEffect(()=>{
-    let unsub: (()=>void)|null = null; let active = true;
-    try {
-      unsub = listenUserSharedLibraries(async entries => {
-        const ids = entries.map(e=>e.libraryId);
-        const libs = ids.length ? await fetchLibrariesByIds(ids) : [];
-        if (active) setShared(libs);
-      });
-    } catch {/* ignore */}
-    return ()=>{ active=false; if(unsub) unsub(); };
-  }, []);
+  // shared libraries now provided via RTK Query
 
   // Combined list (owned + shared, dedup by id)
   const allLibraries = useMemo(()=>{
@@ -45,7 +37,7 @@ export default function DashboardHome() {
     allLibraries.forEach(l=>{ if(!ownerProfiles[l.ownerId]) missing.add(l.ownerId); });
     if(missing.size===0) return; let cancelled=false;
     (async()=>{
-      const results = await Promise.all(Array.from(missing).map(async id=>{ try { const p = await getUserProfile(id); return p || { id }; } catch { return { id }; } }));
+  const results = await Promise.all(Array.from(missing).map(async id=>{ try { const p = await userRepository.getUserProfile(id); return p || { id }; } catch { return { id }; } }));
       if(cancelled) return; const map: Record<string, { id: string; displayName?: string; email?: string; avatarUrl?: string }> = {};
       results.forEach(r=>{ map[r.id]=r; });
       setOwnerProfiles(prev=> ({ ...prev, ...map }));
@@ -118,7 +110,7 @@ export default function DashboardHome() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Chào mừng trở lại!</h1>
+  <H1 className="text-3xl font-bold">Chào mừng trở lại!</H1>
         <p className="text-muted-foreground">
           Tiếp tục hành trình học tập của bạn
         </p>
@@ -174,7 +166,7 @@ export default function DashboardHome() {
                     {(() => { const lib = allLibraries.find(l=>l.id===flashcard.id); if(!lib) return null; const owner = ownerProfiles[lib.ownerId]; const label = owner?.displayName || owner?.email || owner?.id?.slice(0,6) || '—'; return (
                       <div className="flex items-center gap-1">
                         {owner?.avatarUrl ? (
-                          <img src={owner.avatarUrl} alt={label} className="w-4 h-4 rounded-full object-cover" />
+                          <Avatar src={owner.avatarUrl} alt={label} size={16} className="w-4 h-4" fallback={label.slice(0,1)} />
                         ) : (
                           <div className="w-4 h-4 rounded-full bg-muted text-[8px] flex items-center justify-center uppercase">{label.slice(0,1)}</div>
                         )}

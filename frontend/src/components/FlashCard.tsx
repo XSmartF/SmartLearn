@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { H3 } from '@/components/ui/typography';
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -39,7 +40,7 @@ export default function FlashCard({ cards, onCardUpdate, onComplete }: FlashCard
   if (!currentCard) {
     return (
       <div className="text-center py-8">
-        <h3 className="text-lg font-semibold mb-2">Không có thẻ nào để học</h3>
+  <H3 className="text-lg font-semibold mb-2">Không có thẻ nào để học</H3>
         <p className="text-muted-foreground">Thêm thẻ mới để bắt đầu học</p>
       </div>
     )

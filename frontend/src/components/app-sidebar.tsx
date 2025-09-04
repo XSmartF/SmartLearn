@@ -14,15 +14,19 @@ import {
 import { NavFavorites } from "@/components/nav-favorites"
 import { useFavoriteLibraries } from '@/hooks/useFavorites';
 import { NavMain } from "@/components/nav-main"
-import { listenUserNotifications, listenPendingAccessRequestsForOwner } from '@/lib/firebaseLibraryService'
+import { userRepository } from '@/lib/repositories/UserRepository'
 // Removed NavSecondary per requirement
-import { TeamSwitcher } from "@/components/team-switcher"
+// import { TeamSwitcher } from "@/components/team-switcher" // replaced by Brand
 import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
   SidebarRail,
+  SidebarFooter,
+  SidebarSeparator,
 } from "@/components/ui/sidebar"
+import { Brand } from '@/components/Brand'
+import { NavUser } from '@/components/NavUser'
 
 // Static navigation items; favorites now dynamic
 const baseData = {
@@ -181,13 +185,13 @@ const baseData = {
   ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export const AppSidebar = React.memo(function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { favorites, loading } = useFavoriteLibraries();
   const [unreadCount, setUnreadCount] = React.useState(0);
   const [pendingReqCount, setPendingReqCount] = React.useState(0);
 
-  React.useEffect(()=>{ let unsub: (()=>void)|null=null; try { unsub = listenUserNotifications(list=> { setUnreadCount(list.filter(n=> !n.read).length); }); } catch {/* ignore */} return ()=>{ if(unsub) unsub(); }; }, []);
-  React.useEffect(()=>{ let unsub: (()=>void)|null=null; try { unsub = listenPendingAccessRequestsForOwner(reqs=> setPendingReqCount(reqs.length)); } catch {/* ignore */} return ()=>{ if(unsub) unsub(); }; }, []);
+  React.useEffect(()=>{ let unsub: (()=>void)|null=null; try { unsub = userRepository.listenUserNotifications(list=> { setUnreadCount(list.filter(n=> !n.read).length); }); } catch {/* ignore */} return ()=>{ if(unsub) unsub(); }; }, []);
+  React.useEffect(()=>{ let unsub: (()=>void)|null=null; try { unsub = userRepository.listenPendingAccessRequestsForOwner(reqs=> setPendingReqCount(reqs.length)); } catch {/* ignore */} return ()=>{ if(unsub) unsub(); }; }, []);
 
   const navData = React.useMemo(()=>{
     const badgeTotal = unreadCount + pendingReqCount;
@@ -197,16 +201,35 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     };
   }, [unreadCount, pendingReqCount]);
 
+  // simple prefetch when hovering nav items (dynamic import route chunks)
+  const prefetchRoute = (url: string) => {
+    if (url.startsWith('/dashboard/library')) import('@/pages/LibraryDetail').catch(()=>{});
+    else if (url.endsWith('/my-library')) import('@/pages/MyLibrary').catch(()=>{});
+    else if (url.endsWith('/notifications')) import('@/pages/Notifications').catch(()=>{});
+  };
+
   return (
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={navData.teams} />
-        <NavMain items={navData.navMain} />
+        <div className="px-2 pt-2 pb-1">
+          <Brand to="/dashboard" />
+        </div>
+        <div onMouseOver={(e)=>{
+          const target = e.target as HTMLElement;
+          const link = target.closest('[data-url]') as HTMLElement | null;
+          if (link) { const url = link.getAttribute('data-url'); if(url) prefetchRoute(url); }
+        }}>
+          <NavMain items={navData.navMain.map(i=> ({ ...i, dataAttr: { url: i.url } }))} />
+        </div>
       </SidebarHeader>
       <SidebarContent>
         <NavFavorites favorites={favorites.map(f => ({ name: f.title, url: `/dashboard/library/${f.id}` }))} loading={loading} />
       </SidebarContent>
+      <SidebarSeparator />
+      <SidebarFooter>
+        <NavUser />
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   )
-}
+});

@@ -2,7 +2,10 @@
 // Provides async get/set/remove similar to localStorage but non-blocking and larger capacity
 
 const DB_NAME = 'smartlearn-db'
-const DB_VERSION = 1
+// Increment DB_VERSION only when making an intentional schema change.
+// We keep it at 1 here; dynamic recovery logic below will bump if the store is missing.
+// We no longer pass an explicit version on first open to avoid VersionError after auto-migrations.
+const DB_VERSION = 1 // kept for possible future intentional schema bumps
 const STORE_NAME = 'kv'
 
 let dbPromise: Promise<IDBDatabase> | null = null
@@ -10,15 +13,41 @@ let dbPromise: Promise<IDBDatabase> | null = null
 function openDB(): Promise<IDBDatabase> {
   if (dbPromise) return dbPromise
   dbPromise = new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION)
-    request.onupgradeneeded = () => {
-      const db = request.result
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME)
+    // First open WITHOUT specifying version to avoid VersionError if db already upgraded.
+    const normalReq = indexedDB.open(DB_NAME)
+    let triedUpgrade = false
+
+    normalReq.onsuccess = () => {
+      const db = normalReq.result
+      if (!db.objectStoreNames.contains(STORE_NAME) && !triedUpgrade) {
+        triedUpgrade = true
+        // Need an upgrade: reopen with bumped version
+        const newVersion = db.version + 1
+        db.close()
+        const upgradeReq = indexedDB.open(DB_NAME, Math.max(newVersion, DB_VERSION))
+        upgradeReq.onupgradeneeded = () => {
+          const udb = upgradeReq.result
+          if (!udb.objectStoreNames.contains(STORE_NAME)) {
+            udb.createObjectStore(STORE_NAME)
+          }
+        }
+        upgradeReq.onsuccess = () => resolve(upgradeReq.result)
+        upgradeReq.onerror = () => reject(upgradeReq.error)
+        return
       }
+      resolve(db)
     }
-    request.onsuccess = () => resolve(request.result)
-    request.onerror = () => reject(request.error)
+    normalReq.onerror = () => {
+      const err = normalReq.error
+      // If we hit a VersionError here (rare with versionless open) fallback to explicit open with current constant
+      if (err && (err as DOMException).name === 'VersionError') {
+        const req2 = indexedDB.open(DB_NAME, DB_VERSION)
+        req2.onsuccess = () => resolve(req2.result)
+        req2.onerror = () => reject(req2.error)
+        return
+      }
+      reject(err)
+    }
   })
   return dbPromise
 }

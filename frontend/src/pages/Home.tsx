@@ -1,11 +1,13 @@
 "use client"
 
 import { useEffect } from "react"
+import { H1, H2, H3 } from '@/components/ui/typography';
+import { SmartImage } from '@/components/ui/smart-image'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Star, Users, BookOpen, Trophy, ArrowRight, Check, Play, Globe, Smartphone, Brain } from "lucide-react"
-import { useAuth } from "@/components/authContext"
+import { useAuth } from "../hooks/useAuthRedux"
 import { useNavigate, Link } from "react-router-dom"
 export default function LandingPage() {
   const { user, signInWithGoogle, loading } = useAuth()
@@ -21,12 +23,10 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">Q</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900">Quizlet</span>
-            </div>
+            <Link to="/" className="flex items-center space-x-2 group">
+              <SmartImage src="/smartlearn.svg" className="w-8 h-8" alt="SmartLearn" rounded />
+              <span className="text-xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">SmartLearn</span>
+            </Link>
 
 
             <div className="flex items-center space-x-4">
@@ -49,15 +49,14 @@ export default function LandingPage() {
             <div className="space-y-8">
               <div className="space-y-4">
                 <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200">Nền tảng học tập #1 Việt Nam</Badge>
-                <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 leading-tight text-balance">
-                  Học thông minh hơn với{" "}
-                  <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                    Quizlet
+                <H1 className="text-4xl lg:text-6xl font-bold text-gray-900 leading-tight text-balance">
+                  Nền tảng học tập cá nhân hóa
+                  <span className="block bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    SmartLearn
                   </span>
-                </h1>
+                </H1>
                 <p className="text-xl text-gray-600 leading-relaxed text-pretty">
-                  Tạo flashcard, làm bài kiểm tra và học cùng bạn bè. Hơn 60 triệu học sinh trên toàn thế giới đã tin
-                  tưởng Quizlet để đạt được mục tiêu học tập.
+                  Tạo flashcard, luyện kiểm tra, theo dõi tiến độ với AI thích ứng. Cải thiện mỗi ngày và đạt mục tiêu học nhanh hơn cùng SmartLearn.
                 </p>
               </div>
 
@@ -85,21 +84,9 @@ export default function LandingPage() {
               <div className="flex items-center space-x-8 text-sm text-gray-600">
                 <div className="flex items-center space-x-2">
                   <div className="flex -space-x-2">
-                    <img
-                      src="/vietnamese-student-girl.png"
-                      alt="User"
-                      className="w-8 h-8 rounded-full border-2 border-white"
-                    />
-                    <img
-                      src="/vietnamese-office-worker-man.jpg"
-                      alt="User"
-                      className="w-8 h-8 rounded-full border-2 border-white"
-                    />
-                    <img
-                      src="/vietnamese-teacher-woman.jpg"
-                      alt="User"
-                      className="w-8 h-8 rounded-full border-2 border-white"
-                    />
+                    <SmartImage src="/vietnamese-student-girl.png" alt="User" className="w-8 h-8 border-2 border-white" rounded="rounded-full" />
+                    <SmartImage src="/vietnamese-office-worker-man.jpg" alt="User" className="w-8 h-8 border-2 border-white" rounded="rounded-full" />
+                    <SmartImage src="/vietnamese-teacher-woman.jpg" alt="User" className="w-8 h-8 border-2 border-white" rounded="rounded-full" />
                   </div>
                   <span>60M+ học sinh</span>
                 </div>
@@ -112,10 +99,11 @@ export default function LandingPage() {
 
             <div className="relative">
               <div className="relative z-10">
-                <img
+                <SmartImage
                   src="/modern-vietnamese-learning-app-interface-mockup.jpg"
-                  alt="Quizlet App Interface"
+                  alt="SmartLearn App Interface"
                   className="w-full h-auto rounded-2xl shadow-2xl"
+                  rounded
                 />
               </div>
               <div className="absolute -top-4 -right-4 w-72 h-72 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full blur-3xl opacity-20"></div>
@@ -129,7 +117,7 @@ export default function LandingPage() {
       <section id="features" className="py-20 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">Tại sao chọn Quizlet?</h2>
+            <H2 className="text-3xl lg:text-4xl font-bold text-gray-900">Vì sao chọn SmartLearn?</H2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Các công cụ học tập được thiết kế để giúp bạn ghi nhớ lâu hơn và học hiệu quả hơn
             </p>
@@ -228,7 +216,7 @@ export default function LandingPage() {
       <section id="pricing" className="py-20 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">Chọn gói phù hợp với bạn</h2>
+            <H2 className="text-3xl lg:text-4xl font-bold text-gray-900">Chọn gói phù hợp với bạn</H2>
             <p className="text-xl text-gray-600">Bắt đầu miễn phí, nâng cấp khi cần thêm tính năng</p>
           </div>
 
@@ -266,7 +254,7 @@ export default function LandingPage() {
                 <Badge className="bg-blue-500 text-white px-4 py-1">Phổ biến nhất</Badge>
               </div>
               <CardHeader className="text-center pb-4">
-                <CardTitle className="text-2xl font-bold">Quizlet Plus</CardTitle>
+                <CardTitle className="text-2xl font-bold">SmartLearn Plus</CardTitle>
                 <div className="text-4xl font-bold text-gray-900 mt-4">
                   99.000đ<span className="text-lg font-normal text-gray-600">/tháng</span>
                 </div>
@@ -335,10 +323,9 @@ export default function LandingPage() {
       <section className="py-20 bg-gradient-to-r from-blue-600 to-indigo-700">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="max-w-3xl mx-auto space-y-8">
-            <h2 className="text-3xl lg:text-4xl font-bold text-white">Sẵn sàng bắt đầu hành trình học tập?</h2>
+            <H2 className="text-3xl lg:text-4xl font-bold text-white">Sẵn sàng bắt đầu hành trình học tập?</H2>
             <p className="text-xl text-blue-100">
-              Tham gia cùng hàng triệu học sinh trên toàn thế giới đang sử dụng Quizlet để đạt được mục tiêu học tập của
-              mình.
+              Tham gia cộng đồng học tập sử dụng SmartLearn để tăng tốc ghi nhớ và làm chủ kiến thức.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-lg" onClick={() => signInWithGoogle && signInWithGoogle()} disabled={loading}>
@@ -366,15 +353,15 @@ export default function LandingPage() {
                 <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-sm">Q</span>
                 </div>
-                <span className="text-xl font-bold">Quizlet</span>
+                <span className="text-xl font-bold">SmartLearn</span>
               </div>
               <p className="text-gray-400">
-                Nền tảng học tập hàng đầu giúp hàng triệu học sinh đạt được mục tiêu học tập.
+                Nền tảng học tập cá nhân hóa giúp bạn xây dựng thói quen và tiến bộ bền vững.
               </p>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-4">Sản phẩm</h3>
+              <H3 className="font-semibold mb-4">Sản phẩm</H3>
               <ul className="space-y-2 text-gray-400">
                 <li>
                   <Link to="#" className="hover:text-white transition-colors">
@@ -400,7 +387,7 @@ export default function LandingPage() {
             </div>
 
             <div>
-              <h3 className="font-semibold mb-4">Hỗ trợ</h3>
+              <H3 className="font-semibold mb-4">Hỗ trợ</H3>
               <ul className="space-y-2 text-gray-400">
                 <li>
                   <Link to="#" className="hover:text-white transition-colors">
@@ -426,7 +413,7 @@ export default function LandingPage() {
             </div>
 
             <div>
-              <h3 className="font-semibold mb-4">Công ty</h3>
+              <H3 className="font-semibold mb-4">Công ty</H3>
               <ul className="space-y-2 text-gray-400">
                 <li>
                   <Link to="#" className="hover:text-white transition-colors">
@@ -453,7 +440,7 @@ export default function LandingPage() {
           </div>
 
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 Quizlet Inc. Tất cả quyền được bảo lưu.</p>
+            <p>&copy; 2025 SmartLearn. All rights reserved.</p>
           </div>
         </div>
       </footer>

@@ -8,7 +8,13 @@
 
 import { initializeApp, type FirebaseApp, getApps } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import {
+  initializeFirestore,
+  getFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  type Firestore
+} from 'firebase/firestore';
 
 let app: FirebaseApp | null = null;
 
@@ -31,4 +37,34 @@ export function getFirebaseApp() {
 }
 
 export function getFirebaseAuth() { return getAuth(getFirebaseApp()); }
-export function getDb() { return getFirestore(getFirebaseApp()); }
+
+// Lazily initialize Firestore with the new recommended persistence API.
+let dbInstance: Firestore | null = null;
+export function getDb(): Firestore {
+  if (dbInstance) return dbInstance;
+  const app = getFirebaseApp();
+  try {
+    // Attempt persistent multi-tab cache
+    dbInstance = initializeFirestore(app, {
+      localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+    })
+  } catch (e) {
+    // If Firestore already initialized elsewhere (different options) or persistence unsupported
+    console.warn('[Firestore] Persistent local cache init failed; using existing or memory instance', e)
+    try {
+      dbInstance = getFirestore(app)
+    } catch {
+      // Absolute fallback: re-init with no special options
+      dbInstance = initializeFirestore(app, {})
+    }
+  }
+  return dbInstance;
+}
+
+// Preload Firestore (e.g., after user logs in) without awaiting by caller.
+export function preloadFirestore() {
+  // Defer so it doesn't block current event loop / render.
+  setTimeout(() => {
+    try { getDb() } catch { /* ignore */ }
+  }, 0)
+}

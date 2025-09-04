@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { getUserLibraryProgress, upsertUserLibraryProgress, computeBasicProgressStats } from '@/lib/firebaseLibraryService';
+import { progressRepository } from '@/lib/repositories/ProgressRepository';
 
 interface ProgressState {
   mastered: number;
@@ -20,10 +20,10 @@ export function useLibraryProgress(libraryId?: string) {
     (async () => {
       setLoading(true); setError(null);
       try {
-        const prog = await getUserLibraryProgress(libraryId);
+  const prog = await progressRepository.getUserLibraryProgress(libraryId);
         if (cancelled) return;
         setRawState(prog?.engineState ?? null);
-        const s = await computeBasicProgressStats(libraryId);
+  const s = await progressRepository.computeBasicProgressStats(libraryId);
         if (!cancelled) setStats(s);
       } catch(e) {
         if (!cancelled) setError(e instanceof Error ? e.message : 'Load progress failed');
@@ -34,10 +34,10 @@ export function useLibraryProgress(libraryId?: string) {
 
   const saveProgress = useCallback(async (engineState: Record<string, unknown>) => {
     if (!libraryId) return;
-    await upsertUserLibraryProgress(libraryId, engineState);
+  await progressRepository.upsertUserLibraryProgress(libraryId, engineState);
     setRawState(engineState);
     // naive recompute
-    const s = await computeBasicProgressStats(libraryId);
+  const s = await progressRepository.computeBasicProgressStats(libraryId);
     setStats(s);
   }, [libraryId]);
 

@@ -1,9 +1,14 @@
 import { Outlet } from 'react-router-dom'
+import DocumentTitle from '@/components/DocumentTitle'
+import { ThemeProvider } from 'next-themes'
 
 export default function RootLayout() {
   return (
-    <div className="min-h-screen">
-      <Outlet />
-    </div>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <div className="min-h-screen">
+        <DocumentTitle />
+        <Outlet />
+      </div>
+    </ThemeProvider>
   )
 }

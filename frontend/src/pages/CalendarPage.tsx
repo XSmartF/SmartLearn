@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { H1, H4 } from '@/components/ui/typography';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -249,7 +250,7 @@ export default function Calendar() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Lịch học tập</h1>
+          <H1 className="text-3xl font-bold">Lịch học tập</H1>
           <p className="text-muted-foreground">
             Quản lý thời gian biểu và sự kiện học tập
           </p>
@@ -372,7 +373,7 @@ export default function Calendar() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center space-x-2 mb-1">
-                            <h4 className="text-sm font-semibold truncate">{event.title}</h4>
+                            <H4 className="text-sm font-semibold truncate">{event.title}</H4>
                             {getEventBadge(event.type)}
                           </div>
                           <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
@@ -441,7 +442,7 @@ export default function Calendar() {
                       </div>
                       <div>
                         <div className="flex items-center space-x-2 mb-1">
-                          <h4 className="font-semibold">{event.title}</h4>
+                          <H4 className="font-semibold">{event.title}</H4>
                           {getEventBadge(event.type)}
                         </div>
                         <p className="text-sm text-muted-foreground mb-1">{event.description}</p>

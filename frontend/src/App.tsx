@@ -1,9 +1,9 @@
 import './App.css'
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
 import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-router-dom'
-import { AuthProvider } from './components/AuthProvider'
 import { ErrorBoundary, ComponentErrorBoundary } from './components/ErrorBoundary'
-import { useAuth } from './components/authContext'
+import { useAuth } from './hooks/useAuthRedux'
+import { FullScreenLoader } from '@/components/ui/loader'
 
 // Helper: tạo lazy route nhanh
 const lazyLayout = (path: string) => async () => {
@@ -18,7 +18,7 @@ const lazyPage = (path: string) => async () => {
 // AuthGuard bọc các route cần đăng nhập và cung cấp Outlet để render con
 const AuthGuard: React.FC = () => {
   const { user, loading } = useAuth();
-  if (loading) return <div className="p-4 text-sm">Đang kiểm tra đăng nhập...</div>;
+  if (loading) return <FullScreenLoader message="Đang kiểm tra đăng nhập" size="lg" />;
   if (!user) return <Navigate to="/" replace />;
   return <Outlet />; // quan trọng: phải có Outlet để render các route con
 };
@@ -71,8 +71,18 @@ const router = createBrowserRouter([
             path: "library/:id",
             lazy: lazyPage('./pages/LibraryDetail'),
             errorElement: <ErrorBoundary />,
-            // Có thể cập nhật bằng tiêu đề thư viện thực tế nếu dùng loader
-            handle: { breadcrumb: (match: { params: Record<string, string> }) => `Thư viện #${match.params.id}` }
+            // Loader để lấy tiêu đề thư viện cho breadcrumb
+            loader: async ({ params }) => {
+              if (!params.id) return null
+              try {
+                const { libraryRepository } = await import('@/lib/repositories/LibraryRepository')
+        const meta = await libraryRepository.getLibraryMeta(params.id)
+        return { library: meta }
+              } catch {
+        return { library: null }
+              }
+            },
+      handle: { breadcrumb: (match: { params: Record<string,string>; data?: { library?: { title?: string|null } | null } }) => match.data?.library?.title || `Thư viện #${match.params.id}` }
           },
           {
             path: "study/:id",
@@ -145,14 +155,21 @@ const router = createBrowserRouter([
 ])
 
 function App() {
+  // Idle prefetch of learn engine only (test generator prefetched in TestSetup page now)
+  useEffect(() => {
+    const prefetchLearn = () => { import('@/lib/learnEngine').catch(()=>{}) }
+    interface WIdle { requestIdleCallback?: (cb: () => void, opts?: { timeout?: number }) => number }
+    const w = window as unknown as WIdle
+    if (typeof w.requestIdleCallback === 'function') w.requestIdleCallback(prefetchLearn, { timeout: 3000 })
+    else setTimeout(prefetchLearn, 2000)
+  }, [])
+
   return (
-    <AuthProvider>
       <ComponentErrorBoundary>
-        <Suspense fallback={<div className="p-4 text-sm text-muted-foreground">Đang tải...</div>}>
+        <Suspense fallback={<FullScreenLoader message="Đang tải nội dung" size="lg" /> }>
           <RouterProvider router={router} />
         </Suspense>
       </ComponentErrorBoundary>
-    </AuthProvider>
   )
 }
 

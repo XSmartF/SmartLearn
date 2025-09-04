@@ -1,4 +1,5 @@
 import { useParams } from "react-router-dom"
+import { H1 } from '@/components/ui/typography';
 
 export default function TestLibrary() {
   const { id } = useParams()
@@ -7,7 +8,7 @@ export default function TestLibrary() {
   
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold">Test Library Page</h1>
+  <H1 className="text-3xl font-bold">Test Library Page</H1>
       <p className="text-lg">Library ID: {id}</p>
       <p className="text-sm text-gray-600">If you see this, routing is working!</p>
     </div>

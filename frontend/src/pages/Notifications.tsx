@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { H1, H3 } from '@/components/ui/typography';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -25,7 +26,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { actOnAccessRequest, getLibraryMeta, getUserProfile, listenUserNotifications, markNotificationRead, markAllNotificationsRead, listenPendingAccessRequestsForOwner } from '@/lib/firebaseLibraryService'
+import { userRepository } from '@/lib/repositories/UserRepository'
+import { libraryRepository } from '@/lib/repositories/LibraryRepository'
 
 export default function Notifications() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -40,11 +42,11 @@ export default function Notifications() {
     setLoadingRequests(true);
     let unsub: (()=>void)|null = null;
     try {
-      unsub = listenPendingAccessRequestsForOwner(async (reqs)=>{
+  unsub = userRepository.listenPendingAccessRequestsForOwner(async (reqs)=>{
         const enriched = await Promise.all(reqs.map(async r=>{
           let libraryTitle = ''; let requesterName='';
-          try { const meta = await getLibraryMeta(r.libraryId); libraryTitle = meta?.title || ''; } catch{/* ignore meta */}
-          try { const prof = await getUserProfile(r.requesterId); requesterName = prof?.displayName || prof?.email || r.requesterId.slice(0,6); } catch{/* ignore profile */}
+          try { const meta = await libraryRepository.getLibraryMeta(r.libraryId); libraryTitle = meta?.title || ''; } catch{/* ignore meta */}
+          try { const prof = await userRepository.getUserProfile(r.requesterId); requesterName = prof?.displayName || prof?.email || r.requesterId.slice(0,6); } catch{/* ignore profile */}
           return { ...r, libraryTitle, requesterName };
         }));
         setAccessRequests(enriched);
@@ -56,7 +58,7 @@ export default function Notifications() {
 
   const [notifications, setNotifications] = useState<{ id: string; type: string; title: string; message: string; read: boolean; createdAt: string; data?: Record<string, unknown> }[]>([])
   const [notifLoading, setNotifLoading] = useState(true)
-  useEffect(()=>{ let unsub: (()=>void)|null=null; try { unsub = listenUserNotifications(items=>{ setNotifications(items); setNotifLoading(false); }); } catch { setNotifLoading(false); } return ()=>{ if(unsub) unsub(); }; }, [])
+  useEffect(()=>{ let unsub: (()=>void)|null=null; try { unsub = userRepository.listenUserNotifications(items=>{ setNotifications(items); setNotifLoading(false); }); } catch { setNotifLoading(false); } return ()=>{ if(unsub) unsub(); }; }, [])
 
   const stats = [
     { title: 'Chưa đọc', value: notifications.filter(n=>!n.read).length.toString(), subtitle: 'Thông báo mới' },
@@ -78,8 +80,8 @@ export default function Notifications() {
     return matchesSearch && matchesTab
   })
 
-  const markAsRead = async (id: string) => { try { await markNotificationRead(id); } catch {/* ignore */} }
-  const markAllAsRead = async () => { try { await markAllNotificationsRead(); } catch {/* ignore */} }
+  const markAsRead = async (id: string) => { try { await userRepository.markNotificationRead(id); } catch {/* ignore */} }
+  const markAllAsRead = async () => { try { await userRepository.markAllNotificationsRead(); } catch {/* ignore */} }
 
   const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
     flashcard: BookOpen,
@@ -130,7 +132,7 @@ export default function Notifications() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Thông báo</h1>
+          <H1 className="text-3xl font-bold">Thông báo</H1>
           <p className="text-muted-foreground">
             Theo dõi các hoạt động và cập nhật mới nhất
           </p>
@@ -199,7 +201,7 @@ export default function Notifications() {
             <Card>
               <CardContent className="p-8 text-center">
                 <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Không có thông báo</h3>
+                <H3 className="text-lg font-semibold mb-2">Không có thông báo</H3>
                 <p className="text-muted-foreground">
                   {searchQuery ? 'Không tìm thấy thông báo phù hợp với từ khóa tìm kiếm.' : 'Bạn đã xem hết tất cả thông báo.'}
                 </p>
@@ -225,11 +227,11 @@ export default function Notifications() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center space-x-2">
-                            <h3 className={`text-sm font-semibold ${
+                            <span className={`text-sm font-semibold ${
                               !notification.read ? 'text-foreground' : 'text-muted-foreground'
                             }`}>
                               {notification.title}
-                            </h3>
+                            </span>
                             {getNotificationBadge(notification.type, undefined)}
                             {!notification.read && (
                               <div className="w-2 h-2 bg-primary rounded-full"></div>
@@ -282,7 +284,7 @@ export default function Notifications() {
                                         onClick={async ()=>{
                                           setActingNotif(notification.id);
                                           try {
-                                            await actOnAccessRequest(requestId, true);
+                                            await userRepository.actOnAccessRequest(requestId, true);
                                             setActedRequests(prev=> ({ ...prev, [requestId]: 'approved' }));
                                             setAccessRequests(prev=> prev.filter(r=> r.id !== requestId));
                                             await markAsRead(notification.id);
@@ -296,7 +298,7 @@ export default function Notifications() {
                                         onClick={async ()=>{
                                           setActingNotif(notification.id);
                                           try {
-                                            await actOnAccessRequest(requestId, false);
+                                            await userRepository.actOnAccessRequest(requestId, false);
                                             setActedRequests(prev=> ({ ...prev, [requestId]: 'rejected' }));
                                             setAccessRequests(prev=> prev.filter(r=> r.id !== requestId));
                                             await markAsRead(notification.id);
@@ -331,8 +333,8 @@ export default function Notifications() {
                   <div><span className="font-medium">{r.requesterName}</span> muốn truy cập thư viện <span className="font-medium">{r.libraryTitle || r.libraryId}</span></div>
                   <div className="text-[11px] text-muted-foreground">Gửi lúc: {new Date(r.createdAt).toLocaleString()}</div>
                   <div className="flex gap-2 pt-1">
-                    <Button size="sm" disabled={acting===r.id} onClick={async()=>{ setActing(r.id); try { await actOnAccessRequest(r.id, true); setAccessRequests(prev=> prev.filter(x=>x.id!==r.id)); } finally { setActing(null); }}}>Chấp nhận</Button>
-                    <Button size="sm" variant="outline" disabled={acting===r.id} onClick={async()=>{ setActing(r.id); try { await actOnAccessRequest(r.id, false); setAccessRequests(prev=> prev.filter(x=>x.id!==r.id)); } finally { setActing(null); }}}>Từ chối</Button>
+                    <Button size="sm" disabled={acting===r.id} onClick={async()=>{ setActing(r.id); try { await userRepository.actOnAccessRequest(r.id, true); setAccessRequests(prev=> prev.filter(x=>x.id!==r.id)); } finally { setActing(null); }}}>Chấp nhận</Button>
+                    <Button size="sm" variant="outline" disabled={acting===r.id} onClick={async()=>{ setActing(r.id); try { await userRepository.actOnAccessRequest(r.id, false); setAccessRequests(prev=> prev.filter(x=>x.id!==r.id)); } finally { setActing(null); }}}>Từ chối</Button>
                   </div>
                 </div>
               ))}

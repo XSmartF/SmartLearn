@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 
 export interface CardPaginationProps {
   page: number;
@@ -21,9 +22,14 @@ export function CardPagination({ page, pageSize, total, onPageChange, onPageSize
       </div>
       <div className="flex items-center gap-1">Hiển thị
         {onPageSizeChange && (
-          <select className="border rounded px-1 py-0.5 bg-background" value={pageSize} onChange={e=> onPageSizeChange(Number(e.target.value))}>
-            {pageSizeOptions.map(s=> <option key={s} value={s}>{s}</option>)}
-          </select>
+          <Select value={String(pageSize)} onValueChange={(v: string)=> onPageSizeChange(Number(v))}>
+            <SelectTrigger className="h-7 w-[70px] text-xs px-2">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {pageSizeOptions.map(s=> <SelectItem key={s} value={String(s)}>{s}</SelectItem>)}
+            </SelectContent>
+          </Select>
         )}
         thẻ / trang
       </div>
