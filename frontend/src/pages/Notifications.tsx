@@ -130,14 +130,14 @@ export default function Notifications() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
         <div>
           <H1 className="text-3xl font-bold">Thông báo</H1>
           <p className="text-muted-foreground">
             Theo dõi các hoạt động và cập nhật mới nhất
           </p>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
           <Button variant="outline" onClick={markAllAsRead}>
             <Check className="h-4 w-4 mr-2" />
             Đánh dấu tất cả đã đọc
@@ -150,7 +150,7 @@ export default function Notifications() {
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
         {stats.map((stat) => (
           <Card key={stat.title}>
             <CardHeader className="pb-2">
@@ -165,7 +165,7 @@ export default function Notifications() {
       </div>
 
       {/* Search */}
-      <div className="flex items-center space-x-4">
+      <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -179,20 +179,22 @@ export default function Notifications() {
 
     {/* Notification Tabs */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="all">
-            Tất cả
-            <span className="ml-2 bg-muted text-muted-foreground rounded-full px-2 py-1 text-xs">{notifications.length}</span>
-          </TabsTrigger>
-          <TabsTrigger value="unread">
-            Chưa đọc
-            <span className="ml-2 bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs">{notifications.filter(n => !n.read).length}</span>
-          </TabsTrigger>
-          <TabsTrigger value="flashcards">Flashcard</TabsTrigger>
-          <TabsTrigger value="reminders">Nhắc nhở</TabsTrigger>
-          <TabsTrigger value="achievements">Thành tích</TabsTrigger>
-      <TabsTrigger value="requests">Yêu cầu truy cập ({accessRequests.length})</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto">
+          <TabsList className="inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground min-w-max">
+            <TabsTrigger value="all">
+              Tất cả
+              <span className="ml-2 bg-muted text-muted-foreground rounded-full px-2 py-1 text-xs">{notifications.length}</span>
+            </TabsTrigger>
+            <TabsTrigger value="unread">
+              Chưa đọc
+              <span className="ml-2 bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs">{notifications.filter(n => !n.read).length}</span>
+            </TabsTrigger>
+            <TabsTrigger value="flashcards">Flashcard</TabsTrigger>
+            <TabsTrigger value="reminders">Nhắc nhở</TabsTrigger>
+            <TabsTrigger value="achievements">Thành tích</TabsTrigger>
+            <TabsTrigger value="requests">Yêu cầu truy cập ({accessRequests.length})</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value={selectedTab} className="space-y-4">
           {notifLoading ? (
@@ -217,7 +219,7 @@ export default function Notifications() {
                   }`}
                 >
                   <CardContent className="p-4">
-                    <div className="flex items-start space-x-4">
+                    <div className="flex flex-col space-y-3 sm:flex-row sm:items-start sm:space-y-0 sm:space-x-4">
                       <div className={`flex-shrink-0 p-2 rounded-full ${
                         !notification.read ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                       }`}>
@@ -225,7 +227,7 @@ export default function Notifications() {
                       </div>
                       
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between mb-2">
+                        <div className="flex flex-col space-y-2 sm:flex-row sm:items-start sm:justify-between sm:space-y-0">
                           <div className="flex items-center space-x-2">
                             <span className={`text-sm font-semibold ${
                               !notification.read ? 'text-foreground' : 'text-muted-foreground'
@@ -329,10 +331,10 @@ export default function Notifications() {
               {loadingRequests && <div className="text-xs text-muted-foreground">Đang tải...</div>}
               {!loadingRequests && accessRequests.length === 0 && <div className="text-xs text-muted-foreground">Không có yêu cầu.</div>}
               {accessRequests.map(r => (
-                <div key={r.id} className="border rounded-md p-3 flex flex-col gap-1 text-sm">
+                <div key={r.id} className="border rounded-md p-3 flex flex-col gap-2 text-sm">
                   <div><span className="font-medium">{r.requesterName}</span> muốn truy cập thư viện <span className="font-medium">{r.libraryTitle || r.libraryId}</span></div>
                   <div className="text-[11px] text-muted-foreground">Gửi lúc: {new Date(r.createdAt).toLocaleString()}</div>
-                  <div className="flex gap-2 pt-1">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:gap-2">
                     <Button size="sm" disabled={acting===r.id} onClick={async()=>{ setActing(r.id); try { await userRepository.actOnAccessRequest(r.id, true); setAccessRequests(prev=> prev.filter(x=>x.id!==r.id)); } finally { setActing(null); }}}>Chấp nhận</Button>
                     <Button size="sm" variant="outline" disabled={acting===r.id} onClick={async()=>{ setActing(r.id); try { await userRepository.actOnAccessRequest(r.id, false); setAccessRequests(prev=> prev.filter(x=>x.id!==r.id)); } finally { setActing(null); }}}>Từ chối</Button>
                   </div>
@@ -349,7 +351,7 @@ export default function Notifications() {
           <CardTitle className="text-lg">Cài đặt thông báo nhanh</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2">
               <BellRing className="h-6 w-6" />
               <span className="text-sm">Thông báo email</span>
