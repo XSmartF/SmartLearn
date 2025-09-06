@@ -9,6 +9,9 @@ import { useGetSharedLibrariesQuery } from '@/shared/store/api';
 import { userRepository } from '@/shared/lib/repositories/UserRepository';
 import type { LibraryMeta } from '@/shared/lib/models';
 import { StatsSection, RecentFlashcardsSection, UpcomingEventsSection, QuickActionsSection } from '../components';
+import { listenUserStudyEvents } from '@/shared/lib/firebaseCalendarService';
+import type { StudyEvent } from '../../study/types/calendar';
+import { getUpcomingEvents } from '../../study/utils/calendarUtils';
 
 // NOTE: Real progress & accuracy would come from progress documents; placeholder calculations here.
 export default function DashboardPage() {
@@ -16,7 +19,17 @@ export default function DashboardPage() {
   const { favorites } = useFavoriteLibraries();
   const [summaries, setSummaries] = useState<Record<string, ProgressSummaryLite>>({});
   const { data: shared = [] } = useGetSharedLibrariesQuery();
+  const [studyEvents, setStudyEvents] = useState<StudyEvent[]>([]);
   const [ownerProfiles, setOwnerProfiles] = useState<Record<string, { id: string; displayName?: string; email?: string; avatarUrl?: string }>>({});
+
+  // Listen to study events
+  useEffect(() => {
+    const unsubscribe = listenUserStudyEvents((events) => {
+      setStudyEvents(events);
+    });
+
+    return unsubscribe;
+  }, []);
 
   // shared libraries now provided via RTK Query
 
@@ -102,7 +115,9 @@ export default function DashboardPage() {
     ];
   }, [allLibraries, favorites, summaries]);
 
-  const upcomingEvents: { title: string; time: string; type: 'review'|'study'|'test' }[] = [];
+  const upcomingEvents = useMemo(() => {
+    return getUpcomingEvents(studyEvents).slice(0, 5);
+  }, [studyEvents]);
 
   return (
     <div className="space-y-6">
@@ -116,7 +131,7 @@ export default function DashboardPage() {
       {/* Stats Cards */}
       <StatsSection stats={stats} />
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {/* Recent Flashcard Sets */}
         <RecentFlashcardsSection
           recentFlashcards={recentFlashcards}

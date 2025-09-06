@@ -126,7 +126,7 @@ export default function MyLibrary() {
       />
 
       {/* Controls */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <LibraryFilters
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -158,7 +158,7 @@ export default function MyLibrary() {
 
         <TabsContent value="all" className="space-y-4">
           {viewMode === 'grid' ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
               {filteredAll.map(flashcard => {
                 const isFav = favoriteIds.includes(flashcard.id);
                 const role = sharedRoleMap.get(flashcard.id);
@@ -210,7 +210,7 @@ export default function MyLibrary() {
               </p>
             </div>
           ) : viewMode === 'grid' ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
               {favorites.map(f => {
                 const isFav = favoriteIds.includes(f.id);
                 const role = sharedRoleMap.get(f.id);
@@ -257,7 +257,7 @@ export default function MyLibrary() {
             <div className="text-center py-8 text-sm text-muted-foreground">Chưa có thư viện được chia sẻ.</div>
           )}
           {!sharedLoading && shared.length > 0 && (viewMode === 'grid' ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
               {shared.map(s => {
                 const isFav = favoriteIds.includes(s.lib.id);
                 const role = s.role;

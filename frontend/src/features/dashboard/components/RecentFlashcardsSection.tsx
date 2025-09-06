@@ -41,7 +41,7 @@ export function RecentFlashcardsSection({
   ownerProfiles
 }: RecentFlashcardsSectionProps) {
   return (
-    <Card className="col-span-2">
+    <Card className="col-span-2 md:col-span-2 lg:col-span-2">
       <CardHeader className="flex flex-row items-start justify-between space-y-0">
         <div>
           <CardTitle>Bộ flashcard gần đây</CardTitle>

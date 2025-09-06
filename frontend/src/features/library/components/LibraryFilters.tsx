@@ -43,7 +43,7 @@ export default function LibraryFilters({
 
       <div className="flex items-center space-x-2">
         <Select value={sortBy} onValueChange={onSortChange}>
-          <SelectTrigger className="w-40">
+          <SelectTrigger className="w-32 sm:w-40">
             <Filter className="h-4 w-4 mr-2" />
             <SelectValue />
           </SelectTrigger>

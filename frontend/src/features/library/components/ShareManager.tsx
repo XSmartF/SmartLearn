@@ -4,6 +4,7 @@ import { Input } from "@/shared/components/ui/input"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/shared/components/ui/select"
 import { userRepository } from '@/shared/lib/repositories/UserRepository'
 import { UserPlus } from "lucide-react"
+import ConfirmDialog from "@/shared/components/ConfirmDialog"
 
 interface ShareManagerProps {
   libraryId: string;
@@ -80,31 +81,57 @@ function ShareRow({ share, isOwner, updateRole, removeShare }: { share: { id: st
   const [profile, setProfile] = useState<{ id: string; email?: string; displayName?: string }|null>(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  const handleDeleteConfirm = async () => {
+    setUpdating(true);
+    try {
+      await removeShare(share.id);
+      setDeleteDialogOpen(false);
+    } finally {
+      setUpdating(false);
+    }
+  };
   useEffect(()=>{ let cancelled=false; (async()=>{ setLoadingProfile(true); try { const p = await userRepository.getUserProfile(share.targetUserId); if(!cancelled) setProfile(p); } finally { if(!cancelled) setLoadingProfile(false);} })(); return ()=>{cancelled=true}; }, [share.targetUserId]);
   return (
-    <div className="p-3 flex items-center gap-3 text-xs">
-      <div className="flex-1">
-        <div className="font-medium">
-          {loadingProfile ? '...' : (profile?.displayName || profile?.email || share.targetUserId)}
+    <>
+      <div className="p-3 flex items-center gap-3 text-xs">
+        <div className="flex-1">
+          <div className="font-medium">
+            {loadingProfile ? '...' : (profile?.displayName || profile?.email || share.targetUserId)}
+          </div>
+          <div className="text-[10px] text-muted-foreground">Role: {share.role}</div>
         </div>
-        <div className="text-[10px] text-muted-foreground">Role: {share.role}</div>
+        {isOwner ? (
+    <Select value={share.role} onValueChange={async (v: string)=>{ const val = v as 'viewer'|'contributor'; setUpdating(true); try { await updateRole(share.id, val);} finally { setUpdating(false);} }}>
+            <SelectTrigger className="h-7 text-xs w-[130px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="viewer">Viewer</SelectItem>
+              <SelectItem value="contributor">Contributor</SelectItem>
+            </SelectContent>
+          </Select>
+        ) : (
+          <span className="text-muted-foreground text-[11px]">{share.role}</span>
+        )}
+        {isOwner && (
+          <Button size="sm" variant="destructive" className="h-7 px-2" onClick={() => setDeleteDialogOpen(true)} disabled={updating}>Xóa</Button>
+        )}
       </div>
-      {isOwner ? (
-  <Select value={share.role} onValueChange={async (v: string)=>{ const val = v as 'viewer'|'contributor'; setUpdating(true); try { await updateRole(share.id, val);} finally { setUpdating(false);} }}>
-          <SelectTrigger className="h-7 text-xs w-[130px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="viewer">Viewer</SelectItem>
-            <SelectItem value="contributor">Contributor</SelectItem>
-          </SelectContent>
-        </Select>
-      ) : (
-        <span className="text-muted-foreground text-[11px]">{share.role}</span>
-      )}
-      {isOwner && (
-        <Button size="sm" variant="destructive" className="h-7 px-2" onClick={async()=>{ if(confirm('Hủy chia sẻ?')) await removeShare(share.id); }} disabled={updating}>Xóa</Button>
-      )}
-    </div>
+
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Hủy chia sẻ"
+        description="Bạn có chắc chắn muốn hủy chia sẻ thư viện này không?"
+        onConfirm={handleDeleteConfirm}
+        confirmText="Hủy chia sẻ"
+        cancelText="Giữ lại"
+        variant="destructive"
+      >
+        <div />
+      </ConfirmDialog>
+    </>
   );
 }

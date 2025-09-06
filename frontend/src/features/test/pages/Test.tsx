@@ -220,7 +220,7 @@ export default function Test() {
   <H3 className="text-xl font-semibold">Không thể tạo câu hỏi</H3>
         <p className="text-muted-foreground text-sm">Thư viện chưa có thẻ nào. Hãy thêm thẻ rồi thử lại.</p>
         <div className="flex gap-2">
-          <Button onClick={() => navigate(getLibraryDetailPath(id))}>Quay lại thư viện</Button>
+          <Button onClick={() => id && navigate(getLibraryDetailPath(id))}>Quay lại thư viện</Button>
           <Button variant="outline" onClick={() => id && navigate(getTestSetupPath(id))}>Cài đặt lại</Button>
         </div>
       </div>
