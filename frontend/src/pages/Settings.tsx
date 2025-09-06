@@ -1,4 +1,4 @@
-import { H3 } from '@/components/ui/typography';
+import { H3 } from '@/shared/components/ui/typography';
 
 export default function Settings() {
   return (

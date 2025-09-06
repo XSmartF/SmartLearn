@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback, startTransition } from "react"
-import { H1, H3 } from '@/components/ui/typography'
+import { H1, H3 } from '@/shared/components/ui/typography'
 import { useParams, Link, useNavigate } from "react-router-dom"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
+import { Button } from "@/shared/components/ui/button"
+import { Progress } from "@/shared/components/ui/progress"
+import { Badge } from "@/shared/components/ui/badge"
 import { 
   ArrowLeft,
   Clock,
@@ -14,10 +14,10 @@ import {
   BarChart3,
   RefreshCw
 } from "lucide-react"
-import { libraryRepository } from '@/lib/repositories/LibraryRepository'
-import { cardRepository } from '@/lib/repositories/CardRepository'
-import { loadTestQuestionGenerator } from '@/lib/lazyModules'
-import { idbGetItem } from "@/lib/indexedDB"
+import { libraryRepository } from '@/shared/lib/repositories/LibraryRepository'
+import { cardRepository } from '@/shared/lib/repositories/CardRepository'
+import { loadTestQuestionGenerator } from '@/shared/lib/lazyModules'
+import { idbGetItem } from "@/shared/lib/indexedDB"
 
 interface TestConfig {
   libraryId: string

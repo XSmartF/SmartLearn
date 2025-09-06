@@ -1,8 +1,8 @@
 import { useState } from "react"
-import { H1, H4 } from '@/components/ui/typography';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { H1, H4 } from '@/shared/components/ui/typography';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card"
+import { Badge } from "@/shared/components/ui/badge"
+import { Button } from "@/shared/components/ui/button"
 import { 
   Calendar as CalendarIcon, 
   Clock, 
@@ -21,7 +21,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/shared/components/ui/dropdown-menu"
 
 export default function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date())

@@ -3,8 +3,8 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App.tsx';
 import { Provider } from 'react-redux';
-import { store } from '@/store/store';
-import { initAuthListener } from '@/store/authSlice';
+import { initAuthListener } from './shared/store/authSlice.ts';
+import { store } from './shared/store/store.ts';
 
 initAuthListener(store.dispatch);
 

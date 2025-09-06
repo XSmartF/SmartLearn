@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react"
-import { H1, H3 } from '@/components/ui/typography';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { H1, H3 } from '@/shared/components/ui/typography';
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
+import { Badge } from "@/shared/components/ui/badge"
+import { Button } from "@/shared/components/ui/button"
+import { Input } from "@/shared/components/ui/input"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs"
 import { 
   Bell, 
   BellRing, 
@@ -25,9 +25,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { userRepository } from '@/lib/repositories/UserRepository'
-import { libraryRepository } from '@/lib/repositories/LibraryRepository'
+} from "@/shared/components/ui/dropdown-menu"
+import { userRepository } from '@/shared/lib/repositories/UserRepository'
+import { libraryRepository } from '@/shared/lib/repositories/LibraryRepository'
 
 export default function Notifications() {
   const [searchQuery, setSearchQuery] = useState('')

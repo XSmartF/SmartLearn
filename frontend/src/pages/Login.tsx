@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuthRedux';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/shared/hooks/useAuthRedux';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 
 export default function LoginPage() {
   const { signIn } = useAuth();

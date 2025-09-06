@@ -1,21 +1,21 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { H1, H2, H3, H4 } from '@/components/ui/typography'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
+import { Button } from '@/shared/components/ui/button'
+import { H1, H2, H3, H4 } from '@/shared/components/ui/typography'
+import { Badge } from '@/shared/components/ui/badge'
+import { Input } from '@/shared/components/ui/input'
+import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/shared/components/ui/breadcrumb'
 import { ArrowLeft, BookOpen, Keyboard, Home, Check, X, BarChart3, RotateCcw, Settings } from 'lucide-react'
-import { Switch } from '@/components/ui/switch'
-import { libraryRepository } from '@/lib/repositories/LibraryRepository'
-import { cardRepository } from '@/lib/repositories/CardRepository'
-import { loadProgress, saveProgress } from '@/lib/firebaseProgressService'
-import type { Question, Result, Card as LearnCard, SerializedState, LearnEngine as LearnEngineType } from '@/lib/learnEngine'
-import type { LibraryMeta } from '@/lib/models'
-import { idbGetItem, idbSetItem } from '@/lib/indexedDB'
-import { useAuth } from '../hooks/useAuthRedux'
+import { Switch } from '@/shared/components/ui/switch'
+import { libraryRepository } from '@/shared/lib/repositories/LibraryRepository'
+import { cardRepository } from '@/shared/lib/repositories/CardRepository'
+import { loadProgress, saveProgress } from '@/shared/lib/firebaseProgressService'
+import type { Question, Result, Card as LearnCard, SerializedState, LearnEngine as LearnEngineType } from '@/shared/lib/learnEngine'
+import type { LibraryMeta } from '@/shared/lib/models'
+import { idbGetItem, idbSetItem } from '@/shared/lib/indexedDB'
+import { useAuth } from '@/shared/hooks/useAuthRedux'
 
 export default function StudyPage(){
   const { id } = useParams(); const navigate = useNavigate(); const libraryId = id || '';
@@ -42,7 +42,7 @@ export default function StudyPage(){
   useEffect(()=>{ let cancelled=false; if(!libraryId) return; (async()=>{ setLoadingData(true); setLoadError(null); try { const meta=await libraryRepository.getLibraryMeta(libraryId); if(!meta){ if(!cancelled) navigate('/dashboard/my-library'); return; } const c=await cardRepository.listCards(libraryId); if(cancelled) return; setLibrary(meta); setCards(c.map(cd=> ({...cd, domain: meta.subject || cd.domain }))); } catch(e:any){ if(!cancelled) setLoadError(e?.message||'Không tải được dữ liệu'); } finally { if(!cancelled) setLoadingData(false);} })(); return ()=>{ cancelled=true }; }, [libraryId,navigate]);
 
   // Init engine & restore
-  useEffect(()=>{ let cancelled=false; async function init(){ if(loadingData||!library||!cards.length) return; try { const { LearnEngine } = await import('@/lib/learnEngine'); if(cancelled) return; const eng=new LearnEngine({ cards }); let restored=false; try { const remote=await loadProgress(libraryId); if(remote){ eng.restore(remote); restored=true; } } catch{} if(!restored){ try { const local=await idbGetItem<unknown>(`study-session-${libraryId}`); if(local && typeof local==='object' && local!==null && 'params' in local && 'states' in local){ eng.restore(local as SerializedState); restored=true; } } catch{} } if(cancelled) return; setEngine(eng); const q=eng.nextQuestion(); setCurrentQuestion(q); if(!q||eng.isFinished()) setIsFinished(true); } catch(e){ console.error('Khởi tạo LearnEngine thất bại:', e);} } init(); return ()=>{ cancelled=true }; }, [cards,library,libraryId,loadingData]);
+  useEffect(()=>{ let cancelled=false; async function init(){ if(loadingData||!library||!cards.length) return; try { const { LearnEngine } = await import('@/shared/lib/learnEngine'); if(cancelled) return; const eng=new LearnEngine({ cards }); let restored=false; try { const remote=await loadProgress(libraryId); if(remote){ eng.restore(remote); restored=true; } } catch{} if(!restored){ try { const local=await idbGetItem<unknown>(`study-session-${libraryId}`); if(local && typeof local==='object' && local!==null && 'params' in local && 'states' in local){ eng.restore(local as SerializedState); restored=true; } } catch{} } if(cancelled) return; setEngine(eng); const q=eng.nextQuestion(); setCurrentQuestion(q); if(!q||eng.isFinished()) setIsFinished(true); } catch(e){ console.error('Khởi tạo LearnEngine thất bại:', e);} } init(); return ()=>{ cancelled=true }; }, [cards,library,libraryId,loadingData]);
 
   // Autosave
   useEffect(()=>{ const saveFn=()=>{ if(engine && !isFinished){ const s=engine.serialize(); idbSetItem(`study-session-${libraryId}`, s); saveProgress(libraryId, s).catch(()=>{}) } }; const vis=()=>{ if(document.visibilityState==='hidden') saveFn(); }; window.addEventListener('beforeunload', saveFn); document.addEventListener('visibilitychange', vis); return ()=>{ saveFn(); window.removeEventListener('beforeunload', saveFn); document.removeEventListener('visibilitychange', vis);} }, [engine,isFinished,libraryId]);
@@ -59,7 +59,7 @@ export default function StudyPage(){
   useEffect(()=>{ if(showResult && autoAdvance){ const t=setTimeout(()=> handleNext(), 2000); return ()=> clearTimeout(t); } }, [showResult,autoAdvance,handleNext]);
 
   const handleFinish=()=>{ if(engine){ const s=engine.serialize(); saveProgress(libraryId,s).catch(()=>{}); idbSetItem(`study-session-${libraryId}`, s); } navigate(`/dashboard/library/${id}`); };
-  const handleResetSession=()=>{ (async()=>{ try { const { LearnEngine } = await import('@/lib/learnEngine'); const fresh=new LearnEngine({ cards }); setEngine(fresh); const q=fresh.nextQuestion(); setCurrentQuestion(q); setIsFinished(!q||fresh.isFinished()); const s=fresh.serialize(); idbSetItem(`study-session-${libraryId}`, s); saveProgress(libraryId,s).catch(()=>{}); } catch(e){ console.error('Không thể reset phiên học tập:', e);} })(); };
+  const handleResetSession=()=>{ (async()=>{ try { const { LearnEngine } = await import('@/shared/lib/learnEngine'); const fresh=new LearnEngine({ cards }); setEngine(fresh); const q=fresh.nextQuestion(); setCurrentQuestion(q); setIsFinished(!q||fresh.isFinished()); const s=fresh.serialize(); idbSetItem(`study-session-${libraryId}`, s); saveProgress(libraryId,s).catch(()=>{}); } catch(e){ console.error('Không thể reset phiên học tập:', e);} })(); };
 
   if(loadingData) return (<div className='space-y-6'><Breadcrumb><BreadcrumbList><BreadcrumbItem><BreadcrumbLink asChild><Link to='/dashboard'><Home className='h-4 w-4'/></Link></BreadcrumbLink></BreadcrumbItem><BreadcrumbSeparator/><BreadcrumbItem><BreadcrumbLink asChild><Link to='/dashboard/my-library'>Thư viện</Link></BreadcrumbLink></BreadcrumbItem><BreadcrumbSeparator/><BreadcrumbItem><BreadcrumbPage>Học tập</BreadcrumbPage></BreadcrumbItem></BreadcrumbList></Breadcrumb><div className='text-center py-12'><BookOpen className='mx-auto h-16 w-16 text-muted-foreground mb-4'/><H3 className='text-2xl font-semibold mb-2'>Đang tải dữ liệu...</H3></div></div>);
   if(loadError) return (<div className='space-y-6'><Breadcrumb><BreadcrumbList><BreadcrumbItem><BreadcrumbLink asChild><Link to='/dashboard'><Home className='h-4 w-4'/></Link></BreadcrumbLink></BreadcrumbItem><BreadcrumbSeparator/><BreadcrumbItem><BreadcrumbLink asChild><Link to='/dashboard/my-library'>Thư viện</Link></BreadcrumbLink></BreadcrumbItem></BreadcrumbList></Breadcrumb><Card className='max-w-xl mx-auto'><CardContent className='py-12 text-center space-y-4'><H3 className='font-semibold'>Lỗi tải dữ liệu</H3><p className='text-muted-foreground'>{loadError}</p><Button onClick={()=> window.location.reload()}>Thử lại</Button></CardContent></Card></div>);

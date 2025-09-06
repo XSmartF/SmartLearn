@@ -1,9 +1,9 @@
 import './App.css'
 import { Suspense, useEffect } from 'react'
 import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-router-dom'
-import { ErrorBoundary, ComponentErrorBoundary } from './components/ErrorBoundary'
-import { useAuth } from './hooks/useAuthRedux'
-import { FullScreenLoader } from '@/components/ui/loader'
+import { ErrorBoundary, ComponentErrorBoundary } from './shared/components/ErrorBoundary'
+import { useAuth } from './shared/hooks/useAuthRedux'
+import { FullScreenLoader } from '@/shared/components/ui/loader'
 
 // Helper: tạo lazy route nhanh
 const lazyLayout = (path: string) => async () => {
@@ -28,13 +28,13 @@ const router = createBrowserRouter([
   // Removed separate login/register pages (Google one-click only)
   {
     path: "/",
-    lazy: lazyLayout('./layouts/RootLayout'),
+    lazy: lazyLayout('./shared/layouts/RootLayout'),
     errorElement: <ErrorBoundary />,
     handle: { breadcrumb: 'Trang chủ' },
     children: [
       {
         path: "/",
-        lazy: lazyLayout('./layouts/DefaultLayout'),
+        lazy: lazyLayout('./shared/layouts/DefaultLayout'),
         errorElement: <ErrorBoundary />,
         handle: { breadcrumb: 'Trang chủ' },
         children: [
@@ -52,7 +52,7 @@ const router = createBrowserRouter([
         children: [
           {
             path: '',
-            lazy: lazyLayout('./layouts/DashboardLayout'),
+            lazy: lazyLayout('./shared/layouts/DashboardLayout'),
             handle: { breadcrumb: 'Bảng điều khiển' },
             children: [
           {
@@ -63,19 +63,19 @@ const router = createBrowserRouter([
           },
           {
             path: "my-library",
-            lazy: lazyPage('./pages/MyLibrary'),
+            lazy: lazyPage('./features/library/pages/MyLibrary'),
             errorElement: <ErrorBoundary />,
             handle: { breadcrumb: 'Thư viện của tôi' }
           },
           {
             path: "library/:id",
-            lazy: lazyPage('./pages/LibraryDetail'),
+            lazy: lazyPage('./features/library/pages/LibraryDetail'),
             errorElement: <ErrorBoundary />,
             // Loader để lấy tiêu đề thư viện cho breadcrumb
             loader: async ({ params }) => {
               if (!params.id) return null
               try {
-                const { libraryRepository } = await import('@/lib/repositories/LibraryRepository')
+                const { libraryRepository } = await import('@/shared/lib/repositories/LibraryRepository')
         const meta = await libraryRepository.getLibraryMeta(params.id)
         return { library: meta }
               } catch {
@@ -157,7 +157,7 @@ const router = createBrowserRouter([
 function App() {
   // Idle prefetch of learn engine only (test generator prefetched in TestSetup page now)
   useEffect(() => {
-    const prefetchLearn = () => { import('@/lib/learnEngine').catch(()=>{}) }
+    const prefetchLearn = () => { import('@/shared/lib/learnEngine').catch(()=>{}) }
     interface WIdle { requestIdleCallback?: (cb: () => void, opts?: { timeout?: number }) => number }
     const w = window as unknown as WIdle
     if (typeof w.requestIdleCallback === 'function') w.requestIdleCallback(prefetchLearn, { timeout: 3000 })

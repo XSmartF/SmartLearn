@@ -1,13 +1,13 @@
 "use client"
 
 import { useEffect } from "react"
-import { H1, H2, H3 } from '@/components/ui/typography';
-import { SmartImage } from '@/components/ui/smart-image'
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { H1, H2, H3 } from '@/shared/components/ui/typography';
+import { SmartImage } from '@/shared/components/ui/smart-image'
+import { Button } from "@/shared/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card"
+import { Badge } from "@/shared/components/ui/badge"
 import { Star, Users, BookOpen, Trophy, ArrowRight, Check, Play, Globe, Smartphone, Brain } from "lucide-react"
-import { useAuth } from "../hooks/useAuthRedux"
+import { useAuth } from "@/shared/hooks/useAuthRedux"
 import { useNavigate, Link } from "react-router-dom"
 export default function LandingPage() {
   const { user, signInWithGoogle, loading } = useAuth()

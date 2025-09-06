@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom"
-import { H1 } from '@/components/ui/typography';
+import { H1 } from '@/shared/components/ui/typography';
 
 export default function TestLibrary() {
   const { id } = useParams()

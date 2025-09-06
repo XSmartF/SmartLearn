@@ -1,11 +1,11 @@
 import { useState } from "react"
-import { H1, H3 } from '@/components/ui/typography';
+import { H1, H3 } from '@/shared/components/ui/typography';
 import { useParams, Link, useNavigate } from "react-router-dom"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
+import { Button } from "@/shared/components/ui/button"
+import { Input } from "@/shared/components/ui/input"
+import { Label } from "@/shared/components/ui/label"
+import { Separator } from "@/shared/components/ui/separator"
 import { 
   ArrowLeft,
   Clock,
@@ -16,10 +16,10 @@ import {
   Play
 } from "lucide-react"
 import { useEffect, useState as useStateReact } from 'react'
-import { libraryRepository } from '@/lib/repositories/LibraryRepository'
-import { cardRepository } from '@/lib/repositories/CardRepository'
-import { idbSetItem } from "@/lib/indexedDB"
-import { loadTestQuestionGenerator } from '@/lib/lazyModules'
+import { libraryRepository } from '@/shared/lib/repositories/LibraryRepository'
+import { cardRepository } from '@/shared/lib/repositories/CardRepository'
+import { idbSetItem } from "@/shared/lib/indexedDB"
+import { loadTestQuestionGenerator } from '@/shared/lib/lazyModules'
 
 export default function TestSetup() {
   const { id } = useParams()

@@ -1,17 +1,17 @@
 import { useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar } from '@/components/ui/avatar';
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Badge } from "@/shared/components/ui/badge";
+import { Avatar } from '@/shared/components/ui/avatar';
+import { Button } from "@/shared/components/ui/button";
 import { BookOpen, Clock, Star, Users, Zap, Brain, Plus } from "lucide-react";
-import { useUserLibraries } from '@/hooks/useLibraries';
-import { useFavoriteLibraries } from '@/hooks/useFavorites';
+import { useUserLibraries } from '@/shared/hooks/useLibraries';
+import { useFavoriteLibraries } from '@/shared/hooks/useFavorites';
 import { useEffect, useState } from 'react';
-import { H1 } from '@/components/ui/typography';
-import { loadProgressSummary, listenProgressSummary, type ProgressSummaryLite } from '@/lib/firebaseProgressService';
-import { useGetSharedLibrariesQuery } from '@/store/api';
-import { userRepository } from '@/lib/repositories/UserRepository';
-import type { LibraryMeta } from '@/lib/models';
+import { H1 } from '@/shared/components/ui/typography';
+import { loadProgressSummary, listenProgressSummary, type ProgressSummaryLite } from '@/shared/lib/firebaseProgressService';
+import { useGetSharedLibrariesQuery } from '@/shared/store/api';
+import { userRepository } from '@/shared/lib/repositories/UserRepository';
+import type { LibraryMeta } from '@/shared/lib/models';
 
 // NOTE: Real progress & accuracy would come from progress documents; placeholder calculations here.
 export default function DashboardHome() {

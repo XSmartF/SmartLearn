@@ -1,18 +1,26 @@
-import { useAuth } from '../hooks/useAuthRedux'
+import { useAuth } from '@/shared/hooks/useAuthRedux'
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
+import { Button } from '@/shared/components/ui/button'
+import { Input } from '@/shared/components/ui/input'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/shared/components/ui/card'
+import { Separator } from '@/shared/components/ui/separator'
 import { User as UserIcon, Loader2, Trophy } from 'lucide-react'
-import { Avatar } from '@/components/ui/avatar'
+import { Avatar } from '@/shared/components/ui/avatar'
 // Đã bỏ phần Giao diện (theme) theo yêu cầu
-import { Progress } from '@/components/ui/progress'
-import { useAchievements } from '@/hooks/useAchievements'
-import { H1 } from '@/components/ui/typography'
+import { Progress } from '@/shared/components/ui/progress'
+import { useAchievements } from '@/shared/hooks/useAchievements'
+import { H1 } from '@/shared/components/ui/typography'
+
+interface User {
+  displayName?: string;
+  email?: string;
+  avatarUrl?: string;
+  id?: string;
+}
 
 export default function Profile() {
-  const { user } = useAuth()
+  const { user: rawUser } = useAuth()
+  const user = rawUser as User
   const [displayName, setDisplayName] = useState(user?.displayName || '')
   const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || '')
   const [saving, setSaving] = useState(false)
