@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/shared/components/ui/breadcrumb'
 import { Home } from 'lucide-react'
+import { ROUTES } from '@/shared/constants/routes'
 
 export function StudyBreadcrumb() {
   return (
@@ -16,7 +17,7 @@ export function StudyBreadcrumb() {
         <BreadcrumbSeparator/>
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
-            <Link to='/dashboard/my-library'>Thư viện</Link>
+            <Link to={ROUTES.MY_LIBRARY}>Thư viện</Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator/>

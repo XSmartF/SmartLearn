@@ -7,6 +7,7 @@ import { cn } from '@/shared/lib/utils'
 import { Avatar } from '@/shared/components/ui/avatar'
 import { usePersistentTheme } from '@/shared/hooks/usePersistentTheme'
 import { useNavigate } from 'react-router-dom'
+import { ROUTES } from '@/shared/constants/routes'
 
 export function NavUser() {
 interface User {
@@ -55,7 +56,7 @@ interface User {
         </div>
         <DropdownMenuSeparator className="h-px my-1 bg-border" />
         <DropdownMenuItem asChild>
-          <Button variant="ghost" className="w-full justify-start gap-2 px-2 py-1.5 text-sm" onClick={()=> navigate('/dashboard/profile')}>
+          <Button variant="ghost" className="w-full justify-start gap-2 px-2 py-1.5 text-sm" onClick={()=> navigate(ROUTES.PROFILE)}>
             <UserCircle2 className="h-4 w-4" />
             Hồ sơ
           </Button>

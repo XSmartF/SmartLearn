@@ -4,6 +4,7 @@ import { Avatar } from '@/shared/components/ui/avatar';
 import { Button } from "@/shared/components/ui/button";
 import { Brain } from "lucide-react";
 import type { LibraryMeta } from '@/shared/lib/models';
+import { getStudyPath } from '@/shared/constants/routes';
 
 interface RecentFlashcard {
   id: string;
@@ -100,7 +101,7 @@ export function RecentFlashcardsSection({
             </div>
             <div className="flex-shrink-0 flex flex-col items-end gap-2">
               <span className="text-sm font-medium">{flashcard.progress}%</span>
-              <Button size="sm" variant="outline" className="text-xs" onClick={() => window.location.href = `/dashboard/study/${flashcard.id}`}>Tiếp tục học</Button>
+              <Button size="sm" variant="outline" className="text-xs" onClick={() => window.location.href = getStudyPath(flashcard.id)}>Tiếp tục học</Button>
             </div>
           </div>
         ))}

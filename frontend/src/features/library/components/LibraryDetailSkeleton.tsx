@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/shared/components/ui/card'
 import { Link } from 'react-router-dom'
 import { Button } from '@/shared/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
+import { ROUTES } from '@/shared/constants/routes'
 
 interface Props { listView?: boolean }
 
@@ -16,7 +17,7 @@ export const LibraryDetailSkeleton: React.FC<Props> = ({ listView }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             {/* Real back button (no skeleton) so user can navigate immediately */}
-            <Link to="/dashboard/my-library">
+            <Link to={ROUTES.MY_LIBRARY}>
               <Button variant="ghost" size="icon">
                 <ArrowLeft className="h-4 w-4" />
               </Button>

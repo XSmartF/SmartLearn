@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui
 import { Button } from "@/shared/components/ui/button"
 import { Progress } from "@/shared/components/ui/progress"
 import { Badge } from "@/shared/components/ui/badge"
+import { getLibraryDetailPath, getTestSetupPath } from '@/shared/constants/routes'
 import { 
   ArrowLeft,
   Clock,
@@ -92,7 +93,7 @@ export default function Test() {
         parsedConfig = await loadConfig()
       }
       if (!parsedConfig) {
-        if (!cancelled) navigate(`/dashboard/test-setup/${id}`)
+        if (!cancelled && id) navigate(getTestSetupPath(id))
         return
       }
       // Backward compatibility: single questionType -> array
@@ -219,8 +220,8 @@ export default function Test() {
   <H3 className="text-xl font-semibold">Không thể tạo câu hỏi</H3>
         <p className="text-muted-foreground text-sm">Thư viện chưa có thẻ nào. Hãy thêm thẻ rồi thử lại.</p>
         <div className="flex gap-2">
-          <Button onClick={() => navigate(`/dashboard/library/${id}`)}>Quay lại thư viện</Button>
-          <Button variant="outline" onClick={() => navigate(`/dashboard/test-setup/${id}`)}>Cài đặt lại</Button>
+          <Button onClick={() => navigate(getLibraryDetailPath(id))}>Quay lại thư viện</Button>
+          <Button variant="outline" onClick={() => id && navigate(getTestSetupPath(id))}>Cài đặt lại</Button>
         </div>
       </div>
     )
@@ -231,7 +232,7 @@ export default function Test() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center space-x-4">
-          <Link to={`/dashboard/library/${id}`}>
+          <Link to={id ? getLibraryDetailPath(id) : '#'}>
             <Button variant="ghost" size="icon">
               <ArrowLeft className="h-4 w-4" />
             </Button>
@@ -318,11 +319,11 @@ export default function Test() {
 
         {/* Action Buttons */}
         <div className="flex justify-center space-x-4">
-          <Button onClick={() => navigate(`/dashboard/test-setup/${id}`)}>
+          <Button onClick={() => id && navigate(getTestSetupPath(id))}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Làm lại
           </Button>
-          <Button variant="outline" onClick={() => navigate(`/dashboard/library/${id}`)}>
+          <Button variant="outline" onClick={() => id && navigate(getLibraryDetailPath(id))}>
             Quay về thư viện
           </Button>
         </div>
@@ -335,7 +336,7 @@ export default function Test() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <Link to={`/dashboard/test-setup/${id}`}>
+          <Link to={id ? getTestSetupPath(id) : '#'}>
             <Button variant="ghost" size="icon">
               <ArrowLeft className="h-4 w-4" />
             </Button>

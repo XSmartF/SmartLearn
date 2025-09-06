@@ -4,6 +4,7 @@ import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-rou
 import { ErrorBoundary, ComponentErrorBoundary } from './shared/components/ErrorBoundary'
 import { useAuth } from './shared/hooks/useAuthRedux'
 import { FullScreenLoader } from '@/shared/components/ui/loader'
+import { ROUTES } from './shared/constants/routes'
 
 // Helper: tạo lazy route nhanh
 const lazyLayout = (path: string) => async () => {
@@ -19,35 +20,28 @@ const lazyPage = (path: string) => async () => {
 const AuthGuard: React.FC = () => {
   const { user, loading } = useAuth();
   if (loading) return <FullScreenLoader message="Đang kiểm tra đăng nhập" size="lg" />;
-  if (!user) return <Navigate to="/" replace />;
+  if (!user) return <Navigate to={ROUTES.LOGIN} replace />;
   return <Outlet />; // quan trọng: phải có Outlet để render các route con
 };
 
 // Định nghĩa router với handle để tạo breadcrumb động (tiếng Việt)
 const router = createBrowserRouter([
-  // Removed separate login/register pages (Google one-click only)
+  // Route login
   {
-    path: "/",
+    path: ROUTES.LOGIN,
+    lazy: lazyPage('./features/auth/pages/AuthPage'),
+    errorElement: <ErrorBoundary />,
+    handle: { breadcrumb: 'Đăng nhập' }
+  },
+  // Main app routes
+  {
+    path: ROUTES.HOME,
     lazy: lazyLayout('./shared/layouts/RootLayout'),
     errorElement: <ErrorBoundary />,
     handle: { breadcrumb: 'Trang chủ' },
     children: [
       {
-        path: "/",
-        lazy: lazyLayout('./shared/layouts/DefaultLayout'),
-        errorElement: <ErrorBoundary />,
-        handle: { breadcrumb: 'Trang chủ' },
-        children: [
-          {
-            index: true,
-            lazy: lazyPage('./pages/Home'),
-            errorElement: <ErrorBoundary />,
-            handle: { breadcrumb: 'Trang chủ' }
-          }
-        ]
-      },
-      {
-        path: "/dashboard",
+        path: ROUTES.HOME,
         element: <AuthGuard />, // AuthGuard tự render <Outlet />
         children: [
           {
@@ -62,13 +56,13 @@ const router = createBrowserRouter([
             handle: { breadcrumb: 'Tổng quan' }
           },
           {
-            path: "my-library",
+            path: ROUTES.MY_LIBRARY,
             lazy: lazyPage('./features/library/pages/MyLibrary'),
             errorElement: <ErrorBoundary />,
             handle: { breadcrumb: 'Thư viện của tôi' }
           },
           {
-            path: "library/:id",
+            path: ROUTES.LIBRARY_DETAIL,
             lazy: lazyPage('./features/library/pages/LibraryDetail'),
             errorElement: <ErrorBoundary />,
             // Loader để lấy tiêu đề thư viện cho breadcrumb
@@ -85,57 +79,57 @@ const router = createBrowserRouter([
       handle: { breadcrumb: (match: { params: Record<string,string>; data?: { library?: { title?: string|null } | null } }) => match.data?.library?.title || `Thư viện #${match.params.id}` }
           },
           {
-            path: "study/:id",
+            path: ROUTES.STUDY,
             lazy: lazyPage('./features/study/pages/StudyPage'),
             errorElement: <ErrorBoundary />,
             handle: { breadcrumb: 'Học tập' }
           },
           {
-            path: "test-setup/:id",
-            lazy: lazyPage('./pages/TestSetup'),
+            path: ROUTES.TEST_SETUP,
+            lazy: lazyPage('./features/test/pages/TestSetup'),
             errorElement: <ErrorBoundary />,
             handle: { breadcrumb: 'Chuẩn bị kiểm tra' }
           },
           {
-            path: "test/:id",
-            lazy: lazyPage('./pages/Test'),
+            path: ROUTES.TEST,
+            lazy: lazyPage('./features/test/pages/Test'),
             errorElement: <ErrorBoundary />,
             handle: { breadcrumb: 'Làm kiểm tra' }
           },
           {
-            path: "notifications",
+            path: ROUTES.NOTIFICATIONS,
             lazy: lazyPage('./features/notification/pages/Notifications'),
             errorElement: <ErrorBoundary />,
             handle: { breadcrumb: 'Thông báo' }
           },
           {
-            path: "calendar",
-            lazy: lazyPage('./pages/CalendarPage'),
+            path: ROUTES.CALENDAR,
+            lazy: lazyPage('./features/study/pages/CalendarPage'),
             errorElement: <ErrorBoundary />,
             handle: { breadcrumb: 'Lịch' }
           },
           {
-            path: "settings",
-            lazy: lazyPage('./pages/Settings'),
+            path: ROUTES.SETTINGS,
+            lazy: lazyPage('./features/dashboard/pages/Settings'),
             errorElement: <ErrorBoundary />,
             handle: { breadcrumb: 'Cài đặt' }
           },
           {
-            path: "profile",
-            lazy: lazyPage('./pages/Profile'),
+            path: ROUTES.PROFILE,
+            lazy: lazyPage('./features/dashboard/pages/Profile'),
             errorElement: <ErrorBoundary />,
             handle: { breadcrumb: 'Hồ sơ' }
           },
           {
-            path: "test-error",
-            lazy: lazyPage('./pages/TestError'),
+            path: ROUTES.TEST_ERROR,
+            lazy: lazyPage('./features/test/pages/TestError'),
             errorElement: <ErrorBoundary />,
             handle: { breadcrumb: 'Trang lỗi thử nghiệm' }
           },
           // Giữ route cũ để tương thích
           {
-            path: "old",
-            lazy: lazyPage('./pages/Dashboard'),
+            path: ROUTES.OLD_DASHBOARD,
+            lazy: lazyPage('./features/dashboard/pages/DashboardPage'),
             errorElement: <ErrorBoundary />,
             handle: { breadcrumb: 'Phiên bản cũ' }
           }
@@ -147,8 +141,8 @@ const router = createBrowserRouter([
   },
   // Route 404
   {
-    path: "*",
-    lazy: lazyPage('./pages/NotFound'),
+    path: ROUTES.NOT_FOUND,
+    lazy: lazyPage('./shared/pages/NotFound'),
     errorElement: <ErrorBoundary />,
     handle: { breadcrumb: 'Không tìm thấy' }
   }

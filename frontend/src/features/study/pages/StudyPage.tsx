@@ -7,6 +7,7 @@ import type { Question, Result, Card as LearnCard, SerializedState, LearnEngine 
 import type { LibraryMeta } from '@/shared/lib/models'
 import { idbGetItem, idbSetItem } from '@/shared/lib/indexedDB'
 import { useAuth } from '@/shared/hooks/useAuthRedux'
+import { getLibraryDetailPath, ROUTES } from '@/shared/constants/routes'
 import {
   StudyBreadcrumb,
   StudyHeader,
@@ -40,7 +41,7 @@ export default function StudyPage(){
   const [loadError,setLoadError]=useState<string|null>(null);
 
   // Load data
-  useEffect(()=>{ let cancelled=false; if(!libraryId) return; (async()=>{ setLoadingData(true); setLoadError(null); try { const meta=await libraryRepository.getLibraryMeta(libraryId); if(!meta){ if(!cancelled) navigate('/dashboard/my-library'); return; } const c=await cardRepository.listCards(libraryId); if(cancelled) return; setLibrary(meta); setCards(c.map(cd=> ({...cd, domain: meta.subject || cd.domain }))); } catch(e: unknown){ if(!cancelled) setLoadError(e instanceof Error ? e.message : 'Không tải được dữ liệu'); } finally { if(!cancelled) setLoadingData(false);} })(); return ()=>{ cancelled=true }; }, [libraryId,navigate]);
+  useEffect(()=>{ let cancelled=false; if(!libraryId) return; (async()=>{ setLoadingData(true); setLoadError(null);       try { const meta=await libraryRepository.getLibraryMeta(libraryId); if(!meta){ if(!cancelled) navigate(ROUTES.MY_LIBRARY); return; } const c=await cardRepository.listCards(libraryId); if(cancelled) return; setLibrary(meta); setCards(c.map(cd=> ({...cd, domain: meta.subject || cd.domain }))); } catch(e: unknown){ if(!cancelled) setLoadError(e instanceof Error ? e.message : 'Không tải được dữ liệu'); } finally { if(!cancelled) setLoadingData(false);} })(); return ()=>{ cancelled=true }; }, [libraryId,navigate]);
 
   // Init engine & restore
   useEffect(()=>{ let cancelled=false; async function init(){ if(loadingData||!library||!cards.length) return; try { const { LearnEngine } = await import('@/features/study/utils/learnEngine'); if(cancelled) return; const eng=new LearnEngine({ cards }); let restored=false; try { const remote=await loadProgress(libraryId); if(remote){ eng.restore(remote); restored=true; } } catch(e){ console.error(e); } if(!restored){ try { const local=await idbGetItem<SerializedState | null>(`study-session-${libraryId}`); if(local && 'params' in local && 'states' in local){ eng.restore(local); restored=true; } } catch(e){ console.error(e); } } if(cancelled) return; setEngine(eng); const q=eng.nextQuestion(); setCurrentQuestion(q); if(!q||eng.isFinished()) setIsFinished(true); } catch(e){ console.error('Khởi tạo LearnEngine thất bại:', e);} } init(); return ()=>{ cancelled=true }; }, [cards,library,libraryId,loadingData]);
@@ -59,7 +60,7 @@ export default function StudyPage(){
 
   useEffect(()=>{ if(showResult && autoAdvance){ const t=setTimeout(()=> handleNext(), 2000); return ()=> clearTimeout(t); } }, [showResult,autoAdvance,handleNext]);
 
-  const handleFinish=()=>{ if(engine){ const s=engine.serialize(); saveProgress(libraryId,s).catch((e: unknown) => console.error(e)); idbSetItem(`study-session-${libraryId}`, s); } navigate(`/dashboard/library/${id}`); };
+  const handleFinish=()=>{ if(engine){ const s=engine.serialize(); saveProgress(libraryId,s).catch((e: unknown) => console.error(e)); idbSetItem(`study-session-${libraryId}`, s); } if(id) navigate(getLibraryDetailPath(id)); };
   const handleResetSession=()=>{ (async()=>{ try { const { LearnEngine } = await import('@/features/study/utils/learnEngine'); const fresh=new LearnEngine({ cards }); setEngine(fresh); const q=fresh.nextQuestion(); setCurrentQuestion(q); setIsFinished(!q||fresh.isFinished()); const s=fresh.serialize(); idbSetItem(`study-session-${libraryId}`, s); saveProgress(libraryId,s).catch((e: unknown) => console.error(e)); } catch(e){ console.error('Không thể reset phiên học tập:', e);} })(); };
 
   if(loadingData) return <StudyLoading />;

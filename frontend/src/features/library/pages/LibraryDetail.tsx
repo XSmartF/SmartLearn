@@ -43,6 +43,7 @@ import { CardPagination } from '@/shared/components/ui/pagination'
 import { ProgressSummarySection, ShareManager, UnifiedCards } from '../components'
 
 import { Progress } from "@/shared/components/ui/progress"
+import { getTestSetupPath, getStudyPath, ROUTES } from '@/shared/constants/routes'
 
 export default function LibraryDetail() {
   const { id } = useParams()
@@ -206,12 +207,6 @@ export default function LibraryDetail() {
   // Lookup by email debounce (simple)
   useEffect(() => { if (!inviteEmail) { setEmailLookupResults([]); return; } const t = setTimeout(async () => { setLookupLoading(true); try { const res = await userRepository.findUserByEmail(inviteEmail.trim()); setEmailLookupResults(res); } finally { setLookupLoading(false); } }, 400); return () => clearTimeout(t); }, [inviteEmail]);
 
-  // Debug log
-  console.log("LibraryDetail rendered with ID:", id)
-
-  // Hàm xử lý khi cập nhật thẻ học
-  // legacy handlers removed
-
   // Hiển thị skeleton khi đang tải
   if (loading) {
     let preferList = false;
@@ -228,7 +223,7 @@ export default function LibraryDetail() {
         <p className="text-muted-foreground mb-4">
           Thư viện với ID "{id}" không tồn tại.
         </p>
-        <Link to="/dashboard/my-library">
+        <Link to={ROUTES.MY_LIBRARY}>
           <Button>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Quay về thư viện
@@ -261,7 +256,7 @@ export default function LibraryDetail() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Link to="/dashboard/my-library">
+            <Link to={ROUTES.MY_LIBRARY}>
               <Button variant="ghost" size="icon">
                 <ArrowLeft className="h-4 w-4" />
               </Button>
@@ -333,13 +328,13 @@ export default function LibraryDetail() {
 
         {/* Action Buttons */}
         <div className="flex items-center space-x-3">
-          <Link to={canStudy ? `/dashboard/study/${id}` : '#'} onClick={e => { if (!canStudy) e.preventDefault(); }}>
+          <Link to={canStudy ? getStudyPath(id!) : '#'} onClick={e => { if (!canStudy) e.preventDefault(); }}>
             <Button size="default" disabled={!canStudy} title={!canStudy ? 'Bạn không có quyền học thư viện riêng tư này' : ''}>
               <BookOpen className="h-4 w-4 mr-2" />
               Bắt đầu học
             </Button>
           </Link>
-          <Link to={canStudy ? `/dashboard/test-setup/${id}` : '#'} onClick={e => { if (!canStudy) e.preventDefault(); }}>
+          <Link to={canStudy ? getTestSetupPath(id!) : '#'} onClick={e => { if (!canStudy) e.preventDefault(); }}>
             <Button variant="outline" size="default" disabled={!canStudy} title={!canStudy ? 'Bạn không có quyền kiểm tra thư viện này' : ''}>
               <Target className="h-4 w-4 mr-2" />
               Kiểm tra
@@ -421,7 +416,6 @@ export default function LibraryDetail() {
                       setCards(prev => [...temps, ...prev]);
                       const created = await libraryRepository.createCardsBulk(library.id, bulkPreview);
                       setBulkText(''); setOpenAddCard(false);
-                      console.log('Bulk created', created, 'cards');
                       toast.success(`Đã thêm ${created} thẻ`);
                     } finally { setAdding(false); }
                   }}>{adding ? 'Đang lưu...' : `Lưu (${bulkPreview.length})`}</Button>
@@ -496,7 +490,7 @@ export default function LibraryDetail() {
                   <H2 className="text-xl font-semibold">Học với Flashcard</H2>
                   <p className="text-muted-foreground">Lật thẻ để ghi nhớ nhanh</p>
                 </div>
-                <Link to={`/dashboard/study/${id}`}>
+                <Link to={getStudyPath(id!)}>
                   <Button variant="outline">
                     <BookOpen className="h-4 w-4 mr-2" />
                     Chế độ học khác

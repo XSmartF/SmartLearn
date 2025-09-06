@@ -27,6 +27,7 @@ import {
 } from "@/shared/components/ui/sidebar"
 import { Brand } from '@/shared/components/Brand'
 import { NavUser } from '@/shared/components/NavUser'
+import { ROUTES } from '@/shared/constants/routes'
 
 // Static navigation items; favorites now dynamic
 const baseData = {
@@ -50,28 +51,28 @@ const baseData = {
   navMain: [
     {
       title: "Trang chủ",
-      url: "/dashboard",
+      url: ROUTES.HOME,
       icon: Home,
-  match: (pathname: string) => pathname === '/dashboard' || pathname === '/dashboard/'
+      match: (pathname: string) => pathname === ROUTES.HOME
     },
     {
       title: "Thư viện của tôi",
-      url: "/dashboard/my-library",
+      url: ROUTES.MY_LIBRARY,
       icon: Library,
     },
     {
       title: "Lịch trình",
-      url: "/dashboard/calendar",
+      url: ROUTES.CALENDAR,
       icon: Calendar,
     },
     {
       title: "Cài đặt",
-      url: "/dashboard/settings",
+      url: ROUTES.SETTINGS,
       icon: Settings2,
     },
     {
       title: "Thông báo",
-      url: "/dashboard/notifications",
+      url: ROUTES.NOTIFICATIONS,
       icon: Bell,
     },
   ],
@@ -203,16 +204,14 @@ export const AppSidebar = React.memo(function AppSidebar({ ...props }: React.Com
 
   // simple prefetch when hovering nav items (dynamic import route chunks)
   const prefetchRoute = (url: string) => {
-    if (url.startsWith('/dashboard/library')) import('@/features/library/pages/LibraryDetail').catch(()=>{});
-    else if (url.endsWith('/my-library')) import('@/features/library/pages/MyLibrary').catch(()=>{});
-    else if (url.endsWith('/notifications')) import('@/features/notification/pages/Notifications').catch(()=>{});
-  };
-
-  return (
+    if (url.startsWith('/library')) import('@/features/library/pages/LibraryDetail').catch(()=>{});  
+    else if (url === ROUTES.MY_LIBRARY) import('@/features/library/pages/MyLibrary').catch(()=>{});  
+    else if (url === ROUTES.NOTIFICATIONS) import('@/features/notification/pages/Notifications').catch(()=>{});  
+  };  return (
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
         <div className="px-2 pt-2 pb-1">
-          <Brand to="/dashboard" />
+          <Brand to="/" />
         </div>
         <div onMouseOver={(e)=>{
           const target = e.target as HTMLElement;
@@ -223,7 +222,7 @@ export const AppSidebar = React.memo(function AppSidebar({ ...props }: React.Com
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <NavFavorites favorites={favorites.map(f => ({ name: f.title, url: `/dashboard/library/${f.id}` }))} loading={loading} />
+        <NavFavorites favorites={favorites.map(f => ({ name: f.title, url: `/library/${f.id}` }))} loading={loading} />
       </SidebarContent>
       <SidebarSeparator />
       <SidebarFooter>

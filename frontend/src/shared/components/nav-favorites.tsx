@@ -39,8 +39,7 @@ function NavFavoritesBase({
   const { isMobile } = useSidebar()
   const navigate = useNavigate()
 
-  const handleItemClick = (url: string, name: string) => {
-    console.log('Navigating to:', url, 'for:', name)
+  const handleItemClick = (url: string ) => {
     navigate(url)
   }
 
@@ -67,7 +66,7 @@ function NavFavoritesBase({
         {favorites.map((item) => (
           <SidebarMenuItem key={item.name}>
             <SidebarMenuButton 
-              onClick={() => handleItemClick(item.url, item.name)}
+              onClick={() => handleItemClick(item.url)}
               title={item.name}
             >
               <Folder className="h-4 w-4" />

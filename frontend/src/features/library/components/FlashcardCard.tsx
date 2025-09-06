@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu"
 import type { LibraryMeta, ShareRole } from '@/shared/lib/models'
+import { getLibraryDetailPath } from '@/shared/constants/routes'
 
 interface FlashcardCardProps {
   flashcard: LibraryMeta;
@@ -37,7 +38,7 @@ export const FlashcardCard: React.FC<FlashcardCardProps> = ({
   favUpdating
 }) => {
   return (
-    <Link to={`/dashboard/library/${flashcard.id}`}>
+    <Link to={getLibraryDetailPath(flashcard.id)}>
       <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">

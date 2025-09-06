@@ -18,6 +18,7 @@ import {
 import { useEffect, useState as useStateReact } from 'react'
 import { libraryRepository } from '@/shared/lib/repositories/LibraryRepository'
 import { cardRepository } from '@/shared/lib/repositories/CardRepository'
+import { getLibraryDetailPath, getTestPath, ROUTES } from '@/shared/constants/routes'
 import { idbSetItem } from "@/shared/lib/indexedDB"
 import { loadTestQuestionGenerator } from '@/shared/lib/lazyModules'
 
@@ -83,7 +84,7 @@ export default function TestSetup() {
         <p className="text-muted-foreground mb-4">
           Thư viện với ID "{id}" không tồn tại.
         </p>
-        <Link to="/dashboard/my-library">
+        <Link to={ROUTES.MY_LIBRARY}>
           <Button>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Quay về thư viện
@@ -138,7 +139,7 @@ export default function TestSetup() {
     try {
       localStorage.setItem('testConfigBackup', JSON.stringify(testConfig))
     } catch { /* ignore localStorage failure */ }
-    navigate(`/dashboard/test/${id}`)
+    if(id) navigate(getTestPath(id))
   }
 
   // (moved derived values & effect above)
@@ -147,7 +148,7 @@ export default function TestSetup() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center space-x-4">
-        <Link to={`/dashboard/library/${id}`}>
+        <Link to={id ? getLibraryDetailPath(id) : '#'}>
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-4 w-4" />
           </Button>

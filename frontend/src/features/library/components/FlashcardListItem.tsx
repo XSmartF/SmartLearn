@@ -5,6 +5,7 @@ import { Badge } from '@/shared/components/ui/badge'
 import { Avatar } from '@/shared/components/ui/avatar'
 import { H3 } from '@/shared/components/ui/typography'
 import type { LibraryMeta, ShareRole } from '@/shared/lib/models'
+import { getLibraryDetailPath } from '@/shared/constants/routes'
 
 interface FlashcardListItemProps {
   flashcard: LibraryMeta;
@@ -20,7 +21,7 @@ export const FlashcardListItem: React.FC<FlashcardListItemProps> = ({
   authorLabel
 }) => {
   return (
-    <Link to={`/dashboard/library/${flashcard.id}`}>
+    <Link to={getLibraryDetailPath(flashcard.id)}>
       <Card className="hover:shadow-md transition-shadow cursor-pointer group">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">

@@ -1,13 +1,9 @@
-import React, { useState, useEffect, useMemo, useDeferredValue } from 'react'
+import { useState, useEffect, useMemo, useDeferredValue } from 'react'
 import { H1, H3 } from '@/shared/components/ui/typography';
-import { Link } from 'react-router-dom'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Badge } from '@/shared/components/ui/badge'
-import { Avatar } from '@/shared/components/ui/avatar'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger, DialogDescription } from '@/shared/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/shared/components/ui/dialog'
 import { useUserLibraries } from '@/shared/hooks/useLibraries'
 import { shareRepository } from '@/shared/lib/repositories/ShareRepository'
 import { libraryRepository } from '@/shared/lib/repositories/LibraryRepository'
@@ -18,34 +14,20 @@ import { useFavoriteLibraries } from '@/shared/hooks/useFavorites'
 import {
   Star,
   Search,
-  Grid3X3,
-  List,
-  BookOpen,
-  // Clock,
-  // TrendingUp,
-  MoreHorizontal,
-  Filter
 } from "lucide-react"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/shared/components/ui/select";
 import { Textarea } from "@/shared/components/ui/textarea";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/shared/components/ui/dropdown-menu"
 import type { LibraryMeta, ShareRole, LibraryVisibility } from '@/shared/lib/models'
 // Extracted components
 import { FlashcardCard, FlashcardListItem } from '../components'
+import LibraryFilters from '../components/LibraryFilters'
+import LibraryOverviewStats from '../components/LibraryOverviewStats'
+import CreateLibraryDialog from '../components/CreateLibraryDialog'
 
 export default function MyLibrary() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [searchQuery, setSearchQuery] = useState('')
-  const [openCreate, setOpenCreate] = useState(false)
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [newVisibility, setNewVisibility] = useState<LibraryVisibility>('private')
-  const [submitting, setSubmitting] = useState(false)
+  const [sortBy, setSortBy] = useState('newest')
   const { libraries, loading, error } = useUserLibraries();
   const [shared, setShared] = useState<{ lib: LibraryMeta; role: ShareRole }[]>([])
   const [sharedLoading, setSharedLoading] = useState(false)
@@ -115,12 +97,6 @@ export default function MyLibrary() {
     (lib.description?.toLowerCase().includes(deferredSearch.toLowerCase()))
   ), [allLibraries, deferredSearch]);
 
-  const totalCardsAll = allLibraries.reduce((sum, l) => sum + (l.cardCount || 0), 0)
-  const stats = [
-    { title: 'Tổng thư viện', value: allLibraries.length, icon: BookOpen, color: 'text-blue-600' },
-    { title: 'Tổng thẻ', value: totalCardsAll, icon: Star, color: 'text-purple-600' }
-  ]
-
 
 
   // Derive error message safely
@@ -143,106 +119,33 @@ export default function MyLibrary() {
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
-        {stats.map((stat, index) => (
-          <Card key={index}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center space-x-2">
-                <stat.icon className={`h-4 w-4 ${stat.color}`} />
-                <div className="text-2xl font-bold">{stat.value}</div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <LibraryOverviewStats
+        ownedCount={libraries.length}
+        sharedCount={shared.length}
+        favoriteCount={favorites.length}
+      />
 
       {/* Controls */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          <div className="relative flex-1 min-w-[180px] w-full sm:w-auto sm:flex-none">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Tìm kiếm thư viện..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 w-full sm:w-64"
-            />
-          </div>
-          <Button variant="outline" size="icon" className="shrink-0">
-            <Filter className="h-4 w-4" />
-          </Button>
-          <Dialog open={openCreate} onOpenChange={setOpenCreate}>
-            <DialogTrigger asChild>
-              <Button className="shrink-0">Tạo thư viện</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Thư viện mới</DialogTitle>
-                <DialogDescription>Nhập thông tin để tạo thư viện flashcard mới.</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Tiêu đề</label>
-                  <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="VD: Từ vựng TOEIC" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Mô tả</label>
-                  <Textarea
-                    value={description}
-                    onChange={(e)=>setDescription(e.target.value)}
-                    placeholder="Mô tả ngắn (tối đa 300 ký tự)"
-                    maxLength={300}
-                    className="min-h-[90px]"
-                  />
-                  <div className="text-[10px] text-muted-foreground text-right">{description.length}/300</div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Chế độ hiển thị</label>
-                  <Select value={newVisibility} onValueChange={(v: string)=> setNewVisibility(v as LibraryVisibility)}>
-                    <SelectTrigger className="w-full h-9 text-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="private">Riêng tư</SelectItem>
-                      <SelectItem value="public">Công khai</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-[11px] text-muted-foreground">Công khai: mọi người đều xem & học. Riêng tư: chỉ bạn và người được chia sẻ.</p>
-                </div>
-              </div>
-              <DialogFooter className="pt-2">
-                <Button variant="outline" onClick={() => setOpenCreate(false)}>Hủy</Button>
-                <Button disabled={!title || submitting} onClick={async () => {
-                  try {
-                    setSubmitting(true);
-                    await libraryRepository.createLibrary({ title, description, visibility: newVisibility });
-                    setTitle(''); setDescription(''); setNewVisibility('private'); setOpenCreate(false);
-                  } catch (e) { console.error(e); }
-                  finally { setSubmitting(false); }
-                }}>{submitting ? 'Đang lưu...' : 'Tạo'}</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          <Button
-            variant={viewMode === 'grid' ? 'default' : 'outline'}
-            size="icon"
-            onClick={() => setViewMode('grid')}
-          >
-            <Grid3X3 className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={viewMode === 'list' ? 'default' : 'outline'}
-            size="icon"
-            onClick={() => setViewMode('list')}
-          >
-            <List className="h-4 w-4" />
-          </Button>
-        </div>
+      <div className="flex items-center justify-between">
+        <LibraryFilters
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          totalLibraries={allLibraries.length}
+          filteredCount={filteredAll.length}
+        />
+        <CreateLibraryDialog
+          onCreateLibrary={async (title, description, visibility) => {
+            try {
+              await libraryRepository.createLibrary({ title, description, visibility });
+            } catch (error) {
+              console.error(error);
+            }
+          }}
+        />
       </div>
 
       {/* Content */}

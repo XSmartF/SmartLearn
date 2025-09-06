@@ -6,6 +6,7 @@ import { Switch } from '@/shared/components/ui/switch'
 import { ArrowLeft, Settings, RotateCcw, BarChart3 } from 'lucide-react'
 import type { Question } from '@/features/study/utils/learnEngine'
 import type { LibraryMeta } from '@/shared/lib/models'
+import { getLibraryDetailPath } from '@/shared/constants/routes'
 
 interface StudyHeaderProps {
   library: LibraryMeta
@@ -39,7 +40,7 @@ export function StudyHeader({
   return (
     <div className='flex items-center justify-between'>
       <div className='flex items-center space-x-4'>
-        <Link to={`/dashboard/library/${libraryId}`}>
+        <Link to={getLibraryDetailPath(libraryId)}>
           <Button variant='ghost' size='icon'>
             <ArrowLeft className='h-4 w-4'/>
           </Button>
