@@ -8,11 +8,11 @@ import { ROUTES } from './shared/constants/routes'
 
 // Helper: tạo lazy route nhanh
 const lazyLayout = (path: string) => async () => {
-  const mod = await import(/* @vite-ignore */ path)
+  const mod = await import(path)
   return { Component: mod.default }
 }
 const lazyPage = (path: string) => async () => {
-  const mod = await import(/* @vite-ignore */ path)
+  const mod = await import(path)
   return { Component: mod.default }
 }
 
