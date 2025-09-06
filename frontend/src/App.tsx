@@ -6,16 +6,6 @@ import { useAuth } from './shared/hooks/useAuthRedux'
 import { FullScreenLoader } from '@/shared/components/ui/loader'
 import { ROUTES } from './shared/constants/routes'
 
-// Helper: tạo lazy route nhanh
-const lazyLayout = (path: string) => async () => {
-  const mod = await import(path)
-  return { Component: mod.default }
-}
-const lazyPage = (path: string) => async () => {
-  const mod = await import(path)
-  return { Component: mod.default }
-}
-
 // AuthGuard bọc các route cần đăng nhập và cung cấp Outlet để render con
 const AuthGuard: React.FC = () => {
   const { user, loading } = useAuth();
@@ -29,14 +19,20 @@ const router = createBrowserRouter([
   // Route login
   {
     path: ROUTES.LOGIN,
-    lazy: lazyPage('./features/auth/pages/AuthPage'),
+    lazy: async () => {
+      const mod = await import('./features/auth/pages/AuthPage')
+      return { Component: mod.default }
+    },
     errorElement: <ErrorBoundary />,
     handle: { breadcrumb: 'Đăng nhập' }
   },
   // Main app routes
   {
     path: ROUTES.HOME,
-    lazy: lazyLayout('./shared/layouts/RootLayout'),
+    lazy: async () => {
+      const mod = await import('./shared/layouts/RootLayout')
+      return { Component: mod.default }
+    },
     errorElement: <ErrorBoundary />,
     handle: { breadcrumb: 'Trang chủ' },
     children: [
@@ -46,24 +42,36 @@ const router = createBrowserRouter([
         children: [
           {
             path: '',
-            lazy: lazyLayout('./shared/layouts/DashboardLayout'),
+            lazy: async () => {
+              const mod = await import('./shared/layouts/DashboardLayout')
+              return { Component: mod.default }
+            },
             handle: { breadcrumb: 'Bảng điều khiển' },
             children: [
           {
             index: true,
-            lazy: lazyPage('./features/dashboard/pages/DashboardPage'),
+            lazy: async () => {
+              const mod = await import('./features/dashboard/pages/DashboardPage')
+              return { Component: mod.default }
+            },
             errorElement: <ErrorBoundary />,
             handle: { breadcrumb: 'Tổng quan' }
           },
           {
             path: ROUTES.MY_LIBRARY,
-            lazy: lazyPage('./features/library/pages/MyLibrary'),
+            lazy: async () => {
+              const mod = await import('./features/library/pages/MyLibrary')
+              return { Component: mod.default }
+            },
             errorElement: <ErrorBoundary />,
             handle: { breadcrumb: 'Thư viện của tôi' }
           },
           {
             path: ROUTES.LIBRARY_DETAIL,
-            lazy: lazyPage('./features/library/pages/LibraryDetail'),
+            lazy: async () => {
+              const mod = await import('./features/library/pages/LibraryDetail')
+              return { Component: mod.default }
+            },
             errorElement: <ErrorBoundary />,
             // Loader để lấy tiêu đề thư viện cho breadcrumb
             loader: async ({ params }) => {
@@ -80,56 +88,83 @@ const router = createBrowserRouter([
           },
           {
             path: ROUTES.STUDY,
-            lazy: lazyPage('./features/study/pages/StudyPage'),
+            lazy: async () => {
+              const mod = await import('./features/study/pages/StudyPage')
+              return { Component: mod.default }
+            },
             errorElement: <ErrorBoundary />,
             handle: { breadcrumb: 'Học tập' }
           },
           {
             path: ROUTES.TEST_SETUP,
-            lazy: lazyPage('./features/test/pages/TestSetup'),
+            lazy: async () => {
+              const mod = await import('./features/test/pages/TestSetup')
+              return { Component: mod.default }
+            },
             errorElement: <ErrorBoundary />,
             handle: { breadcrumb: 'Chuẩn bị kiểm tra' }
           },
           {
             path: ROUTES.TEST,
-            lazy: lazyPage('./features/test/pages/Test'),
+            lazy: async () => {
+              const mod = await import('./features/test/pages/Test')
+              return { Component: mod.default }
+            },
             errorElement: <ErrorBoundary />,
             handle: { breadcrumb: 'Làm kiểm tra' }
           },
           {
             path: ROUTES.NOTIFICATIONS,
-            lazy: lazyPage('./features/notification/pages/Notifications'),
+            lazy: async () => {
+              const mod = await import('./features/notification/pages/Notifications')
+              return { Component: mod.default }
+            },
             errorElement: <ErrorBoundary />,
             handle: { breadcrumb: 'Thông báo' }
           },
           {
             path: ROUTES.CALENDAR,
-            lazy: lazyPage('./features/study/pages/CalendarPage'),
+            lazy: async () => {
+              const mod = await import('./features/study/pages/CalendarPage')
+              return { Component: mod.default }
+            },
             errorElement: <ErrorBoundary />,
             handle: { breadcrumb: 'Lịch' }
           },
           {
             path: ROUTES.SETTINGS,
-            lazy: lazyPage('./features/dashboard/pages/Settings'),
+            lazy: async () => {
+              const mod = await import('./features/dashboard/pages/Settings')
+              return { Component: mod.default }
+            },
             errorElement: <ErrorBoundary />,
             handle: { breadcrumb: 'Cài đặt' }
           },
           {
             path: ROUTES.PROFILE,
-            lazy: lazyPage('./features/dashboard/pages/Profile'),
+            lazy: async () => {
+              const mod = await import('./features/dashboard/pages/Profile')
+              return { Component: mod.default }
+            },
             errorElement: <ErrorBoundary />,
             handle: { breadcrumb: 'Hồ sơ' }
           },
           {
             path: ROUTES.TEST_ERROR,
-            lazy: lazyPage('./features/test/pages/TestError'),
+            lazy: async () => {
+              const mod = await import('./features/test/pages/TestError')
+              return { Component: mod.default }
+            },
             errorElement: <ErrorBoundary />,
             handle: { breadcrumb: 'Trang lỗi thử nghiệm' }
           },
           // Giữ route cũ để tương thích
           {
             path: ROUTES.OLD_DASHBOARD,
-            lazy: lazyPage('./features/dashboard/pages/DashboardPage'),
+            lazy: async () => {
+              const mod = await import('./features/dashboard/pages/DashboardPage')
+              return { Component: mod.default }
+            },
             errorElement: <ErrorBoundary />,
             handle: { breadcrumb: 'Phiên bản cũ' }
           }
@@ -142,7 +177,10 @@ const router = createBrowserRouter([
   // Route 404
   {
     path: ROUTES.NOT_FOUND,
-    lazy: lazyPage('./shared/pages/NotFound'),
+    lazy: async () => {
+      const mod = await import('./shared/pages/NotFound')
+      return { Component: mod.default }
+    },
     errorElement: <ErrorBoundary />,
     handle: { breadcrumb: 'Không tìm thấy' }
   }

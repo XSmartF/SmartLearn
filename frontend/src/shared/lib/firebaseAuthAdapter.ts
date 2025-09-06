@@ -5,6 +5,16 @@ import type { AuthAdapter } from './auth';
 import type { UserProfile } from './models';
 import { getFirebaseAuth, getDb } from './firebaseClient';
 import { queueSetDoc } from './firestoreQueue';
+import {
+  GoogleAuthProvider,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile,
+  signOut,
+  signInWithPopup,
+  onAuthStateChanged
+} from 'firebase/auth';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 export class FirebaseAuthAdapter implements AuthAdapter {
   private auth = getFirebaseAuth();
@@ -19,7 +29,6 @@ export class FirebaseAuthAdapter implements AuthAdapter {
 
   private async ensureGoogleProvider(): Promise<AuthProvider> {
     if (!this.googleProvider) {
-      const { GoogleAuthProvider } = await import('firebase/auth');
       this.googleProvider = new GoogleAuthProvider();
     }
     return this.googleProvider;
@@ -43,17 +52,14 @@ export class FirebaseAuthAdapter implements AuthAdapter {
   }
 
   async signInEmailPassword(email: string, password: string): Promise<UserProfile> {
-    const { signInWithEmailAndPassword } = await import('firebase/auth');
     const cred = await signInWithEmailAndPassword(this.auth, email, password);
     return this.mapUser(cred.user);
   }
 
   async signUpEmailPassword(email: string, password: string, displayName?: string): Promise<UserProfile> {
-    const { createUserWithEmailAndPassword, updateProfile } = await import('firebase/auth');
     const cred = await createUserWithEmailAndPassword(this.auth, email, password);
     if (displayName) await updateProfile(cred.user, { displayName });
     try {
-      const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
       await setDoc(doc(this.ensureDb(), 'users', cred.user.uid), {
         email,
         displayName: displayName ?? null,
@@ -72,16 +78,13 @@ export class FirebaseAuthAdapter implements AuthAdapter {
   }
 
   async signOut(): Promise<void> {
-    const { signOut } = await import('firebase/auth');
     await signOut(this.auth);
   }
 
   async signInWithGoogle(): Promise<UserProfile> {
-    const { signInWithPopup } = await import('firebase/auth');
     const provider = await this.ensureGoogleProvider();
     const cred = await signInWithPopup(this.auth, provider);
     try {
-      const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
       await setDoc(doc(this.ensureDb(), 'users', cred.user.uid), {
         email: cred.user.email ?? '',
         displayName: cred.user.displayName ?? null,
@@ -103,7 +106,6 @@ export class FirebaseAuthAdapter implements AuthAdapter {
     // Keep static import small by dynamically loading listener only when first subscribed
   let unsub: (() => void) | null = null
   ;(async () => {
-      const { onAuthStateChanged } = await import('firebase/auth')
       unsub = onAuthStateChanged(this.auth, (u) => cb(u ? this.mapUser(u) : null))
     })()
   return () => { if (unsub) { unsub() } }

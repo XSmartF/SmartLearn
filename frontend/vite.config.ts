@@ -21,6 +21,12 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
+          // Allow dynamic imports to be chunked automatically
+          if (id.includes('/src/') && !id.includes('node_modules')) {
+            // Don't manually chunk dynamic imports, let Vite handle them
+            return;
+          }
+          
           if (id.includes('node_modules')) {
             if (id.includes('react')) return 'react';
             // Remove Firebase chunking to prevent initialization issues

@@ -1,11 +1,20 @@
 // Firestore functions dynamically imported per method.
 import { getDb, getFirebaseAuth } from '@/shared/lib/firebaseClient';
 import { invalidateCache, cached } from '@/shared/lib/cache';
+import {
+  query,
+  collection,
+  where,
+  limit,
+  getDocs,
+  updateDoc,
+  doc,
+  serverTimestamp,
+  addDoc
+} from 'firebase/firestore';
 
 const PROGRESS = 'progress';
 const db = getDb();
-let _fsMod: Promise<typeof import('firebase/firestore')> | null = null;
-function fs() { return _fsMod ??= import('firebase/firestore'); }
 
 export interface UserLibraryProgressDoc {
   id: string;
@@ -19,7 +28,6 @@ export class ProgressRepository {
   async getUserLibraryProgress(libraryId: string): Promise<UserLibraryProgressDoc | null> {
     const user = getFirebaseAuth().currentUser; if (!user) throw new Error('Not authenticated');
     return cached([`progress:${user.uid}:${libraryId}`], async () => {
-  const { query, collection, where, limit, getDocs } = await fs();
   const qProg = query(collection(db, PROGRESS), where('userId','==', user.uid), where('libraryId','==', libraryId), limit(1));
   const snap = await getDocs(qProg);
       if (snap.empty) return null;
@@ -32,7 +40,6 @@ export class ProgressRepository {
   async upsertUserLibraryProgress(libraryId: string, engineState: Record<string, unknown>) {
     const user = getFirebaseAuth().currentUser; if (!user) throw new Error('Not authenticated');
     const existing = await this.getUserLibraryProgress(libraryId);
-    const { updateDoc, doc, serverTimestamp, addDoc, collection } = await fs();
     if (existing) {
       await updateDoc(doc(db, PROGRESS, existing.id), { engineState, updatedAt: serverTimestamp() });
       invalidateCache(`progress:${user.uid}:${libraryId}`);
