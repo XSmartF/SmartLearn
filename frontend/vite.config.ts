@@ -22,9 +22,10 @@ export default defineConfig({
         manualChunks(id) {
           if (id.includes('node_modules')) {
             if (id.includes('react')) return 'react';
-            if (id.includes('firebase/auth')) return 'firebase-auth';
-            if (id.includes('firebase/firestore')) return 'firebase-firestore';
-            if (id.includes('firebase/app')) return 'firebase-core';
+            // Remove Firebase chunking to prevent initialization issues
+            // if (id.includes('firebase/auth')) return 'firebase-auth';
+            // if (id.includes('firebase/firestore')) return 'firebase-firestore';
+            // if (id.includes('firebase/app')) return 'firebase-core';
           }
           if (id.includes('/lib/learnEngine')) return 'learn-engine';
         }
