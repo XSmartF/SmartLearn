@@ -2,7 +2,7 @@
 
 import type { SessionPersistenceAdapter } from './sessionService';
 import type { UserID, LibraryID, UserLibraryProgress, LibraryWithCards } from './models';
-import type { Card } from './learnEngine';
+import type { Card } from '../../features/study/utils/learnEngine';
 
 interface MemoryData {
   libraries: Map<LibraryID, LibraryWithCards>;

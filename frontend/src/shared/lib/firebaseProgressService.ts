@@ -1,6 +1,6 @@
 import { doc, getDoc, serverTimestamp, writeBatch, onSnapshot } from 'firebase/firestore';
 import { getDb } from './firebaseClient';
-import type { SerializedState } from './learnEngine';
+import type { SerializedState } from '../../features/study/utils/learnEngine';
 import { getFirebaseAuth } from './firebaseClient';
 
 // Collection: progress (doc id: userId__libraryId)

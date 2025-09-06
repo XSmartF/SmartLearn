@@ -1,7 +1,7 @@
 // Study session orchestration per user + per library
 // This service composes LearnEngine with persistence boundaries.
 
-import { LearnEngine, type Card, type SerializedState } from './learnEngine';
+import { LearnEngine, type Card, type SerializedState } from '../../features/study/utils/learnEngine';
 import type { UserID, LibraryID, UserLibraryProgress } from './models';
 
 export interface SessionContext {

@@ -86,7 +86,7 @@ const router = createBrowserRouter([
           },
           {
             path: "study/:id",
-            lazy: lazyPage('./pages/StudyPage'),
+            lazy: lazyPage('./features/study/pages/StudyPage'),
             errorElement: <ErrorBoundary />,
             handle: { breadcrumb: 'Học tập' }
           },
@@ -157,7 +157,7 @@ const router = createBrowserRouter([
 function App() {
   // Idle prefetch of learn engine only (test generator prefetched in TestSetup page now)
   useEffect(() => {
-    const prefetchLearn = () => { import('@/shared/lib/learnEngine').catch(()=>{}) }
+    const prefetchLearn = () => { import('@/features/study/utils/learnEngine').catch(()=>{}) }
     interface WIdle { requestIdleCallback?: (cb: () => void, opts?: { timeout?: number }) => number }
     const w = window as unknown as WIdle
     if (typeof w.requestIdleCallback === 'function') w.requestIdleCallback(prefetchLearn, { timeout: 3000 })

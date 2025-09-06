@@ -1,7 +1,7 @@
 // Domain models & DTOs for SmartLearn personalization & sharing
 // These are backend-agnostic interfaces so you can plug any persistence (Supabase/Firebase/Custom API)
 
-import type { SerializedState, Card } from './learnEngine';
+import type { SerializedState, Card } from '../../features/study/utils/learnEngine';
 export type { Card };
 
 export type UserID = string;
