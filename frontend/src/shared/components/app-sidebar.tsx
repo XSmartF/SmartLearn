@@ -205,7 +205,7 @@ export const AppSidebar = React.memo(function AppSidebar({ ...props }: React.Com
   const prefetchRoute = (url: string) => {
     if (url.startsWith('/dashboard/library')) import('@/features/library/pages/LibraryDetail').catch(()=>{});
     else if (url.endsWith('/my-library')) import('@/features/library/pages/MyLibrary').catch(()=>{});
-    else if (url.endsWith('/notifications')) import('@/pages/Notifications').catch(()=>{});
+    else if (url.endsWith('/notifications')) import('@/features/notification/pages/Notifications').catch(()=>{});
   };
 
   return (

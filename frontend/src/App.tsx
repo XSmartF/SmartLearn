@@ -104,7 +104,7 @@ const router = createBrowserRouter([
           },
           {
             path: "notifications",
-            lazy: lazyPage('./pages/Notifications'),
+            lazy: lazyPage('./features/notification/pages/Notifications'),
             errorElement: <ErrorBoundary />,
             handle: { breadcrumb: 'Thông báo' }
           },
