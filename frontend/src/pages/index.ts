@@ -1,6 +1,6 @@
 export { default as Home } from './Home'
 export { default as Dashboard } from './Dashboard'
-export { default as DashboardHome } from './DashboardHome'
+export { default as DashboardHome } from '../features/dashboard/pages/DashboardPage'
 export { default as MyLibrary } from '../features/library/pages/MyLibrary'
 export { default as LibraryDetail } from '../features/library/pages/LibraryDetail'
 export { default as StudyPage } from '../features/study/pages/StudyPage'

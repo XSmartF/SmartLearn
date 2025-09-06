@@ -57,7 +57,7 @@ const router = createBrowserRouter([
             children: [
           {
             index: true,
-            lazy: lazyPage('./pages/DashboardHome'),
+            lazy: lazyPage('./features/dashboard/pages/DashboardPage'),
             errorElement: <ErrorBoundary />,
             handle: { breadcrumb: 'Tổng quan' }
           },
