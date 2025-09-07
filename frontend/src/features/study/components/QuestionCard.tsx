@@ -18,7 +18,6 @@ interface QuestionCardProps {
   selectedOptionIndex: number | null
   correctOptionIndex: number | null
   autoAdvance: boolean
-  autoRead: boolean
   readLanguage: string
   speakQuestion: (text: string, lang: string) => void
   handleAnswer: (answer: string | number) => void
@@ -36,7 +35,6 @@ export function QuestionCard({
   selectedOptionIndex,
   correctOptionIndex,
   autoAdvance,
-  autoRead,
   readLanguage,
   speakQuestion,
   handleAnswer,

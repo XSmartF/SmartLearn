@@ -98,7 +98,7 @@ export default function LibraryDetail() {
   // Search (giữ lại theo yêu cầu)
   const [search, setSearch] = useState('');
   // Text-to-speech settings
-  const [readLanguage, setReadLanguage] = useState('en-US');
+  const [readLanguage] = useState('en-US');
 
   // Function to speak text using Web Speech API
   const speakQuestion = (text: string, lang: string) => {

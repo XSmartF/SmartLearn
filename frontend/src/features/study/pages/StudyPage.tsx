@@ -129,7 +129,6 @@ export default function StudyPage(){
           selectedOptionIndex={selectedOptionIndex}
           correctOptionIndex={correctOptionIndex}
           autoAdvance={autoAdvance}
-          autoRead={autoRead}
           readLanguage={readLanguage}
           speakQuestion={speakQuestion}
           handleAnswer={handleAnswer}
