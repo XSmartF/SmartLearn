@@ -1,19 +1,30 @@
 import * as React from "react"
+import { motion, type HTMLMotionProps } from "framer-motion"
 
 import { cn } from "@/shared/lib/utils"
 
-function Card({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="card"
-      className={cn(
-        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm",
-        className
-      )}
-      {...props}
-    />
-  )
-}
+type CardProps = React.ComponentProps<"div"> & HTMLMotionProps<"div">
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, ...props }, ref) => {
+    return (
+      <motion.div
+        ref={ref}
+        data-slot="card"
+        className={cn(
+          "bg-card text-card-foreground flex flex-col gap-6 rounded-2xl border border-border/50 py-6 shadow-lg shadow-black/5 backdrop-blur-sm transition-all duration-200 hover:shadow-xl hover:shadow-black/10",
+          className
+        )}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        {...props}
+      />
+    )
+  }
+)
+
+Card.displayName = "Card"
 
 function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (

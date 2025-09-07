@@ -5,6 +5,7 @@ import { useParams, Link, useLoaderData, useNavigate } from 'react-router-dom'
 import { Card, CardContent } from "@/shared/components/ui/card"
 import { Badge } from "@/shared/components/ui/badge"
 import { Button } from "@/shared/components/ui/button"
+import { VisibilityBadge } from '@/features/library/components/VisibilityDisplay'
 import {
   ArrowLeft,
   Share2,
@@ -492,7 +493,7 @@ export default function LibraryDetail() {
               </div>
 
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <div className="text-xs">Visibility: {library?.visibility}</div>
+                <VisibilityBadge visibility={library?.visibility || 'public'} />
                 {library && !canStudy && (
                   <div className="text-xs flex items-center gap-1">
                     Chủ sở hữu: <span className="font-medium">{ownerProfile?.displayName || ownerProfile?.email || ownerProfile?.id?.slice(0, 6) || '—'}</span>

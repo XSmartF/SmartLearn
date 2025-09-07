@@ -6,6 +6,7 @@ import { Avatar } from '@/shared/components/ui/avatar'
 import { H3 } from '@/shared/components/ui/typography'
 import type { LibraryMeta, ShareRole } from '@/shared/lib/models'
 import { getLibraryDetailPath } from '@/shared/constants/routes'
+import { VisibilityBadge } from './VisibilityDisplay'
 
 interface FlashcardListItemProps {
   flashcard: LibraryMeta;
@@ -31,7 +32,7 @@ export const FlashcardListItem: React.FC<FlashcardListItemProps> = ({
                   {flashcard.title}
                 </H3>
                 <p className="text-sm text-muted-foreground truncate max-w-md">
-                  {flashcard.cardCount} thẻ • {flashcard.visibility}
+                  {flashcard.cardCount} thẻ • <VisibilityBadge visibility={flashcard.visibility} />
                 </p>
                 <div className="mt-1">
                   <div className="flex items-center gap-2 flex-wrap">

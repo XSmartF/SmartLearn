@@ -71,14 +71,24 @@ export default function CreateLibraryDialog({ onCreateLibrary }: CreateLibraryDi
             />
           </div>
           <div>
-            <label className="text-sm font-medium">Quyền riêng tư</label>
+            <label className="text-sm font-medium">Ai có thể xem thư viện này?</label>
             <Select value={visibility} onValueChange={(value: LibraryVisibility) => setVisibility(value)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="private">Riêng tư</SelectItem>
-                <SelectItem value="public">Công khai</SelectItem>
+                <SelectItem value="private">
+                  <div className="flex items-center gap-2">
+                    <span className="text-orange-500">🔒</span>
+                    <span>Chỉ mình tôi</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="public">
+                  <div className="flex items-center gap-2">
+                    <span className="text-green-500">🌐</span>
+                    <span>Mọi người</span>
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>

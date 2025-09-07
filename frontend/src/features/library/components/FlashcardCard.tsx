@@ -13,6 +13,7 @@ import {
 } from "@/shared/components/ui/dropdown-menu"
 import type { LibraryMeta, ShareRole } from '@/shared/lib/models'
 import { getLibraryDetailPath } from '@/shared/constants/routes'
+import { VisibilityBadge } from './VisibilityDisplay'
 
 interface FlashcardCardProps {
   flashcard: LibraryMeta;
@@ -98,7 +99,7 @@ export const FlashcardCard: React.FC<FlashcardCardProps> = ({
           <div className="space-y-1 sm:space-y-2">
             <div className="flex justify-between text-xs sm:text-sm text-muted-foreground">
               <span>{flashcard.cardCount} thẻ</span>
-              <span>{flashcard.visibility}</span>
+              <VisibilityBadge visibility={flashcard.visibility} />
             </div>
           </div>
 

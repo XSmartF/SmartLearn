@@ -355,14 +355,24 @@ export default function MyLibrary() {
                 <div className="text-[10px] text-muted-foreground text-right">{editDescription.length}/300</div>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Chế độ hiển thị</label>
+                <label className="text-sm font-medium">Ai có thể xem thư viện này?</label>
                 <Select value={editVisibility} onValueChange={(v: string)=> setEditVisibility(v as LibraryVisibility)}>
                   <SelectTrigger className="w-full h-9 text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="private">Riêng tư</SelectItem>
-                    <SelectItem value="public">Công khai</SelectItem>
+                    <SelectItem value="private">
+                      <div className="flex items-center gap-2">
+                        <span className="text-orange-500">🔒</span>
+                        <span>Chỉ mình tôi</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="public">
+                      <div className="flex items-center gap-2">
+                        <span className="text-green-500">🌐</span>
+                        <span>Mọi người</span>
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
