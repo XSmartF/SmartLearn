@@ -21,3 +21,7 @@ export const getUserStudyEvents = async (): Promise<StudyEvent[]> => {
 export const listenUserStudyEvents = (callback: (events: StudyEvent[]) => void): (() => void) => {
   return CalendarRepository.listenUserEvents(callback);
 };
+
+export const updateStudyEventStatus = async (id: string, status: StudyEvent['status']): Promise<void> => {
+  return CalendarRepository.updateEventStatus(id, status);
+};

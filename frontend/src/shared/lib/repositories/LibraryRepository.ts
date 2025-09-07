@@ -51,6 +51,7 @@ export class LibraryRepository {
     return cached([`library:${id}`], async () => {
       const snap = await getDoc(doc(db, LIBRARIES, id)); if(!snap.exists()) return null;
       const data = snap.data();
+      if (data.__deleted === true) return null;
       return { id: snap.id, ownerId: data.ownerId, title: data.title, description: data.description, tags: data.tags ?? [], visibility: data.visibility, cardCount: data.cardCount ?? 0, subject: data.subject ?? '', createdAt: data.createdAt?.toMillis ? new Date(data.createdAt.toMillis()).toISOString() : '', updatedAt: data.updatedAt?.toMillis ? new Date(data.updatedAt.toMillis()).toISOString() : '' } as LibraryMeta;
     });
   }
@@ -82,7 +83,12 @@ export class LibraryRepository {
     const results: LibraryMeta[] = [];
     for (const chunk of chunks) {
       const qLibs = query(collection(db, LIBRARIES), where('__name__','in', chunk)); const snap = await getDocs(qLibs);
-      snap.forEach(docSnap => { const d = docSnap.data(); results.push({ id: docSnap.id, ownerId: d.ownerId, title: d.title, description: d.description, tags: d.tags ?? [], visibility: d.visibility, cardCount: d.cardCount ?? 0, subject: d.subject ?? '', createdAt: d.createdAt?.toMillis ? new Date(d.createdAt.toMillis()).toISOString() : '', updatedAt: d.updatedAt?.toMillis ? new Date(d.updatedAt.toMillis()).toISOString() : '' } as LibraryMeta); });
+      snap.forEach(docSnap => { 
+        const d = docSnap.data(); 
+        if (d.__deleted !== true) {
+          results.push({ id: docSnap.id, ownerId: d.ownerId, title: d.title, description: d.description, tags: d.tags ?? [], visibility: d.visibility, cardCount: d.cardCount ?? 0, subject: d.subject ?? '', createdAt: d.createdAt?.toMillis ? new Date(d.createdAt.toMillis()).toISOString() : '', updatedAt: d.updatedAt?.toMillis ? new Date(d.updatedAt.toMillis()).toISOString() : '' } as LibraryMeta); 
+        }
+      });
     }
     return results.sort((a,b)=> ids.indexOf(a.id) - ids.indexOf(b.id));
   }
@@ -95,7 +101,12 @@ export class LibraryRepository {
       const qOwned = query(collection(db, LIBRARIES), where('ownerId','==', user.uid));
       unsub = onSnapshot(qOwned, snap => {
         const arr: LibraryMeta[] = [];
-        snap.forEach(docSnap => { const d = docSnap.data(); arr.push({ id: docSnap.id, ownerId: d.ownerId, title: d.title, description: d.description, tags: d.tags ?? [], visibility: d.visibility, cardCount: d.cardCount ?? 0, subject: d.subject ?? '', createdAt: d.createdAt?.toMillis ? new Date(d.createdAt.toMillis()).toISOString() : '', updatedAt: d.updatedAt?.toMillis ? new Date(d.updatedAt.toMillis()).toISOString() : '' }); });
+        snap.forEach(docSnap => { 
+          const d = docSnap.data(); 
+          if (d.__deleted !== true) {
+            arr.push({ id: docSnap.id, ownerId: d.ownerId, title: d.title, description: d.description, tags: d.tags ?? [], visibility: d.visibility, cardCount: d.cardCount ?? 0, subject: d.subject ?? '', createdAt: d.createdAt?.toMillis ? new Date(d.createdAt.toMillis()).toISOString() : '', updatedAt: d.updatedAt?.toMillis ? new Date(d.updatedAt.toMillis()).toISOString() : '' });
+          }
+        });
         cb(arr);
       });
     })();
@@ -108,6 +119,21 @@ export class LibraryRepository {
     await updateDoc(doc(db, LIBRARIES, libraryId), { cardCount: snap.size, updatedAt: serverTimestamp() });
     invalidateCache(`library:${libraryId}`);
     return snap.size;
+  }
+
+  async deleteLibrary(id: string) {
+    const user = getFirebaseAuth().currentUser; if(!user) throw new Error('Not authenticated');
+    // First, delete all cards in the library
+    const qCards = query(collection(db, CARDS), where('libraryId','==', id));
+    const snap = await getDocs(qCards);
+    const batch = writeBatch(db);
+    snap.forEach(docSnap => batch.delete(docSnap.ref));
+    await batch.commit();
+    // Then delete the library
+    await updateDoc(doc(db, LIBRARIES, id), { __deleted: true, updatedAt: serverTimestamp() });
+    invalidateCache(`library:${id}`);
+    invalidateCache(`cards:${id}`);
+    invalidateCache('library:');
   }
 }
 

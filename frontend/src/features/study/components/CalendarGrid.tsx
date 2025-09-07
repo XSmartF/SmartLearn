@@ -94,7 +94,7 @@ export function CalendarGrid({
           <CardContent>
             <div className="grid grid-cols-7 gap-1 mb-4">
               {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'].map((day) => (
-                <div key={day} className="p-2 text-center text-sm font-medium text-muted-foreground dark:text-muted-foreground">
+                <div key={day} className="p-2 text-center text-sm sm:text-xs font-medium text-muted-foreground dark:text-muted-foreground">
                   {day}
                 </div>
               ))}
@@ -109,16 +109,16 @@ export function CalendarGrid({
                     <TooltipTrigger asChild>
                       <div
                         className={`
-                          p-2 text-center text-sm cursor-pointer rounded-md transition-colors min-h-[60px]
+                          p-2 text-center text-sm sm:text-xs cursor-pointer rounded-md transition-colors min-h-[60px] sm:min-h-[50px]
                           ${date ? 'hover:bg-muted' : ''}
-                          ${date && date.toDateString() === new Date().toDateString() ? 'bg-primary text-primary-foreground' : ''}
-                          ${date && selectedDate && date.toDateString() === selectedDate.toDateString() ? 'bg-accent' : ''}
+                          ${date && date.toDateString() === new Date().toDateString() ? 'ring-2 ring-primary bg-background text-foreground font-bold' : ''}
+                          ${date && selectedDate && date.toDateString() === selectedDate.toDateString() ? 'bg-accent text-accent-foreground' : ''}
                         `}
                         onClick={() => date && onDateChange(date)}
                       >
                         {date && (
                           <div className="relative h-full">
-                            <span className="block text-foreground dark:text-foreground">{date.getDate()}</span>
+                            <span className="block text-foreground dark:text-foreground sm:text-xs">{date.getDate()}</span>
                             {hasEvents && (
                               <div className="mt-1 space-y-1">
                                 {dayEvents.slice(0, 2).map((event) => (

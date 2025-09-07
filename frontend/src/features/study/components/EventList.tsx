@@ -19,16 +19,20 @@ import {
   getEventIcon,
   getEventColor,
   formatShortDate,
-  formatTime
+  formatTime,
+  getStatusColor,
+  getStatusText,
+  updateEventStatus
 } from '../utils/calendarUtils';
 
 interface EventListProps {
   events: StudyEvent[];
   onView?: (event: StudyEvent) => void;
   onDelete?: (eventId: string) => void;
+  onStatusUpdate?: (eventId: string, status: StudyEvent['status']) => void;
 }
 
-export function EventList({ events, onView, onDelete }: EventListProps) {
+export function EventList({ events, onView, onDelete, onStatusUpdate }: EventListProps) {
   return (
     <Card>
       <CardHeader>
@@ -63,6 +67,9 @@ export function EventList({ events, onView, onDelete }: EventListProps) {
                           {event.type === 'favorite_review' && 'Yêu thích'}
                           {event.type === 'create' && 'Tạo mới'}
                         </Badge>
+                        <Badge className={`text-xs ${getStatusColor(updateEventStatus(event))}`}>
+                          {getStatusText(updateEventStatus(event))}
+                        </Badge>
                       </div>
                       <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
                         {event.description}
@@ -89,10 +96,12 @@ export function EventList({ events, onView, onDelete }: EventListProps) {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                      <DropdownMenuItem>
-                        <Check className="h-4 w-4 mr-2" />
-                        Đánh dấu hoàn thành
-                      </DropdownMenuItem>
+                      {updateEventStatus(event) !== 'completed' && (
+                        <DropdownMenuItem onClick={() => onStatusUpdate?.(event.id, 'completed')}>
+                          <Check className="h-4 w-4 mr-2" />
+                          Đánh dấu hoàn thành
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem onClick={() => onView?.(event)}>
                         Xem chi tiết
                       </DropdownMenuItem>

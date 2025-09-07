@@ -1,12 +1,102 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="256" height="256" rx="56" fill="url(#g)"/>
-  <path d="M68 94c0-8.837 7.163-16 16-16h44c17.673 0 32 14.327 32 32v4h12c6.627 0 12 5.373 12 12v16c0 6.627-5.373 12-12 12h-12v4c0 17.673-14.327 32-32 32h-20l-22.627 22.627C112.5 217 110 216 110 212v-20H84c-8.837 0-16-7.163-16-16V94Z" stroke="white" stroke-width="12" stroke-linejoin="round"/>
-  <path d="M96 116h56M96 140h40" stroke="white" stroke-width="12" stroke-linecap="round"/>
+<svg width="256" height="256" viewBox="0 0 256 256" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>Smart Learn — Logo</title>
+  <desc>Huy hiệu tròn chuyển sắc xanh-tím; chữ S dạng ruy-băng và dấu check phát sáng tượng trưng cho học thông minh.</desc>
+
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="256" y2="256" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#3B82F6"/>
-      <stop offset="1" stop-color="#6366F1"/>
+    <!-- Vòng nền chuyển sắc -->
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"  stop-color="#2DD4BF"/>
+      <stop offset="50%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+
+    <!-- Vệt sáng chéo -->
+    <linearGradient id="sheen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="white" stop-opacity="0.0"/>
+      <stop offset="50%" stop-color="white" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0.0"/>
+    </linearGradient>
+
+    <!-- Gradient cho dải S -->
+    <linearGradient id="ribbon" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#E5E7EB" stop-opacity="0.9"/>
+    </linearGradient>
+
+    <!-- Viền trong (inner shadow) để badge có chiều sâu -->
+    <filter id="inner" x="-50%" y="-50%" width="200%" height="200%">
+      <feOffset dx="0" dy="1"/>
+      <feGaussianBlur stdDeviation="2" result="b"/>
+      <feComposite in="SourceGraphic" in2="b" operator="arithmetic" k2="1" k3="-1" result="inner"/>
+      <feColorMatrix in="inner" type="matrix"
+        values="0 0 0 0 0
+                0 0 0 0 0
+                0 0 0 0 0
+                0 0 0 .65 0"/>
+      <feBlend in="SourceGraphic" mode="normal"/>
+    </filter>
+
+    <!-- Đổ bóng mềm cho biểu tượng trung tâm -->
+    <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.25"/>
+    </filter>
+
+    <!-- Glow nhẹ cho dấu check -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.5" result="g"/>
+      <feMerge>
+        <feMergeNode in="g"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Vệt sáng cong trên S -->
+    <linearGradient id="spec" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.65"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Nét viền kính mờ -->
+    <linearGradient id="glassEdge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.15"/>
     </linearGradient>
   </defs>
+
+  <!-- Badge nền -->
+  <g filter="url(#inner)">
+    <circle cx="128" cy="128" r="120" fill="url(#bg)"/>
+    <!-- Lớp sheen chéo tạo cảm giác vật liệu -->
+    <ellipse cx="100" cy="70" rx="140" ry="60" transform="rotate(25 100 70)" fill="url(#sheen)"/>
+    <!-- Viền kính nhẹ -->
+    <circle cx="128" cy="128" r="120" fill="none" stroke="url(#glassEdge)" stroke-width="2"/>
+  </g>
+
+  <!-- Biểu tượng trung tâm: dải S + check -->
+  <g filter="url(#softShadow)">
+    <!-- Dải S dạng ruy-băng: hai nửa đối xứng, bo góc mềm -->
+    <!-- Nửa trên -->
+    <path d="M82 104c0-16 18-30 46-30h14c20 0 36-7 44-18 3-4 9-3 10 2 4 22-19 40-54 40h-13c-13 0-21 5-21 13 0 6 4 11 12 15l12 6c10 5 17 9 22 13 11 9 16 19 16 30 0 22-20 37-48 37-23 0-41-9-50-23-3-5 2-10 7-8 11 4 24 7 38 7 16 0 26-6 26-15 0-7-5-13-16-18l-12-6c-23-11-33-23-33-39Z"
+          fill="url(#ribbon)"/>
+
+    <!-- Vệt sáng nhỏ chạy theo “lưng” chữ S -->
+    <path d="M98 92c7-10 22-16 41-16h8" stroke="url(#spec)" stroke-width="6" stroke-linecap="round" opacity=".7"/>
+
+    <!-- Dấu check “learn complete” -->
+    <g filter="url(#glow)">
+      <path d="M167 118l-26 26-11-11" fill="none" stroke="#10B981" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- điểm sáng -->
+      <circle cx="167" cy="118" r="3.5" fill="#34D399"/>
+    </g>
+  </g>
+
+  <!-- Hạt sáng mịn (subtle) để logo sống động hơn nhưng không nhiễu -->
+  <g opacity=".18">
+    <circle cx="190" cy="62" r="2" fill="#FFFFFF"/>
+    <circle cx="60" cy="170" r="1.5" fill="#FFFFFF"/>
+    <circle cx="210" cy="150" r="1.8" fill="#FFFFFF"/>
+    <circle cx="98" cy="42" r="1.4" fill="#FFFFFF"/>
+    <circle cx="150" cy="210" r="1.6" fill="#FFFFFF"/>
+  </g>
 </svg>

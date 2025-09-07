@@ -22,6 +22,7 @@ interface FlashcardCardProps {
   authorLabel: string;
   onToggleFavorite: (id: string, isFav: boolean) => void;
   onEdit?: (lib: LibraryMeta) => void;
+  onDelete?: (lib: LibraryMeta) => void;
   currentUserId: string;
   favUpdating: boolean;
 }
@@ -34,6 +35,7 @@ export const FlashcardCard: React.FC<FlashcardCardProps> = ({
   authorLabel,
   onToggleFavorite,
   onEdit,
+  onDelete,
   currentUserId,
   favUpdating
 }) => {
@@ -81,7 +83,7 @@ export const FlashcardCard: React.FC<FlashcardCardProps> = ({
                     {flashcard.visibility !== 'public' && (
                       <DropdownMenuItem>Chia sẻ</DropdownMenuItem>
                     )}
-                    <DropdownMenuItem className="text-red-600">Xóa</DropdownMenuItem>
+                    {onDelete && <DropdownMenuItem className="text-red-600" onClick={(e) => { e.preventDefault(); onDelete(flashcard); }}>Xóa</DropdownMenuItem>}
                   </>
                 )}
               </DropdownMenuContent>

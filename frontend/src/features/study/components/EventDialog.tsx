@@ -12,6 +12,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/components/ui/dialog";
+import { useAllLibraries } from "@/shared/hooks/useLibraries";
+import { updateStudyEventStatus } from "@/shared/lib/firebaseCalendarService";
+import { getStatusColor, getStatusText, updateEventStatus } from "../utils/calendarUtils";
 import type { StudyEvent, CreateStudyEventInput } from '../types/calendar';
 
 interface EventDialogProps {
@@ -20,9 +23,10 @@ interface EventDialogProps {
   onSave: (event: CreateStudyEventInput) => Promise<void>;
   editingEvent?: StudyEvent | null;
   viewOnly?: boolean;
+  onStatusUpdate?: (eventId: string, status: StudyEvent['status']) => void;
 }
 
-export function EventDialog({ isOpen, onClose, onSave, editingEvent, viewOnly = false }: EventDialogProps) {
+export function EventDialog({ isOpen, onClose, onSave, editingEvent, viewOnly = false, onStatusUpdate }: EventDialogProps) {
   const [formData, setFormData] = useState<CreateStudyEventInput>({
     title: '',
     description: '',
@@ -33,6 +37,7 @@ export function EventDialog({ isOpen, onClose, onSave, editingEvent, viewOnly = 
     cardCount: 0
   });
   const [loading, setLoading] = useState(false);
+  const { libraries, loading: librariesLoading } = useAllLibraries();
 
   useEffect(() => {
     if (editingEvent) {
@@ -72,6 +77,19 @@ export function EventDialog({ isOpen, onClose, onSave, editingEvent, viewOnly = 
       setLoading(false);
     }
   };
+
+  const handleMarkCompleted = async () => {
+    if (!editingEvent || !onStatusUpdate) return;
+    
+    try {
+      await updateStudyEventStatus(editingEvent.id, 'completed');
+      onStatusUpdate(editingEvent.id, 'completed');
+    } catch (error) {
+      console.error('Error updating event status:', error);
+    }
+  };
+
+  const currentStatus = editingEvent ? updateEventStatus(editingEvent) : 'upcoming';
 
   const handleInputChange = (field: keyof CreateStudyEventInput, value: string | number | Date | StudyEvent['type']) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -195,12 +213,26 @@ export function EventDialog({ isOpen, onClose, onSave, editingEvent, viewOnly = 
             {viewOnly ? (
               <div className="p-2 bg-muted rounded">{formData.flashcardSet}</div>
             ) : (
-              <Input
-                id="flashcardSet"
+              <Select
                 value={formData.flashcardSet}
-                onChange={(e) => handleInputChange('flashcardSet', e.target.value)}
-                placeholder="Ví dụ: Từ vựng TOEIC"
-              />
+                onValueChange={(value) => handleInputChange('flashcardSet', value)}
+                disabled={librariesLoading}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={libraries.length === 0 ? "Không có bộ thẻ nào" : "Chọn bộ thẻ từ thư viện"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {libraries.length === 0 ? (
+                    <div className="p-2 text-sm text-muted-foreground">Không có bộ thẻ nào</div>
+                  ) : (
+                    libraries.map((library) => (
+                      <SelectItem key={library.id} value={library.title}>
+                        {library.title}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
             )}
           </div>
 
@@ -219,6 +251,28 @@ export function EventDialog({ isOpen, onClose, onSave, editingEvent, viewOnly = 
               />
             )}
           </div>
+
+          {editingEvent && (
+            <div className="space-y-2">
+              <Label>Trạng thái</Label>
+              <div className="flex items-center justify-between">
+                <div className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(currentStatus)}`}>
+                  {getStatusText(currentStatus)}
+                </div>
+                {currentStatus !== 'completed' && !viewOnly && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleMarkCompleted}
+                    disabled={loading}
+                  >
+                    Đánh dấu hoàn thành
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>

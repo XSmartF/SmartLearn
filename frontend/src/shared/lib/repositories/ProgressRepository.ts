@@ -24,6 +24,17 @@ export interface UserLibraryProgressDoc {
   updatedAt: string;
 }
 
+export interface UserLibraryProgressSummary {
+  userId: string;
+  libraryId: string;
+  total: number;
+  mastered: number;
+  learning: number;
+  due: number;
+  percentMastered: number;
+  updatedAt: string;
+}
+
 export class ProgressRepository {
   async getUserLibraryProgress(libraryId: string): Promise<UserLibraryProgressDoc | null> {
     const user = getFirebaseAuth().currentUser; if (!user) throw new Error('Not authenticated');
@@ -59,6 +70,66 @@ export class ProgressRepository {
     const due = num(state.dueCount);
     const total = num(state.totalCount);
     return { mastered, learning, due, total };
+  }
+
+  async getAllUserProgressForLibrary(libraryId: string): Promise<UserLibraryProgressDoc[]> {
+    return cached([`all-progress:${libraryId}`], async () => {
+      const qProg = query(collection(db, PROGRESS), where('libraryId', '==', libraryId));
+      const snap = await getDocs(qProg);
+      const results: UserLibraryProgressDoc[] = [];
+      snap.forEach(docSnap => {
+        const d = docSnap.data() as Record<string, unknown> & { userId: string; libraryId: string; engineState?: Record<string, unknown>; updatedAt?: { toMillis?: () => number } };
+        results.push({
+          id: docSnap.id,
+          userId: d.userId,
+          libraryId: d.libraryId,
+          engineState: (d.engineState as Record<string, unknown> | undefined) ?? null,
+          updatedAt: d.updatedAt?.toMillis ? new Date(d.updatedAt.toMillis()).toISOString() : ''
+        });
+      });
+      return results;
+    });
+  }
+
+  async getAllUserProgressSummariesForLibrary(libraryId: string): Promise<UserLibraryProgressSummary[]> {
+    return cached([`progress-summaries:${libraryId}`], async () => {
+      // Query for summary documents (they have __summary suffix)
+      const qSummaries = query(collection(db, PROGRESS), where('libraryId', '==', libraryId));
+      const snap = await getDocs(qSummaries);
+      const results: UserLibraryProgressSummary[] = [];
+      
+      snap.forEach(docSnap => {
+        const docId = docSnap.id;
+        // Only process summary documents
+        if (!docId.endsWith('__summary')) return;
+        
+        const d = docSnap.data() as Record<string, unknown> & { 
+          userId: string; 
+          libraryId: string; 
+          total?: number; 
+          mastered?: number; 
+          learning?: number; 
+          due?: number; 
+          percentMastered?: number; 
+          updatedAt?: { toMillis?: () => number } 
+        };
+        
+        const num = (v: unknown) => typeof v === 'number' ? v : 0;
+        
+        results.push({
+          userId: d.userId,
+          libraryId: d.libraryId,
+          total: num(d.total),
+          mastered: num(d.mastered),
+          learning: num(d.learning),
+          due: num(d.due),
+          percentMastered: num(d.percentMastered),
+          updatedAt: d.updatedAt?.toMillis ? new Date(d.updatedAt.toMillis()).toISOString() : ''
+        });
+      });
+      
+      return results;
+    });
   }
 }
 

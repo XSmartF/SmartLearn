@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useDeferredValue } from 'react'
 import { H1, H3 } from '@/shared/components/ui/typography';
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
+import { toast } from 'sonner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/shared/components/ui/dialog'
 import { useUserLibraries } from '@/shared/hooks/useLibraries'
@@ -40,6 +41,10 @@ export default function MyLibrary() {
   const [editDescription, setEditDescription] = useState('')
   const [editVisibility, setEditVisibility] = useState<LibraryVisibility>('private')
   const [editing, setEditing] = useState(false)
+  // Delete state
+  const [deleteLib, setDeleteLib] = useState<LibraryMeta | null>(null)
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   // Listen to libraries shared with current user (fixed: useEffect instead of useState)
   useEffect(() => {
     let unsub: (() => void) | null = null; let active = true;
@@ -90,6 +95,27 @@ export default function MyLibrary() {
     })();
     return () => { cancelled = true };
   }, [allLibraries, ownerProfiles]);
+
+  const handleDeleteLibrary = (lib: LibraryMeta) => {
+    setDeleteLib(lib);
+    setConfirmDeleteOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteLib) return;
+    try {
+      setDeleting(true);
+      await libraryRepository.deleteLibrary(deleteLib.id);
+      toast.success('Đã xóa thư viện');
+      setConfirmDeleteOpen(false);
+      setDeleteLib(null);
+    } catch (error) {
+      console.error(error);
+      toast.error('Lỗi khi xóa thư viện');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const deferredSearch = useDeferredValue(searchQuery);
   const filteredAll = useMemo(() => allLibraries.filter(lib =>
@@ -174,6 +200,7 @@ export default function MyLibrary() {
                     authorLabel={authorLabel}
                     onToggleFavorite={toggleFavorite}
                     onEdit={setEditLib}
+                    onDelete={handleDeleteLibrary}
                     currentUserId={currentUserId}
                     favUpdating={favUpdating}
                   />
@@ -226,6 +253,7 @@ export default function MyLibrary() {
                     authorLabel={authorLabel}
                     onToggleFavorite={toggleFavorite}
                     onEdit={setEditLib}
+                    onDelete={handleDeleteLibrary}
                     currentUserId={currentUserId}
                     favUpdating={favUpdating}
                   />
@@ -273,6 +301,7 @@ export default function MyLibrary() {
                     authorLabel={authorLabel}
                     onToggleFavorite={toggleFavorite}
                     onEdit={setEditLib}
+                    onDelete={handleDeleteLibrary}
                     currentUserId={currentUserId}
                     favUpdating={favUpdating}
                   />
@@ -367,6 +396,24 @@ export default function MyLibrary() {
           Lỗi: {errorMessage}
         </div>
       )}
+
+      {/* Delete Confirm Dialog */}
+      <Dialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Xác nhận xóa thư viện</DialogTitle>
+            <DialogDescription>
+              Bạn có chắc muốn xóa thư viện "{deleteLib?.title}"? Hành động này không thể hoàn tác và sẽ xóa tất cả thẻ trong thư viện.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmDeleteOpen(false)}>Hủy</Button>
+            <Button variant="destructive" onClick={confirmDelete} disabled={deleting}>
+              {deleting ? 'Đang xóa...' : 'Xóa'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

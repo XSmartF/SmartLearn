@@ -1,23 +1,20 @@
 import { useState, useEffect } from "react"
-import { H1 } from '@/shared/components/ui/typography';
+import { H1 } from '@/shared/components/ui/typography'
 import { Button } from "@/shared/components/ui/button"
 import { Plus } from "lucide-react"
-import { Stats, CalendarGrid, EventList, TodayEvents, EventDialog, RecentActivities } from '../components'
-import { listenUserStudyEvents, createStudyEvent, updateStudyEvent, deleteStudyEvent } from '@/shared/lib/firebaseCalendarService'
+import { Stats, CalendarGrid, EventDialog, TaskStatusCards } from '../components'
+import { listenUserStudyEvents, createStudyEvent, updateStudyEvent, deleteStudyEvent, updateStudyEventStatus } from '@/shared/lib/firebaseCalendarService'
 import ConfirmDialog from "@/shared/components/ConfirmDialog"
 import type { StudyEvent, CreateStudyEventInput } from '../types/calendar'
 import {
-  getUpcomingEvents,
-  getTodayEvents,
-  calculateStats
+  calculateStats,
+  updateEventStatus
 } from '../utils/calendarUtils'
 
 export default function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [events, setEvents] = useState<StudyEvent[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingEvent, setEditingEvent] = useState<StudyEvent | null>(null)
   const [viewOnly, setViewOnly] = useState(false)
@@ -25,23 +22,61 @@ export default function Calendar() {
   const [eventToDelete, setEventToDelete] = useState<string | null>(null)
 
   useEffect(() => {
-    try {
-      const unsubscribe = listenUserStudyEvents((fetchedEvents) => {
-        setEvents(fetchedEvents)
-        setLoading(false)
-        setError(null)
-      })
+    const unsubscribe = listenUserStudyEvents((fetchedEvents) => {
+      setEvents(fetchedEvents);
+    });
 
-      return unsubscribe
-    } catch {
-      setError('Không thể tải dữ liệu lịch học tập. Vui lòng thử lại sau.')
-      setLoading(false)
-      return () => {}
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    const updateStatuses = async () => {
+      const now = new Date();
+      const eventsToUpdate = events.filter(event => {
+        const currentStatus = event.status;
+        const calculatedStatus = event.endTime < now ? 'overdue' : 'upcoming';
+        return currentStatus !== calculatedStatus && currentStatus !== 'completed';
+      });
+
+      for (const event of eventsToUpdate) {
+        const newStatus = event.endTime < now ? 'overdue' : 'upcoming';
+        try {
+          await updateStudyEventStatus(event.id, newStatus);
+        } catch (error) {
+          console.error('Error updating event status:', error);
+        }
+      }
+    };
+
+    if (events.length > 0) {
+      updateStatuses();
     }
-  }, [])
+  }, [events]);
 
-  const upcomingEvents = getUpcomingEvents(events)
-  const todayEvents = getTodayEvents(events)
+  // Auto-update event statuses based on time
+  useEffect(() => {
+    const updateStatuses = async () => {
+      const eventsToUpdate = events.filter(event => {
+        if (event.status === 'completed') return false;
+        const newStatus = updateEventStatus(event);
+        return newStatus !== event.status;
+      });
+
+      for (const event of eventsToUpdate) {
+        try {
+          const newStatus = updateEventStatus(event);
+          await updateStudyEventStatus(event.id, newStatus);
+        } catch (error) {
+          console.error('Error auto-updating event status:', error);
+        }
+      }
+    };
+
+    if (events.length > 0) {
+      updateStatuses();
+    }
+  }, [events]);
+
   const stats = calculateStats(events)
 
   const handleCreateEvent = async (eventData: CreateStudyEventInput) => {
@@ -73,6 +108,12 @@ export default function Calendar() {
     setDialogOpen(true)
   }
 
+  const handleEditEvent = (event: StudyEvent) => {
+    setEditingEvent(event);
+    setViewOnly(false);
+    setDialogOpen(true);
+  }
+
   const handleAddEvent = () => {
     setEditingEvent(null)
     setViewOnly(false)
@@ -85,42 +126,26 @@ export default function Calendar() {
     setViewOnly(false)
   }
 
+  const handleStatusUpdate = async (eventId: string, status: StudyEvent['status']) => {
+    try {
+      await updateStudyEventStatus(eventId, status);
+      // Update local state
+      setEvents(prevEvents =>
+        prevEvents.map(event =>
+          event.id === eventId ? { ...event, status } : event
+        )
+      );
+    } catch (error) {
+      console.error('Error updating event status:', error);
+    }
+  };
+
   const handleSaveEvent = async (eventData: CreateStudyEventInput) => {
     if (editingEvent) {
       await handleUpdateEvent(eventData)
     } else {
       await handleCreateEvent(eventData)
     }
-  }
-
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <H1 className="text-3xl font-bold">Lịch học tập</H1>
-            <p className="text-muted-foreground">
-              Đang tải dữ liệu...
-            </p>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <H1 className="text-3xl font-bold">Lịch học tập</H1>
-            <p className="text-muted-foreground">
-              {error}
-            </p>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -143,34 +168,28 @@ export default function Calendar() {
       {/* Stats */}
       <Stats stats={stats} />
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6">
         {/* Calendar */}
-        <CalendarGrid
-          currentDate={currentDate}
-          selectedDate={selectedDate}
-          events={events}
-          onDateChange={setSelectedDate}
-          onCurrentDateChange={setCurrentDate}
-          onViewEvent={handleViewEvent}
-          onDeleteEvent={handleDeleteEvent}
-        />
-
-        {/* Upcoming Events */}
-        <EventList
-          events={upcomingEvents}
-          onView={handleViewEvent}
-          onDelete={handleDeleteEvent}
-        />
-
-        {/* Recent Activities */}
-        <RecentActivities />
+        <div className="w-full">
+          <CalendarGrid
+            currentDate={currentDate}
+            selectedDate={selectedDate}
+            events={events}
+            onDateChange={setSelectedDate}
+            onCurrentDateChange={setCurrentDate}
+            onViewEvent={handleViewEvent}
+            onDeleteEvent={handleDeleteEvent}
+          />
+        </div>
       </div>
 
-      {/* Today's Events */}
-      <TodayEvents
-        events={todayEvents}
+      {/* Task Status Cards */}
+      <TaskStatusCards
+        events={events}
         onView={handleViewEvent}
         onDelete={handleDeleteEvent}
+        onStatusUpdate={handleStatusUpdate}
+        onEdit={handleEditEvent}
       />
 
       {/* Event Dialog */}
@@ -180,6 +199,7 @@ export default function Calendar() {
         onSave={handleSaveEvent}
         editingEvent={editingEvent}
         viewOnly={viewOnly}
+        onStatusUpdate={handleStatusUpdate}
       />
 
       {/* Delete Confirmation Dialog */}

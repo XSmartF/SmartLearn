@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { H1, H2, H3 } from '@/shared/components/ui/typography';
 import LibraryDetailSkeleton from '@/features/library/components/LibraryDetailSkeleton'
-import { useParams, Link, useLoaderData } from 'react-router-dom'
+import { useParams, Link, useLoaderData, useNavigate } from 'react-router-dom'
 import { Card, CardContent } from "@/shared/components/ui/card"
 import { Badge } from "@/shared/components/ui/badge"
 import { Button } from "@/shared/components/ui/button"
@@ -15,6 +15,7 @@ import {
   BarChart3,
   LayoutGrid,
   List as ListIcon,
+  Trash2,
 } from "lucide-react"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/shared/components/ui/select";
 import { Textarea } from "@/shared/components/ui/textarea";
@@ -40,13 +41,14 @@ import { CardPagination } from '@/shared/components/ui/pagination'
 // Icons for future enhancements can be added here
 // ...existing imports...
 // Extracted components
-import { ProgressSummarySection, ShareManager, UnifiedCards } from '../components'
+import { ProgressSummarySection, ShareManager, UnifiedCards, LeaderboardSection } from '../components'
 
 import { Progress } from "@/shared/components/ui/progress"
 import { getTestSetupPath, getStudyPath, ROUTES } from '@/shared/constants/routes'
 
 export default function LibraryDetail() {
   const { id } = useParams()
+  const navigate = useNavigate()
   // Loader (from route) may have provided library meta already
   const loaderData = useLoaderData() as { library?: LibraryMeta | null } | null;
   const { favoriteIds, toggleFavorite } = useFavoriteLibraries();
@@ -68,6 +70,8 @@ export default function LibraryDetail() {
   const [editBack, setEditBack] = useState('');
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [confirmDeleteLibraryOpen, setConfirmDeleteLibraryOpen] = useState(false);
+  const [deletingLibrary, setDeletingLibrary] = useState(false);
   const [editDomain, setEditDomain] = useState('');
   const [editDifficulty, setEditDifficulty] = useState<'easy' | 'medium' | 'hard' | ''>('');
   // Share dialog state
@@ -323,6 +327,37 @@ export default function LibraryDetail() {
             <Button variant="ghost" size="icon" disabled={!canStudy} title={!canStudy ? 'Không có quyền tải xuống' : 'Tải'}>
               <Download className="h-4 w-4" />
             </Button>
+            {isOwner && (
+              <ConfirmDialog
+                open={confirmDeleteLibraryOpen}
+                onOpenChange={setConfirmDeleteLibraryOpen}
+                title="Xác nhận xóa thư viện"
+                description={`Xóa thư viện "${library?.title}"? Hành động này không thể hoàn tác và sẽ xóa tất cả thẻ trong thư viện.`}
+                onConfirm={async () => {
+                  if (!id || !library) return;
+                  try {
+                    setDeletingLibrary(true);
+                    await libraryRepository.deleteLibrary(id);
+                    toast.success('Đã xóa thư viện');
+                    navigate(ROUTES.MY_LIBRARY);
+                  } catch (error) {
+                    console.error(error);
+                    toast.error('Lỗi khi xóa thư viện');
+                  } finally {
+                    setDeletingLibrary(false);
+                    setConfirmDeleteLibraryOpen(false);
+                  }
+                }}
+                confirmText={deletingLibrary ? 'Đang xóa...' : 'Xóa'}
+                cancelText="Hủy"
+                loading={deletingLibrary}
+                variant="destructive"
+              >
+                <Button variant="ghost" size="icon" title="Xóa thư viện">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </ConfirmDialog>
+            )}
           </div>
         </div>
 
@@ -517,6 +552,7 @@ export default function LibraryDetail() {
       {/* Unified Cards + Progress Section */}
       <div className="space-y-6">
         <ProgressSummarySection total={total} masteredVal={masteredVal} learningVal={learningVal} masteredPct={masteredPct} learningPct={learningPct} due={summary ? summary.due : progStats.due} />
+        <LeaderboardSection libraryId={id!} currentUserId={currentUserId} />
         {canStudy ? (
           <div className="space-y-4">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">

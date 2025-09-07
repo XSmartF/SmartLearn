@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { H1 } from '@/shared/components/ui/typography'
 import { Button } from "@/shared/components/ui/button"
-import { ArrowLeft, Heart, Share2, Download } from "lucide-react"
+import { ArrowLeft, Heart, Share2, Download, Trash2 } from "lucide-react"
 import type { LibraryMeta } from '@/shared/lib/models'
 import { ROUTES } from '@/shared/constants/routes'
 
@@ -11,6 +11,7 @@ interface LibraryHeaderProps {
   onToggleFavorite: () => void
   onShareClick: () => void
   onDownloadClick: () => void
+  onDeleteClick?: () => void
   canModify: boolean
 }
 
@@ -20,6 +21,7 @@ export default function LibraryHeader({
   onToggleFavorite,
   onShareClick,
   onDownloadClick,
+  onDeleteClick,
   canModify
 }: LibraryHeaderProps) {
   return (
@@ -53,6 +55,11 @@ export default function LibraryHeader({
               <Button variant="ghost" size="icon" title="Tải xuống" onClick={onDownloadClick}>
                 <Download className="h-4 w-4" />
               </Button>
+              {onDeleteClick && (
+                <Button variant="ghost" size="icon" title="Xóa" onClick={onDeleteClick}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
             </>
           )}
         </div>

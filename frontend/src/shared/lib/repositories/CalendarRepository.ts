@@ -132,4 +132,15 @@ export class CalendarRepository {
       callback(sortedEvents);
     });
   }
+
+  static async updateEventStatus(id: string, status: StudyEvent['status']): Promise<void> {
+    const user = getFirebaseAuth().currentUser;
+    if (!user) throw new Error('Not authenticated');
+
+    const eventRef = doc(db, COLLECTION, id);
+    await updateDoc(eventRef, {
+      status,
+      updatedAt: serverTimestamp()
+    });
+  }
 }

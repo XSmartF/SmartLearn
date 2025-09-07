@@ -146,3 +146,41 @@ export const calculateStats = (events: StudyEvent[]): StudyStats[] => {
     }
   ];
 };
+
+export const updateEventStatus = (event: StudyEvent): StudyEvent['status'] => {
+  const now = new Date();
+  
+  if (event.status === 'completed') {
+    return 'completed';
+  }
+  
+  if (event.endTime < now) {
+    return 'overdue';
+  }
+  
+  return 'upcoming';
+};
+
+export const getStatusColor = (status: StudyEvent['status']) => {
+  switch (status) {
+    case 'completed':
+      return 'text-green-600 bg-green-50 border-green-200';
+    case 'overdue':
+      return 'text-red-600 bg-red-50 border-red-200';
+    case 'upcoming':
+    default:
+      return 'text-blue-600 bg-blue-50 border-blue-200';
+  }
+};
+
+export const getStatusText = (status: StudyEvent['status']) => {
+  switch (status) {
+    case 'completed':
+      return 'Đã hoàn thành';
+    case 'overdue':
+      return 'Quá hạn';
+    case 'upcoming':
+    default:
+      return 'Sắp tới';
+  }
+};

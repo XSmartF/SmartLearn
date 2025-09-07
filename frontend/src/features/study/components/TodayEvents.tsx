@@ -7,16 +7,20 @@ import {
   getEventIcon,
   getEventColor,
   formatDate,
-  formatTime
+  formatTime,
+  getStatusColor,
+  getStatusText,
+  updateEventStatus
 } from '../utils/calendarUtils';
 
 interface TodayEventsProps {
   events: StudyEvent[];
   onView?: (event: StudyEvent) => void;
   onDelete?: (eventId: string) => void;
+  onStatusUpdate?: (eventId: string, status: StudyEvent['status']) => void;
 }
 
-export function TodayEvents({ events, onView, onDelete }: TodayEventsProps) {
+export function TodayEvents({ events, onView, onDelete, onStatusUpdate }: TodayEventsProps) {
   if (events.length === 0) return null;
 
   return (
@@ -47,6 +51,9 @@ export function TodayEvents({ events, onView, onDelete }: TodayEventsProps) {
                         {event.type === 'favorite_review' && 'Yêu thích'}
                         {event.type === 'create' && 'Tạo mới'}
                       </Badge>
+                      <Badge className={`text-xs ${getStatusColor(updateEventStatus(event))}`}>
+                        {getStatusText(updateEventStatus(event))}
+                      </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground mb-1">{event.description}</p>
                     <div className="flex items-center space-x-4 text-sm text-muted-foreground">
@@ -57,6 +64,15 @@ export function TodayEvents({ events, onView, onDelete }: TodayEventsProps) {
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
+                  {updateEventStatus(event) !== 'completed' && (
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={() => onStatusUpdate?.(event.id, 'completed')}
+                    >
+                      Hoàn thành
+                    </Button>
+                  )}
                   <Button size="sm" variant="outline" onClick={() => onView?.(event)}>
                     Xem chi tiết
                   </Button>
