@@ -10,6 +10,21 @@
  *   // loop until engine.isFinished()
  */
 
+/** Serialize learning state to persist across sessions */
+export interface SerializedState { 
+  params: LearnParams; 
+  sessionIndex: number; 
+  asked: number; 
+  correct: number; 
+  incorrect: number; 
+  startedAt: number; 
+  recentMs: number[]; 
+  states: CardState[];
+  modePrefs?: { mc: boolean; typed: boolean };
+  currentGroup: string[]; // array of card IDs in current group
+  nextCardIndex: number;
+}
+
 ///////////////////////////////
 // Domain Types
 ///////////////////////////////
@@ -33,6 +48,9 @@ export interface CardState {
   nextDue: number;         // session-relative index; smaller = sooner
   seenCount: number;
   wrongCount: number;
+  addedToGroupAt?: number; // session index when added to current group
+  easeFactor: number;      // SM-2 ease factor, default 2.5
+  lastInterval: number;    // last interval used
 }
 
 export interface QuestionMC {
@@ -46,6 +64,8 @@ export interface QuestionTyped {
   mode: "TYPED_RECALL";
   cardId: string;
   prompt: string;
+  hint?: string; // optional hint for difficult cards
+  fullAnswer?: string; // full answer for "Don't know" button
 }
 
 export type Question = QuestionMC | QuestionTyped;
@@ -213,6 +233,13 @@ export class LearnEngine {
   // User mode preferences (both enabled by default)
   private modePrefs: { mc: boolean; typed: boolean } = { mc: true, typed: true };
 
+  // New: Group-based learning with adaptive size
+  private currentGroup: CardState[] = []; // current group of cards
+  private nextCardIndex = 0; // index of next card to add to group
+  private groupSize = 7; // initial group size
+  private lastAccuracyCheck = 0;
+  private accuracyCheckInterval = 10; // check every 10 questions
+
   constructor(init: LearnInit) {
     this.cards = init.cards.slice();
     this.params = { ...DefaultParams, ...(init.params || {}) };
@@ -225,8 +252,13 @@ export class LearnEngine {
         nextDue: 0,
         seenCount: 0,
         wrongCount: 0,
+        addedToGroupAt: 0, // initial cards added at session 0
+        easeFactor: 2.5,
+        lastInterval: 1,
       });
     }
+    // Initialize current group with first 7 cards
+    this.initializeGroup();
   }
 
   /** Set which modes are allowed (at least one must remain true) */
@@ -241,27 +273,43 @@ export class LearnEngine {
   }
 
   isFinished(): boolean {
+    // Check if all cards are mastered
     for (const s of this.state.values()) {
       if (s.mastery < this.params.M) return false;
     }
-    return true;
+    // Also check if current group is empty (all cards processed)
+    return this.currentGroup.length === 0;
   }
 
   nextQuestion(): Question | null {
     if (this.isFinished()) return null;
 
+    // Only consider cards in current group that are not mastered
+    const candidates = this.currentGroup.filter(s => s.mastery < this.params.M);
+    
+    if (candidates.length === 0) {
+      // If no candidates in group, try to add more cards
+      this.addNextCardToGroup();
+      const newCandidates = this.currentGroup.filter(s => s.mastery < this.params.M);
+      if (newCandidates.length === 0) return null;
+      return this.generateQuestionFromCandidates(newCandidates);
+    }
+
+    return this.generateQuestionFromCandidates(candidates);
+  }
+
+  private generateQuestionFromCandidates(candidates: CardState[]): Question | null {
     // pick candidates due now; if none, pick closest-to-due
     const due: CardState[] = [];
     let minNextDue = Infinity;
-    for (const s of this.state.values()) {
-      if (s.mastery >= this.params.M) continue;
+    for (const s of candidates) {
       if (s.nextDue <= this.sessionIndex) {
         due.push(s);
       }
       minNextDue = Math.min(minNextDue, s.nextDue);
     }
 
-    const pool = due.length > 0 ? due : [...this.state.values()].filter(s => s.mastery < this.params.M && s.nextDue === minNextDue);
+    const pool = due.length > 0 ? due : candidates.filter(s => s.nextDue === minNextDue);
     const picked = this.selectNext(pool);
     if (!picked) return null;
 
@@ -272,7 +320,9 @@ export class LearnEngine {
       const options = this.generateMCOptions(card, this.params.mcOptions);
       return { mode, cardId: card.id, prompt: card.front, options };
     } else {
-      return { mode, cardId: card.id, prompt: card.front };
+      // For typed recall, add hint if mastery is low and wrong count > 0
+      const hint = (picked.mastery < 2 && picked.wrongCount > 0) ? this.generateHint(card.back) : undefined;
+      return { mode, cardId: card.id, prompt: card.front, hint, fullAnswer: card.back };
     }
   }
 
@@ -282,6 +332,7 @@ export class LearnEngine {
     const card = this.getCard(cardId);
 
     let result: Result = "Incorrect";
+    let quality = 0; // 0-5 for SM-2
 
     const qMode = this.chooseMode(s); // infer mode again (or track externally)
 
@@ -292,18 +343,37 @@ export class LearnEngine {
       // To keep it engine-agnostic, we accept either number index 0 (correct) or compare strings.
       if (typeof rawAnswer === "number") {
         result = rawAnswer === 0 ? "Correct" : "Incorrect";
+        quality = rawAnswer === 0 ? 5 : 0;
       } else if (typeof rawAnswer === "string") {
-        result = normalize(rawAnswer) === normalize(card.back) ? "Correct" : "Incorrect";
+        const isCorrect = normalize(rawAnswer) === normalize(card.back);
+        result = isCorrect ? "Correct" : "Incorrect";
+        quality = isCorrect ? 5 : 0;
       } else {
         result = "Incorrect";
+        quality = 0;
       }
     } else {
       // typed recall
       const u = normalize(String(rawAnswer ?? ""));
       const g = normalize(card.back);
-      if (u === g) result = "Correct";
-      else if (levenshtein(u, g) <= this.params.lenientDistance) result = "CorrectMinor";
-      else result = "Incorrect";
+      const dist = levenshtein(u, g);
+      if (u === g) {
+        result = "Correct";
+        quality = 5;
+      } else if (dist <= this.params.lenientDistance) {
+        result = "CorrectMinor";
+        quality = 4;
+      } else {
+        result = "Incorrect";
+        quality = 0;
+      }
+    }
+
+    // Update ease factor based on quality
+    if (quality >= 3) {
+      s.easeFactor = Math.max(1.3, s.easeFactor + 0.1);
+    } else {
+      s.easeFactor = Math.max(1.3, s.easeFactor - 0.2);
     }
 
     this.updateState(s, result);
@@ -395,7 +465,9 @@ export class LearnEngine {
       const options = this.generateMCOptions(card, this.params.mcOptions);
       return { mode, cardId: card.id, prompt: card.front, options };
     }
-    return { mode, cardId: card.id, prompt: card.front };
+    // For typed recall, add hint if mastery is low and wrong count > 0
+    const hint = (s.mastery < 2 && s.wrongCount > 0) ? this.generateHint(card.back) : undefined;
+    return { mode, cardId: card.id, prompt: card.front, hint, fullAnswer: card.back };
   }
 
   /** Serialize learning state to persist across sessions */
@@ -408,8 +480,10 @@ export class LearnEngine {
       incorrect: this.incorrect,
       startedAt: this.startedAt,
       recentMs: [...this.recentMs],
-  states: [...this.state.values()].map(s => ({...s})),
-  modePrefs: { ...this.modePrefs }
+      states: [...this.state.values()].map(s => ({...s})),
+      modePrefs: { ...this.modePrefs },
+      currentGroup: this.currentGroup.map(s => s.id),
+      nextCardIndex: this.nextCardIndex
     };
   }
 
@@ -442,12 +516,24 @@ export class LearnEngine {
           nextDue: this.sessionIndex, // cho phép xuất hiện ngay
           seenCount: 0,
           wrongCount: 0,
+          addedToGroupAt: this.sessionIndex, // new cards added at current session
+          easeFactor: 2.5,
+          lastInterval: 1,
         });
       }
     }
     if (snapshot.modePrefs) {
       this.modePrefs = { ...snapshot.modePrefs };
     }
+    // Restore group state
+    this.currentGroup = [];
+    for (const cardId of snapshot.currentGroup) {
+      const state = this.state.get(cardId);
+      if (state) {
+        this.currentGroup.push(state);
+      }
+    }
+    this.nextCardIndex = snapshot.nextCardIndex;
   }
 
   // Get current session stats
@@ -478,6 +564,64 @@ export class LearnEngine {
     return Array.from(this.state.values());
   }
 
+  // Initialize the current group with first 7 cards
+  private initializeGroup(): void {
+    this.currentGroup = [];
+    this.nextCardIndex = 0;
+    for (let i = 0; i < this.groupSize && this.nextCardIndex < this.cards.length; i++) {
+      const cardId = this.cards[this.nextCardIndex].id;
+      const state = this.state.get(cardId);
+      if (state) {
+        state.addedToGroupAt = this.sessionIndex; // Mark when added to group
+        this.currentGroup.push(state);
+      }
+      this.nextCardIndex++;
+    }
+  }
+
+  // Add next card to group if available
+  private addNextCardToGroup(): void {
+    if (this.nextCardIndex < this.cards.length) {
+      const cardId = this.cards[this.nextCardIndex].id;
+      const state = this.state.get(cardId);
+      if (state && !this.currentGroup.find(s => s.id === cardId)) {
+        state.addedToGroupAt = this.sessionIndex; // Mark when added to group
+        this.currentGroup.push(state);
+      }
+      this.nextCardIndex++;
+    }
+  }
+
+  // Remove mastered card from group and add next
+  private removeMasteredCard(cardId: string): void {
+    this.currentGroup = this.currentGroup.filter(s => s.id !== cardId);
+    this.addNextCardToGroup();
+  }
+
+  // Adjust group size based on recent accuracy
+  private adjustGroupSize(): void {
+    const recentAccuracy = this.asked > 0 ? this.correct / this.asked : 0;
+    if (recentAccuracy > 0.8) {
+      this.groupSize = Math.min(15, this.groupSize + 1); // increase up to 15
+    } else if (recentAccuracy < 0.6) {
+      this.groupSize = Math.max(3, this.groupSize - 1); // decrease down to 3
+    }
+    // If group is larger than current size, trim it
+    if (this.currentGroup.length > this.groupSize) {
+      this.currentGroup = this.currentGroup.slice(0, this.groupSize);
+    }
+  }
+
+  // Generate a hint for typed recall
+  private generateHint(answer: string): string {
+    const words = answer.split(' ');
+    if (words.length <= 2) {
+      return answer.substring(0, Math.ceil(answer.length / 2)) + '...';
+    } else {
+      return words.slice(0, Math.floor(words.length / 2)).join(' ') + '...';
+    }
+  }
+
   ///////////////////////////////
   // Internals
   ///////////////////////////////
@@ -502,11 +646,16 @@ export class LearnEngine {
 
     for (const c of candidates) {
       const overdue = Math.max(0, now - c.nextDue);
+      const groupAge = now - (c.addedToGroupAt || 0); // How long card has been in group
+      const card = this.getCard(c.id);
+      const difficultyBias = card.difficulty === 'hard' ? 1.5 : card.difficulty === 'medium' ? 1.0 : 0.5; // prioritize harder cards
       const score =
         this.params.overdueBias * overdue +
         this.params.wrongBias * (c.lastResult === "Incorrect" ? 1 : 0) +
         this.params.lowMasteryBias * (this.params.M - c.mastery) +
-        this.params.rarityBias * (1 / (1 + c.seenCount));
+        this.params.rarityBias * (1 / (1 + c.seenCount)) +
+        0.5 * groupAge + // Prefer cards that have been in group longer (new cards get lower priority)
+        difficultyBias; // Add difficulty bias
       if (score > bestScore) {
         bestScore = score;
         best = c;
@@ -535,50 +684,80 @@ export class LearnEngine {
 
     // Prefer same domain distractors; else fallback to all
     const sameDomain = card.domain ? others.filter(o => o.domain === card.domain) : [];
-    const pool = (sameDomain.length >= total - 1 ? sameDomain : others).map(x => x.back);
+    let pool = (sameDomain.length >= total - 1 ? sameDomain : others).map(x => x.back);
 
-    // Optional: bias by similarity (here, crude length difference)
+    // Ensure we have enough unique distractors
+    if (pool.length < total - 1) {
+      // If not enough, add more from all cards, excluding duplicates
+      const allPool = others.map(x => x.back).filter(back => !pool.includes(back) && normalize(back) !== normalize(correct));
+      pool = [...pool, ...allPool];
+    }
+
+    // Improved: bias by similarity (length difference and difficulty)
     const sorted = pool
       .filter((x) => normalize(x) !== normalize(correct))
-      .sort((a, b) => Math.abs(a.length - correct.length) - Math.abs(b.length - correct.length));
+      .map(other => {
+        const lengthDiff = Math.abs(other.length - correct.length);
+        // Prefer distractors with similar difficulty
+        const cardObj = this.cards.find(c => c.back === other);
+        const difficultyMatch = cardObj?.difficulty === card.difficulty ? 0 : 1;
+        return { text: other, score: lengthDiff + difficultyMatch * 10 }; // lower score better
+      })
+      .sort((a, b) => a.score - b.score)
+      .map(item => item.text);
 
     const distractors = sorted.slice(0, Math.max(0, total - 1));
-    const options = shuffle([correct, ...shuffle(distractors).slice(0, total - 1)]);
+    const shuffledDistractors = shuffle(distractors);
+    const options = [correct, ...shuffledDistractors]; // Correct always at index 0
 
-    // NOTE: for submitAnswer with index semantics, the caller should map index 0 to the correct option.
-    // To keep a consistent convention, we can place the correct answer at index 0 and then shuffle an index map at UI layer.
-    // But for simplicity here, we return a shuffled array and let UI handle correctness mapping.
+    // NOTE: Correct answer is always at index 0. UI should handle shuffling if needed, but for engine consistency, we keep correct at 0.
     return options;
   }
 
   private scheduleNext(s: CardState): number {
-    const m = s.mastery;
-    const buckets = this.params.scheduleBuckets;
-    let range: [number, number];
-    if (m <= 1) range = buckets.low;
-    else if (m <= 3) range = buckets.mid;
-    else range = buckets.high;
-    const gap = rngInt(range[0], range[1]);
-    return this.sessionIndex + gap;
+    // Use SM-2 like intervals with ease factor
+    let interval: number;
+    if (s.lastInterval === 1) {
+      interval = 1;
+    } else if (s.lastInterval === 2) {
+      interval = 6;
+    } else {
+      interval = Math.round(s.lastInterval * s.easeFactor);
+    }
+    s.lastInterval = interval;
+    return this.sessionIndex + interval;
   }
 
   private updateState(s: CardState, result: Result): void {
     s.seenCount += 1;
     if (result === "Correct" || result === "CorrectMinor") {
       s.streakCorrect += 1;
-      s.mastery = Math.min(this.params.M, s.mastery + this.params.promoteBonus);
+      // Adaptive mastery increase: bonus for high streak
+      const streakBonus = Math.floor(s.streakCorrect / 3); // extra 1 mastery every 3 correct in a row
+      s.mastery = Math.min(this.params.M, s.mastery + this.params.promoteBonus + streakBonus);
       s.lastResult = "Correct";
       s.nextDue = this.scheduleNext(s);
+      // Check if card is now mastered
+      if (s.mastery >= this.params.M) {
+        this.removeMasteredCard(s.id);
+      }
     } else if (result === "Incorrect") {
+      // Reduced penalty if streak was good before
+      const penaltyMultiplier = s.streakCorrect > 2 ? 0.8 : this.params.earlyPenalty;
       s.streakCorrect = 0;
       s.wrongCount += 1;
-      s.mastery = Math.max(0, Math.floor(s.mastery * this.params.earlyPenalty));
+      s.mastery = Math.max(0, Math.floor(s.mastery * penaltyMultiplier));
       // reinsert soon (1-2 items later)
       s.nextDue = this.sessionIndex + rngInt(1, 2);
       s.lastResult = "Incorrect";
     } else { // Skip or other
       s.nextDue = this.sessionIndex + 1;
       s.lastResult = "Incorrect"; // treat as not learned
+    }
+    // Adaptive group size adjustment
+    if (this.asked - this.lastAccuracyCheck >= this.accuracyCheckInterval) {
+      this.adjustGroupSize();
+      this.lastAccuracyCheck = this.asked;
     }
   }
 }

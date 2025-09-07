@@ -4,6 +4,7 @@ import { Input } from '@/shared/components/ui/input'
 import { Badge } from '@/shared/components/ui/badge'
 import { H2, H3 } from '@/shared/components/ui/typography'
 import { BookOpen, Keyboard, Check, X, Volume2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import type { Question, Result, LearnEngine as LearnEngineType } from '@/features/study/utils/learnEngine'
 import type { Card as LearnCard } from '@/features/study/utils/learnEngine'
 
@@ -40,6 +41,18 @@ export function QuestionCard({
   handleAnswer,
   handleNext
 }: QuestionCardProps) {
+  const [showFullAnswer, setShowFullAnswer] = useState(false)
+  const [fullAnswerText, setFullAnswerText] = useState('')
+  const [showHint, setShowHint] = useState(false)
+  const [hintText, setHintText] = useState('')
+
+  // Reset state when question changes
+  useEffect(() => {
+    setShowFullAnswer(false)
+    setFullAnswerText('')
+    setShowHint(false)
+    setHintText('')
+  }, [currentQuestion])
   return (
     <Card className="max-w-4xl mx-auto">
       <CardHeader>
@@ -123,12 +136,108 @@ export function QuestionCard({
                   className="text-lg p-4"
                 />
                 <Button
-                  onClick={() => handleAnswer(userAnswer)}
+                  onClick={() => {
+                    if (showFullAnswer) {
+                      if (userAnswer.toLowerCase().trim() === fullAnswerText.toLowerCase().trim()) {
+                        handleAnswer(userAnswer)
+                        setShowFullAnswer(false)
+                        setFullAnswerText('')
+                      } else {
+                        alert("Bạn phải nhập đúng đáp án đã hiển thị!")
+                      }
+                    } else {
+                      handleAnswer(userAnswer)
+                    }
+                  }}
                   disabled={!userAnswer.trim()}
                   className="w-full"
                 >
-                  Kiểm tra
+                  {showFullAnswer ? "Xác nhận đáp án" : "Kiểm tra"}
                 </Button>
+                {/* Hint and Don't Know buttons */}
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      if (currentQuestion.hint) {
+                        setShowHint(true)
+                        setHintText(currentQuestion.hint)
+                      } else if (currentQuestion.fullAnswer) {
+                        // Tạo hint từ full answer nếu không có hint
+                        const answer = currentQuestion.fullAnswer
+                        const hint = answer.length > 10 ? answer.substring(0, Math.ceil(answer.length / 2)) + '...' : answer.substring(0, Math.ceil(answer.length * 0.7)) + '...'
+                        setShowHint(true)
+                        setHintText(hint)
+                      }
+                    }}
+                    className="flex-1"
+                    disabled={showHint}
+                  >
+                    💡 Gợi ý
+                  </Button>
+                  {currentQuestion.fullAnswer && (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowFullAnswer(true)
+                        setFullAnswerText(currentQuestion.fullAnswer!)
+                      }}
+                      className="flex-1"
+                      disabled={showFullAnswer}
+                    >
+                      🤔 Không biết
+                    </Button>
+                  )}
+                </div>
+                {/* Show hint when requested */}
+                {showHint && (
+                  <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <p className="text-sm text-yellow-800">
+                          <strong>Gợi ý:</strong> {hintText}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setShowHint(false)
+                          setHintText('')
+                        }}
+                        className="text-yellow-600 hover:text-yellow-800"
+                      >
+                        ✕
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                {/* Show full answer when requested */}
+                {showFullAnswer && (
+                  <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <p className="text-sm text-blue-800">
+                          <strong>Đáp án đầy đủ:</strong> {fullAnswerText}
+                        </p>
+                        <p className="text-xs text-blue-600 mt-2">
+                          Hãy nhập lại đáp án chính xác vào ô trên để tiếp tục.
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setShowFullAnswer(false)
+                          setFullAnswerText('')
+                        }}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        ✕
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
