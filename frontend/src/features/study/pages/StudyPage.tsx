@@ -46,7 +46,10 @@ export default function StudyPage(){
     if ('speechSynthesis' in window) {
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = lang;
-      window.speechSynthesis.speak(utterance);
+      // Add a small delay to prevent cutting off the beginning
+      setTimeout(() => {
+        window.speechSynthesis.speak(utterance);
+      }, 200);
     }
   };
 
