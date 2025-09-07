@@ -36,15 +36,15 @@ export function TaskStatusCards({ events, onView, onDelete, onStatusUpdate, onEd
         </div>
       ) : (
         eventList.map((event) => (
-          <div key={event.id} className={`p-4 rounded-lg border-l-4 ${getEventColor(event.type)}`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
+          <div key={event.id} className={`p-3 sm:p-4 rounded-lg border-l-4 ${getEventColor(event.type)}`}>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
                 <div className="flex-shrink-0">
                   {getEventIcon(event.type)}
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <H4 className="font-semibold">{event.title}</H4>
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <H4 className="font-semibold text-sm sm:text-base">{event.title}</H4>
                     <Badge variant="secondary" className="text-xs">
                       {event.type === 'review' && 'Ôn tập'}
                       {event.type === 'study' && 'Học mới'}
@@ -58,7 +58,7 @@ export function TaskStatusCards({ events, onView, onDelete, onStatusUpdate, onEd
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground mb-1">{event.description}</p>
-                  <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                     <span>{formatTime(event.startTime)} - {formatTime(event.endTime)}</span>
                     <span>📅 {formatDate(event.startTime)}</span>
                     <span>🎯 {event.cardCount > 0 ? `${event.cardCount} thẻ` : 'Tạo mới'}</span>
@@ -66,12 +66,13 @@ export function TaskStatusCards({ events, onView, onDelete, onStatusUpdate, onEd
                   </div>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {updateEventStatus(event) === 'overdue' && (
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => onStatusUpdate?.(event.id, 'completed')}
+                    className="text-xs"
                   >
                     Hoàn thành
                   </Button>
@@ -81,17 +82,18 @@ export function TaskStatusCards({ events, onView, onDelete, onStatusUpdate, onEd
                     size="sm"
                     variant="outline"
                     onClick={() => onStatusUpdate?.(event.id, 'completed')}
+                    className="text-xs"
                   >
                     Hoàn thành
                   </Button>
                 )}
-                <Button size="sm" variant="outline" onClick={() => onEdit?.(event)}>
+                <Button size="sm" variant="outline" onClick={() => onEdit?.(event)} className="text-xs">
                   Chỉnh sửa
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => onView?.(event)}>
+                <Button size="sm" variant="outline" onClick={() => onView?.(event)} className="text-xs">
                   Xem chi tiết
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => onDelete?.(event.id)}>
+                <Button size="sm" variant="outline" onClick={() => onDelete?.(event.id)} className="text-xs">
                   Xóa
                 </Button>
               </div>

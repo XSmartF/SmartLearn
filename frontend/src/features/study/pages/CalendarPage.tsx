@@ -149,16 +149,16 @@ export default function Calendar() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <H1 className="text-3xl font-bold">Lịch học tập</H1>
-          <p className="text-muted-foreground">
+          <H1 className="text-2xl sm:text-3xl font-bold">Lịch học tập</H1>
+          <p className="text-muted-foreground text-sm sm:text-base">
             Quản lý thời gian biểu và sự kiện học tập
           </p>
         </div>
-        <div className="flex items-center space-x-2">
-          <Button onClick={handleAddEvent}>
+        <div className="flex items-center gap-2">
+          <Button onClick={handleAddEvent} size="sm" className="w-full sm:w-auto">
             <Plus className="h-4 w-4 mr-2" />
             Thêm sự kiện
           </Button>
@@ -168,7 +168,7 @@ export default function Calendar() {
       {/* Stats */}
       <Stats stats={stats} />
 
-      <div className="grid gap-6">
+      <div className="grid gap-4 sm:gap-6">
         {/* Calendar */}
         <div className="w-full">
           <CalendarGrid

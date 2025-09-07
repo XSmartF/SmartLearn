@@ -120,10 +120,10 @@ export default function DashboardPage() {
   }, [studyEvents]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-  <H1 className="text-3xl font-bold">Chào mừng trở lại!</H1>
-        <p className="text-muted-foreground">
+  <H1 className="text-2xl sm:text-3xl font-bold">Chào mừng trở lại!</H1>
+        <p className="text-muted-foreground text-sm sm:text-base">
           Tiếp tục hành trình học tập của bạn
         </p>
       </div>
@@ -131,7 +131,7 @@ export default function DashboardPage() {
       {/* Stats Cards */}
       <StatsSection stats={stats} />
 
-      <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {/* Recent Flashcard Sets */}
         <RecentFlashcardsSection
           recentFlashcards={recentFlashcards}

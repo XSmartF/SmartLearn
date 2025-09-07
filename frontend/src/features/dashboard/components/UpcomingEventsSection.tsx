@@ -12,23 +12,23 @@ interface UpcomingEventsSectionProps {
 
 export function UpcomingEventsSection({ upcomingEvents }: UpcomingEventsSectionProps) {
   return (
-    <Card className="col-span-2 sm:col-span-2 md:col-span-2 lg:col-span-1">
+    <Card className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-1">
       <CardHeader>
-        <CardTitle>Lịch nhắc nhở</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-base sm:text-lg">Lịch nhắc nhở</CardTitle>
+        <CardDescription className="text-sm">
           Đừng bỏ lỡ những hoạt động quan trọng
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4">
         {upcomingEvents.map((event, index) => (
-          <div key={event.id || index} className="flex items-start space-x-3">
+          <div key={event.id || index} className="flex items-start gap-3">
             <div className="flex-shrink-0">
               {getEventIcon(event.type)}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center space-x-2 mb-1">
-                <p className="text-sm font-medium">{event.title}</p>
-                <Badge variant="secondary" className="text-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1">
+                <p className="text-sm font-medium truncate">{event.title}</p>
+                <Badge variant="secondary" className="text-xs w-fit">
                   {event.type === 'review' && 'Ôn tập'}
                   {event.type === 'study' && 'Học mới'}
                   {event.type === 'deadline' && 'Deadline'}

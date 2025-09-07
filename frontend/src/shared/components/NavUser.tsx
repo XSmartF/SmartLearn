@@ -32,13 +32,13 @@ interface User {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <button className={cn('flex w-full items-center gap-3 rounded-md px-2 py-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-left text-sm')}> 
-          <div className="relative h-9 w-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-semibold overflow-hidden">
-            {user.avatarUrl ? <Avatar src={user.avatarUrl} alt={user.displayName || user.email} size={36} className="h-full w-full" fallback={initials} /> : initials}
+        <button className={cn('flex w-full items-center gap-2 sm:gap-3 rounded-md px-2 py-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-left text-sm')}>
+          <div className="relative h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-semibold overflow-hidden">
+            {user.avatarUrl ? <Avatar src={user.avatarUrl} alt={user.displayName || user.email} size={32} className="h-full w-full" fallback={initials} /> : initials}
           </div>
           <div className="flex min-w-0 flex-col">
-            <span className="font-medium truncate">{user.displayName || user.email}</span>
-            <span className="text-xs text-muted-foreground truncate">{user.email}</span>
+            <span className="font-medium truncate text-xs sm:text-sm">{user.displayName || user.email}</span>
+            <span className="text-xs text-muted-foreground truncate hidden sm:block">{user.email}</span>
           </div>
           <span className="ml-auto text-xs text-muted-foreground">{open ? '▲' : '▼'}</span>
         </button>

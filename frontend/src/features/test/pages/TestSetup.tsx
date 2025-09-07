@@ -145,23 +145,23 @@ export default function TestSetup() {
   // (moved derived values & effect above)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center gap-2 sm:gap-4">
         <Link to={id ? getLibraryDetailPath(id) : '#'}>
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
         <div>
-          <H1 className="text-3xl font-bold">Cài đặt kiểm tra</H1>
+          <H1 className="text-2xl sm:text-3xl font-bold">Cài đặt kiểm tra</H1>
           <p className="text-muted-foreground text-sm">
             {loadingLib ? 'Đang tải...' : `${libraryTitle} • ${cardCountState} thẻ`}
           </p>
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid gap-4 sm:gap-6 sm:grid-cols-1 md:grid-cols-2">
         {/* Question Type Selection (Multi) */}
         <Card className="h-fit">
           <CardHeader>

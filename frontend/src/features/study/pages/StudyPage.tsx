@@ -9,7 +9,6 @@ import { idbGetItem, idbSetItem } from '@/shared/lib/indexedDB'
 import { useAuth } from '@/shared/hooks/useAuthRedux'
 import { getLibraryDetailPath, ROUTES } from '@/shared/constants/routes'
 import {
-  StudyBreadcrumb,
   StudyHeader,
   QuestionCard,
   StatsCard,
@@ -95,8 +94,7 @@ export default function StudyPage(){
   if(!currentQuestion) return (<div className='py-12 text-center'>Đang khởi tạo...</div>);
 
   return (
-    <div className='space-y-6'>
-      <StudyBreadcrumb />
+    <div className='space-y-3 sm:space-y-4 lg:space-y-6 sm:px-4 lg:px-0 '>
       <StudyHeader
         library={library}
         libraryId={libraryId}

@@ -57,16 +57,16 @@ export function CalendarGrid({
   return (
     <>
       <TooltipProvider>
-        <Card className="lg:col-span-2">
+        <Card className="w-full">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-foreground dark:text-foreground">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <CardTitle className="text-base sm:text-lg text-foreground dark:text-foreground">
                 {currentDate.toLocaleDateString('vi-VN', {
                   year: 'numeric',
                   month: 'long'
                 })}
               </CardTitle>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
@@ -78,6 +78,7 @@ export function CalendarGrid({
                   variant="outline"
                   size="sm"
                   onClick={() => onCurrentDateChange(new Date())}
+                  className="text-xs sm:text-sm"
                 >
                   Hôm nay
                 </Button>
@@ -94,7 +95,7 @@ export function CalendarGrid({
           <CardContent>
             <div className="grid grid-cols-7 gap-1 mb-4">
               {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'].map((day) => (
-                <div key={day} className="p-2 text-center text-sm sm:text-xs font-medium text-muted-foreground dark:text-muted-foreground">
+                <div key={day} className="p-1 sm:p-2 text-center text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                   {day}
                 </div>
               ))}

@@ -54,9 +54,9 @@ export function QuestionCard({
     setHintText('')
   }, [currentQuestion])
   return (
-    <Card className="max-w-4xl mx-auto">
+    <Card className="w-full">
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0">
           <div className="flex items-center space-x-3">
             {currentQuestion.mode === "MULTIPLE_CHOICE" ? (
               <BookOpen className="h-6 w-6 text-green-600" />
@@ -100,30 +100,30 @@ export function QuestionCard({
       <CardContent className="space-y-6">
         {/* Question */}
         <div className="text-center">
-          <H2 className="text-2xl font-bold mb-4">{currentQuestion.prompt}</H2>
+          <H2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">{currentQuestion.prompt}</H2>
         </div>
 
         {/* Answer Section */}
         {!showResult ? (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {currentQuestion.mode === "MULTIPLE_CHOICE" ? (
               // Multiple Choice
-              <div className="grid gap-3">
+              <div className="grid gap-2 sm:gap-3 grid-cols-1 sm:grid-cols-2">
                 {currentQuestion.options.map((option: string, index: number) => (
                   <Button
                     key={index}
                     variant="outline"
-                    className="p-4 h-auto text-left justify-start"
+                    className="p-3 sm:p-4 h-auto text-left justify-start text-sm sm:text-base"
                     onClick={() => handleAnswer(option)}
                   >
-                    <span className="font-semibold mr-3">{String.fromCharCode(65 + index)}.</span>
+                    <span className="font-semibold mr-2 sm:mr-3">{String.fromCharCode(65 + index)}.</span>
                     {option}
                   </Button>
                 ))}
               </div>
             ) : (
               // Typing
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <Input
                   placeholder="Nhập câu trả lời..."
                   value={userAnswer}
@@ -133,7 +133,7 @@ export function QuestionCard({
                       handleAnswer(userAnswer)
                     }
                   }}
-                  className="text-lg p-4"
+                  className="text-base sm:text-lg p-3 sm:p-4"
                 />
                 <Button
                   onClick={() => {
@@ -155,7 +155,7 @@ export function QuestionCard({
                   {showFullAnswer ? "Xác nhận đáp án" : "Kiểm tra"}
                 </Button>
                 {/* Hint and Don't Know buttons */}
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Button
                     variant="outline"
                     onClick={() => {

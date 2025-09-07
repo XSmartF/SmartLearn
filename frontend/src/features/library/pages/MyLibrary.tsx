@@ -136,10 +136,10 @@ export default function MyLibrary() {
   ) : '';
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-  <H1 className="text-3xl font-bold">Thư viện của tôi</H1>
-        <p className="text-muted-foreground">
+  <H1 className="text-2xl sm:text-3xl font-bold">Thư viện của tôi</H1>
+        <p className="text-muted-foreground text-sm sm:text-base">
           Quản lý và theo dõi tiến độ học flashcard của bạn
         </p>
       </div>
@@ -149,10 +149,11 @@ export default function MyLibrary() {
         ownedCount={libraries.length}
         sharedCount={shared.length}
         favoriteCount={favorites.length}
+        totalCards={libraries.reduce((total, lib) => total + (lib.cardCount || 0), 0)}
       />
 
       {/* Controls */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <LibraryFilters
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -176,7 +177,7 @@ export default function MyLibrary() {
 
       {/* Content */}
       <Tabs defaultValue="all" className="space-y-4">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="all">Tất cả ({filteredAll.length})</TabsTrigger>
           <TabsTrigger value="favorites">Yêu thích ({favorites.length})</TabsTrigger>
           <TabsTrigger value="shared">Được chia sẻ ({shared.length})</TabsTrigger>
@@ -184,7 +185,7 @@ export default function MyLibrary() {
 
         <TabsContent value="all" className="space-y-4">
           {viewMode === 'grid' ? (
-            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredAll.map(flashcard => {
                 const isFav = favoriteIds.includes(flashcard.id);
                 const role = sharedRoleMap.get(flashcard.id);

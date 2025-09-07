@@ -32,17 +32,17 @@ export function TodayEvents({ events, onView, onDelete, onStatusUpdate }: TodayE
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {events.map((event) => (
-            <div key={event.id} className={`p-4 rounded-lg border-l-4 ${getEventColor(event.type)}`}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
+            <div key={event.id} className={`p-3 sm:p-4 rounded-lg border-l-4 ${getEventColor(event.type)}`}>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
                   <div className="flex-shrink-0">
                     {getEventIcon(event.type)}
                   </div>
-                  <div>
-                    <div className="flex items-center space-x-2 mb-1">
-                      <H4 className="font-semibold">{event.title}</H4>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-1 sm:gap-2 mb-1">
+                      <H4 className="font-semibold text-sm sm:text-base">{event.title}</H4>
                       <Badge variant="secondary" className="text-xs">
                         {event.type === 'review' && 'Ôn tập'}
                         {event.type === 'study' && 'Học mới'}

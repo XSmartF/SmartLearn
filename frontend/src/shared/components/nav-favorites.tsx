@@ -45,7 +45,7 @@ function NavFavoritesBase({
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarGroupLabel>Bộ flashcard yêu thích</SidebarGroupLabel>
+      <SidebarGroupLabel className="text-xs sm:text-sm">Bộ flashcard yêu thích</SidebarGroupLabel>
       <SidebarMenu>
         {loading && favorites.length === 0 && (
           <SidebarMenuItem>

@@ -64,15 +64,15 @@ export default function Notifications() {
   const markAllAsRead = async () => { try { await userRepository.markAllNotificationsRead(); } catch {/* ignore */} }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <H1 className="text-3xl font-bold">Thông báo</H1>
-          <p className="text-muted-foreground">
+          <H1 className="text-2xl sm:text-3xl font-bold">Thông báo</H1>
+          <p className="text-muted-foreground text-sm sm:text-base">
             Theo dõi các hoạt động và cập nhật mới nhất
           </p>
         </div>
-        <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:gap-2">
           <Button variant="outline" onClick={markAllAsRead}>
             <Check className="h-4 w-4 mr-2" />
             Đánh dấu tất cả đã đọc
@@ -91,12 +91,12 @@ export default function Notifications() {
       <NotificationSearch searchQuery={searchQuery} onSearchChange={setSearchQuery} />
 
     {/* Notification Tabs */}
-      <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
+      <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4 sm:space-y-6">
         <div className="overflow-x-auto">
           <TabsList className="inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground min-w-max">
-            <TabsTrigger value="all">
+            <TabsTrigger value="all" className="text-xs sm:text-sm">
               Tất cả
-              <span className="ml-2 bg-muted text-muted-foreground rounded-full px-2 py-1 text-xs">{notifications.length}</span>
+              <span className="ml-1 sm:ml-2 bg-muted text-muted-foreground rounded-full px-1 sm:px-2 py-1 text-xs">{notifications.length}</span>
             </TabsTrigger>
             <TabsTrigger value="unread">
               Chưa đọc

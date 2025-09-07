@@ -13,11 +13,11 @@ interface CardProgressCardProps {
 
 export function CardProgressCard({ engine, showCardAnswers, setShowCardAnswers }: CardProgressCardProps) {
   return (
-    <Card className="max-w-4xl mx-auto">
+    <Card className="w-full">
       <CardHeader>
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between flex-wrap">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" />
             Chi tiết tiến độ từng thẻ
           </CardTitle>
           <div className="flex items-center gap-2">
@@ -25,6 +25,7 @@ export function CardProgressCard({ engine, showCardAnswers, setShowCardAnswers }
               variant="outline"
               size="sm"
               onClick={() => setShowCardAnswers(!showCardAnswers)}
+              className="text-xs sm:text-sm"
             >
               {showCardAnswers ? 'Ẩn đáp án' : 'Hiện đáp án'}
             </Button>
@@ -32,16 +33,16 @@ export function CardProgressCard({ engine, showCardAnswers, setShowCardAnswers }
         </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {/* Using getCardProgress() */}
           {engine.getCardProgress().map((cardProgress) => {
             const currentState = engine.getCardState(cardProgress.id) // Using getCardState()
             return (
-              <div key={cardProgress.id} className="border rounded-lg p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex-1">
-                    <div className="font-semibold">{cardProgress.front}</div>
-                    <div className="text-sm text-muted-foreground">
+              <div key={cardProgress.id} className="border rounded-lg p-3 sm:p-4">
+                <div className="flex justify-between items-start mb-2 gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-sm sm:text-base truncate">{cardProgress.front}</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">
                       {showCardAnswers ? (
                         cardProgress.back
                       ) : (

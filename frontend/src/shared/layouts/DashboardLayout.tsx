@@ -14,8 +14,8 @@ export default function DashboardLayout() {
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
-        <header className="flex h-14 shrink-0 items-center gap-2">
-          <div className="flex flex-1 items-center gap-2 px-3">
+        <header className="sticky top-0 z-50 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-2 sm:px-3">
+          <div className="flex flex-1 items-center gap-2 px-1 sm:px-0">
             <SidebarTrigger />
             <Separator
               orientation="vertical"
@@ -23,11 +23,11 @@ export default function DashboardLayout() {
             />
             <DynamicBreadcrumb />
           </div>
-          <div className="ml-auto px-3">
+          <div className="ml-auto px-1 sm:px-3">
             <NavActions />
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 px-4 py-6">
+        <div className="flex flex-1 flex-col gap-4 px-2 sm:px-4 py-4 sm:py-6">
           <div className="max-w-7xl mx-auto w-full">
             <Outlet />
           </div>

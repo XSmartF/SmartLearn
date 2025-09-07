@@ -42,35 +42,35 @@ export const FlashcardCard: React.FC<FlashcardCardProps> = ({
   return (
     <Link to={getLibraryDetailPath(flashcard.id)}>
       <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-            <div className="space-y-1 flex-1">
-              <CardTitle className="text-lg group-hover:text-blue-600 transition-colors">
+        <CardHeader className="pb-2 sm:pb-3">
+          <div className="flex items-start justify-between gap-2">
+            <div className="space-y-1 flex-1 min-w-0">
+              <CardTitle className="text-base sm:text-lg group-hover:text-blue-600 transition-colors line-clamp-2">
                 {flashcard.title}
               </CardTitle>
-              <div className="flex gap-2 items-center">
+              <div className="flex flex-wrap gap-1 sm:gap-2 items-center">
                 {role ? (
-                  <Badge variant="outline" className="text-[10px] px-1">Chia sẻ • {role === 'viewer' ? 'Viewer' : 'Contributor'}</Badge>
+                  <Badge variant="outline" className="text-[9px] sm:text-[10px] px-1">Chia sẻ • {role === 'viewer' ? 'Viewer' : 'Contributor'}</Badge>
                 ) : (
-                  <Badge variant="secondary" className="text-[10px] px-1">Sở hữu</Badge>
+                  <Badge variant="secondary" className="text-[9px] sm:text-[10px] px-1">Sở hữu</Badge>
                 )}
                 <div className="flex items-center gap-1">
                   {owner?.avatarUrl ? (
-                    <Avatar src={owner.avatarUrl} alt={authorLabel} size={16} className="w-4 h-4" fallback={authorLabel.slice(0,1)} />
+                    <Avatar src={owner.avatarUrl} alt={authorLabel} size={16} className="w-3 h-3 sm:w-4 sm:h-4" fallback={authorLabel.slice(0,1)} />
                   ) : (
-                    <div className="w-4 h-4 rounded-full bg-muted text-[8px] flex items-center justify-center uppercase">
+                    <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-muted text-[7px] sm:text-[8px] flex items-center justify-center uppercase">
                       {authorLabel.slice(0, 1)}
                     </div>
                   )}
-                  <span className="text-[10px] text-muted-foreground">{authorLabel}</span>
+                  <span className="text-[9px] sm:text-[10px] text-muted-foreground truncate">{authorLabel}</span>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground">{flashcard.description?.slice(0, 60)}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{flashcard.description?.slice(0, 60)}</p>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <MoreHorizontal className="h-4 w-4" />
+                <Button variant="ghost" size="sm" className="h-6 w-6 sm:h-8 sm:w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                  <MoreHorizontal className="h-3 w-3 sm:h-4 sm:w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -90,13 +90,13 @@ export const FlashcardCard: React.FC<FlashcardCardProps> = ({
             </DropdownMenu>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-2 flex-wrap">
-            {(flashcard.tags || []).slice(0, 3).map(t => <Badge key={t} variant="secondary">{t}</Badge>)}
+        <CardContent className="space-y-3 sm:space-y-4">
+          <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+            {(flashcard.tags || []).slice(0, 3).map(t => <Badge key={t} variant="secondary" className="text-xs">{t}</Badge>)}
           </div>
 
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm text-muted-foreground">
+          <div className="space-y-1 sm:space-y-2">
+            <div className="flex justify-between text-xs sm:text-sm text-muted-foreground">
               <span>{flashcard.cardCount} thẻ</span>
               <span>{flashcard.visibility}</span>
             </div>

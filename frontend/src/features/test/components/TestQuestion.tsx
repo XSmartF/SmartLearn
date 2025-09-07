@@ -44,7 +44,7 @@ export default function TestQuestion({
             value={userAnswer}
             onChange={(e) => onAnswerSelect(e.target.value)}
             placeholder="Nhập câu trả lời của bạn..."
-            className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
             disabled={showAnswer}
           />
         </div>
@@ -52,7 +52,7 @@ export default function TestQuestion({
     }
 
     return (
-      <div className="space-y-2">
+      <div className="space-y-2 sm:space-y-3">
         {question.options?.map((option, index) => {
           const isSelected = userAnswer === option
           const isCorrect = showAnswer && option === question.correctAnswer
@@ -62,14 +62,14 @@ export default function TestQuestion({
             <Button
               key={index}
               variant={isSelected ? "default" : "outline"}
-              className={`w-full justify-start text-left p-4 h-auto ${
+              className={`w-full justify-start text-left p-3 sm:p-4 h-auto text-sm sm:text-base ${
                 isCorrect ? 'bg-green-100 border-green-500 text-green-800' :
                 isIncorrect ? 'bg-red-100 border-red-500 text-red-800' : ''
               }`}
               onClick={() => !showAnswer && onAnswerSelect(option)}
               disabled={showAnswer}
             >
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2 sm:space-x-3">
                 <span className="font-medium">{String.fromCharCode(65 + index)}.</span>
                 <span className="flex-1">{option}</span>
                 {isCorrect && <CheckCircle className="h-4 w-4 text-green-600" />}
@@ -85,17 +85,17 @@ export default function TestQuestion({
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <Badge variant="secondary">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
+          <Badge variant="secondary" className="text-xs">
             {getQuestionTypeLabel(question.type)}
           </Badge>
           {showAnswer && (
-            <Badge variant={question.isCorrect ? "default" : "destructive"}>
+            <Badge variant={question.isCorrect ? "default" : "destructive"} className="text-xs">
               {question.isCorrect ? 'Đúng' : 'Sai'}
             </Badge>
           )}
         </div>
-        <CardTitle className="text-lg leading-relaxed">
+        <CardTitle className="text-base sm:text-lg leading-relaxed">
           {question.question}
         </CardTitle>
       </CardHeader>

@@ -45,10 +45,10 @@ export default function CreateLibraryDialog({ onCreateLibrary }: CreateLibraryDi
           Tạo thư viện
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Tạo thư viện mới</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-lg sm:text-xl">Tạo thư viện mới</DialogTitle>
+          <DialogDescription className="text-sm">
             Tạo một thư viện flashcard mới để bắt đầu học tập.
           </DialogDescription>
         </DialogHeader>
@@ -83,11 +83,11 @@ export default function CreateLibraryDialog({ onCreateLibrary }: CreateLibraryDi
             </Select>
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>
+        <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:gap-0">
+          <Button variant="outline" onClick={() => setOpen(false)} className="w-full sm:w-auto">
             Hủy
           </Button>
-          <Button onClick={handleCreate} disabled={submitting || !title.trim()}>
+          <Button onClick={handleCreate} disabled={submitting || !title.trim()} className="w-full sm:w-auto">
             {submitting ? 'Đang tạo...' : 'Tạo thư viện'}
           </Button>
         </DialogFooter>

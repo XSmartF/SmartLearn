@@ -26,7 +26,7 @@ export default function TestHeader({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       <div className="flex items-center justify-between">
         <Link to={`/dashboard/library/${libraryTitle ? 'library-id' : ''}`}>
           <Button variant="ghost" size="icon">
@@ -35,14 +35,14 @@ export default function TestHeader({
         </Link>
 
         <div className="text-center">
-          <H1 className="text-2xl font-bold">Kiểm tra: {libraryTitle}</H1>
+          <H1 className="text-xl sm:text-2xl font-bold">Kiểm tra: {libraryTitle}</H1>
           {!testCompleted && (
-            <div className="flex items-center justify-center space-x-4 mt-2">
-              <Badge variant="outline">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 mt-2">
+              <Badge variant="outline" className="text-xs">
                 Câu {currentQuestionIndex + 1} / {totalQuestions}
               </Badge>
               {timeLeft !== null && (
-                <Badge variant="outline" className="flex items-center space-x-1">
+                <Badge variant="outline" className="flex items-center space-x-1 text-xs">
                   <Clock className="h-3 w-3" />
                   <span>{formatTime(timeLeft)}</span>
                 </Badge>

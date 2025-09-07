@@ -41,11 +41,11 @@ export function EventList({ events, onView, onDelete, onStatusUpdate }: EventLis
           5 hoạt động gần nhất
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4">
         {events.length === 0 ? (
-          <div className="text-center py-8">
-            <CalendarIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">Không có sự kiện nào sắp tới</p>
+          <div className="text-center py-6 sm:py-8">
+            <CalendarIcon className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground text-sm sm:text-base">Không có sự kiện nào sắp tới</p>
           </div>
         ) : (
           events.map((event) => (

@@ -97,12 +97,12 @@ export function EventDialog({ isOpen, onClose, onSave, editingEvent, viewOnly = 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">
             {editingEvent ? 'Chỉnh sửa sự kiện' : 'Thêm sự kiện mới'}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm">
             {editingEvent
               ? 'Cập nhật thông tin sự kiện học tập'
               : 'Tạo sự kiện mới cho lịch học tập của bạn'
@@ -110,11 +110,11 @@ export function EventDialog({ isOpen, onClose, onSave, editingEvent, viewOnly = 
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Tiêu đề</Label>
+            <Label htmlFor="title" className="text-sm">Tiêu đề</Label>
             {viewOnly ? (
-              <div className="p-2 bg-muted rounded">{formData.title}</div>
+              <div className="p-2 bg-muted rounded text-sm">{formData.title}</div>
             ) : (
               <Input
                 id="title"
@@ -127,21 +127,22 @@ export function EventDialog({ isOpen, onClose, onSave, editingEvent, viewOnly = 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Mô tả</Label>
+            <Label htmlFor="description" className="text-sm">Mô tả</Label>
             {viewOnly ? (
-              <div className="p-2 bg-muted rounded min-h-[80px]">{formData.description}</div>
+              <div className="p-2 bg-muted rounded min-h-[60px] sm:min-h-[80px] text-sm">{formData.description}</div>
             ) : (
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 placeholder="Mô tả chi tiết về sự kiện..."
-                rows={3}
+                rows={2}
+                className="resize-none"
               />
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
               <Label htmlFor="startTime">Thời gian bắt đầu</Label>
               {viewOnly ? (

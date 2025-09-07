@@ -58,7 +58,7 @@ export function DynamicBreadcrumb({
   }
 
   return (
-    <Breadcrumb>
+    <Breadcrumb className="hidden sm:block">
       <BreadcrumbList>
         {displayCrumbs.map((c, idx) => {
           const isFirst = idx === 0

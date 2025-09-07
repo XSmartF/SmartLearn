@@ -332,31 +332,31 @@ export default function Test() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center space-x-2 sm:space-x-4">
           <Link to={id ? getTestSetupPath(id) : '#'}>
             <Button variant="ghost" size="icon">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
           <div>
-            <H1 className="text-2xl font-bold">Kiểm tra</H1>
-            <p className="text-muted-foreground">{libraryTitle}</p>
+            <H1 className="text-xl sm:text-2xl font-bold">Kiểm tra</H1>
+            <p className="text-muted-foreground text-sm">{libraryTitle}</p>
           </div>
         </div>
         
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4">
           {timeLeft !== null && (
             <div className="flex items-center space-x-2">
               <Clock className="h-4 w-4" />
-              <span className={`font-mono ${timeLeft < 60 ? 'text-red-600' : ''}`}>
+              <span className={`font-mono text-sm ${timeLeft < 60 ? 'text-red-600' : ''}`}>
                 {formatTime(timeLeft)}
               </span>
             </div>
           )}
-          <Badge variant="outline">
+          <Badge variant="outline" className="text-xs">
             {currentQuestionIndex + 1} / {questions.length}
           </Badge>
         </div>
@@ -370,7 +370,7 @@ export default function Test() {
 
       {/* Question Navigator */}
       {questions.length > 1 && (
-        <div className="flex flex-wrap gap-2 border rounded-md p-3 bg-muted/30">
+        <div className="flex flex-wrap gap-1 sm:gap-2 border rounded-md p-2 sm:p-3 bg-muted/30">
           {questions.map((_, i) => {
             const rawAnswer = userAnswers[i]
             const answered = rawAnswer !== undefined && rawAnswer !== ''
@@ -381,7 +381,7 @@ export default function Test() {
                 type="button"
                 onClick={() => setCurrentQuestionIndex(i)}
                 variant={answered ? 'default' : 'outline'}
-                className={`w-8 h-8 p-0 text-xs font-medium flex items-center justify-center ${isCurrent ? 'ring-2 ring-primary ring-offset-1' : ''}`}
+                className={`w-7 h-7 sm:w-8 sm:h-8 p-0 text-xs font-medium flex items-center justify-center ${isCurrent ? 'ring-2 ring-primary ring-offset-1' : ''}`}
                 aria-label={`Tới câu ${i + 1}${answered ? ' (đã trả lời)' : ''}`}
               >
                 {i + 1}

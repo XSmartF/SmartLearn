@@ -26,34 +26,39 @@ export default function TestNavigation({
   const isLastQuestion = currentQuestionIndex === totalQuestions - 1
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-0">
       <Button
         variant="outline"
         onClick={onPrevious}
         disabled={isFirstQuestion}
+        className="flex-1 sm:flex-none"
       >
         <ChevronLeft className="h-4 w-4 mr-2" />
-        Câu trước
+        <span className="hidden sm:inline">Câu trước</span>
+        <span className="sm:hidden">Trước</span>
       </Button>
 
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center justify-center space-x-2">
         {!showAnswer ? (
-          <Button onClick={onShowAnswer}>
-            Xem đáp án
+          <Button onClick={onShowAnswer} className="flex-1 sm:flex-none">
+            <span className="hidden sm:inline">Xem đáp án</span>
+            <span className="sm:hidden">Đáp án</span>
           </Button>
         ) : !isLastQuestion ? (
-          <Button onClick={onNext}>
-            Câu tiếp
+          <Button onClick={onNext} className="flex-1 sm:flex-none">
+            <span className="hidden sm:inline">Câu tiếp</span>
+            <span className="sm:hidden">Tiếp</span>
             <ChevronRight className="h-4 w-4 ml-2" />
           </Button>
         ) : (
           <Button
             onClick={onFinish}
             disabled={!canFinish}
-            className="bg-green-600 hover:bg-green-700"
+            className="bg-green-600 hover:bg-green-700 flex-1 sm:flex-none"
           >
             <CheckCircle className="h-4 w-4 mr-2" />
-            Hoàn thành
+            <span className="hidden sm:inline">Hoàn thành</span>
+            <span className="sm:hidden">Xong</span>
           </Button>
         )}
       </div>

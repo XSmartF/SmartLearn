@@ -47,7 +47,7 @@ export function StudyHeader({
   handleResetSession
 }: StudyHeaderProps) {
   return (
-    <div className='flex items-center justify-between'>
+    <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0'>
       <div className='flex items-center space-x-4'>
         <Link to={getLibraryDetailPath(libraryId)}>
           <Button variant='ghost' size='icon'>
@@ -55,7 +55,7 @@ export function StudyHeader({
           </Button>
         </Link>
         <div>
-          <H1 className='text-3xl font-bold'>Học với {library.title}</H1>
+          <H1 className='text-2xl sm:text-3xl font-bold'>Học với {library.title}</H1>
           <p className='text-muted-foreground'>
             Thuật toán thích ứng - {currentQuestion?.mode === 'MULTIPLE_CHOICE' ? 'Trắc nghiệm' : 'Đánh máy'}
           </p>
@@ -67,12 +67,12 @@ export function StudyHeader({
             <Settings className='h-4 w-4'/>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className='w-72' align='end'>
-          <div className='space-y-4'>
+        <PopoverContent className='w-72 sm:w-80' align='end'>
+          <div className='space-y-3 sm:space-y-4'>
             <div className='space-y-1'>
               <div className='text-sm font-medium'>Tùy chọn học tập</div>
             </div>
-            <div className='space-y-3'>
+            <div className='space-y-2 sm:space-y-3'>
               <Switch
                 checked={allowMC}
                 onCheckedChange={v => setAllowMC(!!v)}
@@ -107,7 +107,7 @@ export function StudyHeader({
                 </Select>
               </div>
             </div>
-            <div className='pt-2 border-t space-y-2'>
+            <div className='pt-2 border-t space-y-2 sm:space-y-3'>
               <Button
                 variant='outline'
                 size='sm'
