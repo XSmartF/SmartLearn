@@ -3,7 +3,7 @@ import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Badge } from '@/shared/components/ui/badge'
 import { H2, H3 } from '@/shared/components/ui/typography'
-import { BookOpen, Keyboard, Check, X } from 'lucide-react'
+import { BookOpen, Keyboard, Check, X, Volume2 } from 'lucide-react'
 import type { Question, Result, LearnEngine as LearnEngineType } from '@/features/study/utils/learnEngine'
 import type { Card as LearnCard } from '@/features/study/utils/learnEngine'
 
@@ -18,6 +18,9 @@ interface QuestionCardProps {
   selectedOptionIndex: number | null
   correctOptionIndex: number | null
   autoAdvance: boolean
+  autoRead: boolean
+  readLanguage: string
+  speakQuestion: (text: string, lang: string) => void
   handleAnswer: (answer: string | number) => void
   handleNext: () => void
 }
@@ -33,6 +36,9 @@ export function QuestionCard({
   selectedOptionIndex,
   correctOptionIndex,
   autoAdvance,
+  autoRead,
+  readLanguage,
+  speakQuestion,
   handleAnswer,
   handleNext
 }: QuestionCardProps) {
@@ -56,6 +62,14 @@ export function QuestionCard({
             if (cardState) {
               return (
                 <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => speakQuestion(currentQuestion.prompt, readLanguage)}
+                    title="Đọc câu hỏi"
+                  >
+                    <Volume2 className="h-4 w-4" />
+                  </Button>
                   <Badge variant="outline">
                     Thành thạo: {cardState.mastery}/5
                   </Badge>

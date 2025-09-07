@@ -2,6 +2,7 @@ import { Button } from "@/shared/components/ui/button"
 import { Checkbox } from '@/shared/components/ui/checkbox'
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/shared/components/ui/table'
 import { Badge } from "@/shared/components/ui/badge"
+import { Volume2 } from "lucide-react"
 import type { Card as EngineCard } from '@/shared/lib/models'
 
 interface UnifiedCardsProps {
@@ -14,6 +15,8 @@ interface UnifiedCardsProps {
   onEdit: (card: EngineCard) => void;
   onDeleteSingle: (id: string) => void;
   canModify: boolean;
+  readLanguage?: string;
+  speakQuestion?: (text: string, lang: string) => void;
 }
 
 export function UnifiedCards({
@@ -25,7 +28,9 @@ export function UnifiedCards({
   onSelectAll,
   onEdit,
   onDeleteSingle,
-  canModify
+  canModify,
+  readLanguage = 'en-US',
+  speakQuestion
 }: UnifiedCardsProps) {
   interface CSLite { id: string; mastery?: number; seenCount?: number; wrongCount?: number; nextDue?: number }
   const map = new Map<string, CSLite>();
@@ -71,6 +76,7 @@ export function UnifiedCards({
                   <TableCell className="p-2 text-center">{st?.wrongCount ?? '-'}</TableCell>
                   <TableCell className="p-2 text-center">{st?.nextDue ?? '-'}</TableCell>
                   <TableCell className="p-2 text-right space-x-2">
+                    {speakQuestion && <Button variant="ghost" size="sm" onClick={() => speakQuestion(c.front, readLanguage)}><Volume2 className="h-4 w-4" /></Button>}
                     <Button variant="outline" size="sm" onClick={()=>onEdit(c)} disabled={!canModify}>Sửa</Button>
                     <Button variant="destructive" size="sm" onClick={()=>onDeleteSingle(c.id)} disabled={!canModify}>Xóa</Button>
                   </TableCell>
@@ -106,6 +112,7 @@ export function UnifiedCards({
               {typeof st?.nextDue === 'number' && <Badge variant="outline" className="px-1 py-0">D{st.nextDue}</Badge>}
             </div>
             <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition">
+              {speakQuestion && <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => speakQuestion(c.front, readLanguage)}><Volume2 className="h-4 w-4" /></Button>}
               <Button size="sm" variant="outline" className="h-7 px-2" onClick={()=>onEdit(c)} disabled={!canModify}>Sửa</Button>
               <Button size="sm" variant="destructive" className="h-7 px-2" onClick={()=>onDeleteSingle(c.id)} disabled={!canModify}>Xóa</Button>
             </div>

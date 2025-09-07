@@ -28,19 +28,30 @@ interface FlashCardProps {
   cards: FlashCardData[]
   onCardUpdate?: (cardId: string, status: 'easy' | 'medium' | 'hard') => void
   onComplete?: () => void
+  readLanguage?: string
 }
 
-export default function FlashCard({ cards, onCardUpdate, onComplete }: FlashCardProps) {
+export default function FlashCard({ cards, onCardUpdate, onComplete, readLanguage = 'en-US' }: FlashCardProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isFlipped, setIsFlipped] = useState(false)
-  const [showAnswer, setShowAnswer] = useState(false)
 
   const currentCard = cards[currentIndex]
+
+  const speakQuestion = (text: string) => {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = readLanguage;
+      // Add a small delay to prevent cutting off the beginning
+      setTimeout(() => {
+        window.speechSynthesis.speak(utterance);
+      }, 200);
+    }
+  }
 
   if (!currentCard) {
     return (
       <div className="text-center py-8">
-  <H3 className="text-lg font-semibold mb-2">Không có thẻ nào để học</H3>
+        <H3 className="text-lg font-semibold mb-2">Không có thẻ nào để học</H3>
         <p className="text-muted-foreground">Thêm thẻ mới để bắt đầu học</p>
       </div>
     )
@@ -48,14 +59,12 @@ export default function FlashCard({ cards, onCardUpdate, onComplete }: FlashCard
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped)
-    setShowAnswer(!showAnswer)
   }
 
   const handleNext = () => {
     if (currentIndex < cards.length - 1) {
       setCurrentIndex(currentIndex + 1)
       setIsFlipped(false)
-      setShowAnswer(false)
     } else {
       onComplete?.()
     }
@@ -65,7 +74,6 @@ export default function FlashCard({ cards, onCardUpdate, onComplete }: FlashCard
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1)
       setIsFlipped(false)
-      setShowAnswer(false)
     }
   }
 
@@ -110,7 +118,7 @@ export default function FlashCard({ cards, onCardUpdate, onComplete }: FlashCard
         </Badge>
         
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" onClick={() => speakQuestion(isFlipped ? currentCard.back : currentCard.front)}>
             <Volume2 className="h-4 w-4" />
           </Button>
           <Button variant="ghost" size="icon">
@@ -120,25 +128,21 @@ export default function FlashCard({ cards, onCardUpdate, onComplete }: FlashCard
       </div>
 
       {/* Flash Card */}
-      <div className="relative h-80">
+      <div className="relative h-80" style={{ perspective: '1000px' }}>
         <Card 
-          className={`absolute inset-0 cursor-pointer transition-all duration-700 transform-gpu ${
-            isFlipped ? 'rotate-y-180' : ''
-          }`}
+          className="absolute inset-0 cursor-pointer transition-all duration-700"
           style={{ 
             transformStyle: 'preserve-3d',
-            perspective: '1000px'
+            transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
           }}
           onClick={handleFlip}
         >
           {/* Front Side */}
           <CardContent 
-            className={`h-full flex items-center justify-center p-8 ${
-              isFlipped ? 'opacity-0' : 'opacity-100'
-            }`}
+            className="absolute inset-0 h-full flex items-center justify-center p-8"
             style={{ 
               backfaceVisibility: 'hidden',
-              transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
+              transform: 'rotateY(0deg)'
             }}
           >
             <div className="text-center space-y-4">
@@ -156,12 +160,10 @@ export default function FlashCard({ cards, onCardUpdate, onComplete }: FlashCard
 
           {/* Back Side */}
           <CardContent 
-            className={`absolute inset-0 h-full flex items-center justify-center p-8 bg-blue-50 ${
-              isFlipped ? 'opacity-100' : 'opacity-0'
-            }`}
+            className="absolute inset-0 h-full flex items-center justify-center p-8 bg-blue-50"
             style={{ 
               backfaceVisibility: 'hidden',
-              transform: isFlipped ? 'rotateY(0deg)' : 'rotateY(-180deg)'
+              transform: 'rotateY(180deg)'
             }}
           >
             <div className="text-center space-y-4">
@@ -206,41 +208,39 @@ export default function FlashCard({ cards, onCardUpdate, onComplete }: FlashCard
           onClick={handleNext}
           disabled={currentIndex === cards.length - 1}
         >
-          Sau
+          Tiếp
           <ChevronRight className="h-4 w-4 ml-2" />
         </Button>
       </div>
 
-      {/* Answer Difficulty (Only show when flipped) */}
+      {/* Difficulty Selection */}
       {isFlipped && (
-        <div className="space-y-3">
-          <div className="text-center text-sm text-muted-foreground">
-            Độ khó của thẻ này đối với bạn?
-          </div>
-          <div className="flex justify-center gap-3">
+        <div className="space-y-4">
+          <H3 className="text-center">Đánh giá độ khó</H3>
+          <div className="flex justify-center gap-4">
             <Button 
               variant="outline" 
-              className="text-red-600 border-red-200 hover:bg-red-50"
-              onClick={() => handleDifficultySelect('hard')}
-            >
-              <X className="h-4 w-4 mr-2" />
-              Khó
-            </Button>
-            <Button 
-              variant="outline" 
-              className="text-yellow-600 border-yellow-200 hover:bg-yellow-50"
-              onClick={() => handleDifficultySelect('medium')}
-            >
-              <RotateCcw className="h-4 w-4 mr-2" />
-              Bình thường
-            </Button>
-            <Button 
-              variant="outline" 
-              className="text-green-600 border-green-200 hover:bg-green-50"
               onClick={() => handleDifficultySelect('easy')}
+              className="flex items-center gap-2"
             >
-              <Check className="h-4 w-4 mr-2" />
+              <Check className="h-4 w-4 text-green-600" />
               Dễ
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => handleDifficultySelect('medium')}
+              className="flex items-center gap-2"
+            >
+              <Star className="h-4 w-4 text-yellow-600" />
+              Trung bình
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => handleDifficultySelect('hard')}
+              className="flex items-center gap-2"
+            >
+              <X className="h-4 w-4 text-red-600" />
+              Khó
             </Button>
           </div>
         </div>

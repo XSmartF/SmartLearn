@@ -3,6 +3,7 @@ import { Button } from '@/shared/components/ui/button'
 import { H1 } from '@/shared/components/ui/typography'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover'
 import { Switch } from '@/shared/components/ui/switch'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
 import { ArrowLeft, Settings, RotateCcw, BarChart3 } from 'lucide-react'
 import type { Question } from '@/features/study/utils/learnEngine'
 import type { LibraryMeta } from '@/shared/lib/models'
@@ -16,10 +17,14 @@ interface StudyHeaderProps {
   allowTyped: boolean
   autoAdvance: boolean
   showCardProgress: boolean
+  autoRead: boolean
+  readLanguage: string
   setAllowMC: (value: boolean) => void
   setAllowTyped: (value: boolean) => void
   setAutoAdvance: (value: boolean) => void
   setShowCardProgress: (value: boolean) => void
+  setAutoRead: (value: boolean) => void
+  setReadLanguage: (value: string) => void
   handleResetSession: () => void
 }
 
@@ -31,10 +36,14 @@ export function StudyHeader({
   allowTyped,
   autoAdvance,
   showCardProgress,
+  autoRead,
+  readLanguage,
   setAllowMC,
   setAllowTyped,
   setAutoAdvance,
   setShowCardProgress,
+  setAutoRead,
+  setReadLanguage,
   handleResetSession
 }: StudyHeaderProps) {
   return (
@@ -79,6 +88,24 @@ export function StudyHeader({
                 onCheckedChange={v => setAutoAdvance(!!v)}
                 label='Tự chuyển câu'
               />
+              <Switch
+                checked={autoRead}
+                onCheckedChange={v => setAutoRead(!!v)}
+                label='Tự động đọc câu hỏi'
+              />
+              <div className='space-y-2'>
+                <label className='text-sm font-medium'>Ngôn ngữ đọc</label>
+                <Select value={readLanguage} onValueChange={setReadLanguage}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='en-US'>English (US)</SelectItem>
+                    <SelectItem value='en-GB'>English (UK)</SelectItem>
+                    <SelectItem value='vi-VN'>Tiếng Việt</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className='pt-2 border-t space-y-2'>
               <Button

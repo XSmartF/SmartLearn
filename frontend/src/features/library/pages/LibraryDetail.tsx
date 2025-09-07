@@ -97,6 +97,17 @@ export default function LibraryDetail() {
   // (filters removed per request)
   // Search (giữ lại theo yêu cầu)
   const [search, setSearch] = useState('');
+  // Text-to-speech settings
+  const [readLanguage, setReadLanguage] = useState('en-US');
+
+  // Function to speak text using Web Speech API
+  const speakQuestion = (text: string, lang: string) => {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = lang;
+      window.speechSynthesis.speak(utterance);
+    }
+  };
 
   // progress hook
   const { stats: progStats, rawState } = useLibraryProgress(id); // basic stats + raw engine state
@@ -536,6 +547,7 @@ export default function LibraryDetail() {
                 <FlashCard
                   cards={cards.map(c => ({ id: c.id, front: c.front, back: c.back, status: 'learning', difficulty: 'medium' }))}
                   onComplete={() => { /* optional: toast */ }}
+                  readLanguage={readLanguage}
                 />
               ) : (
                 <div className="text-sm text-muted-foreground">Chưa có thẻ. Thêm thẻ để bắt đầu.</div>
@@ -607,6 +619,8 @@ export default function LibraryDetail() {
               onEdit={(c) => { setEditCardId(c.id); setEditFront(c.front); setEditBack(c.back); setEditDomain(c.domain || ''); setEditDifficulty((c.difficulty || '') as '' | 'easy' | 'medium' | 'hard'); }}
               onDeleteSingle={(cid) => { setSelectedIds([cid]); setConfirmDeleteOpen(true); }}
               canModify={canModify}
+              readLanguage={readLanguage}
+              speakQuestion={speakQuestion}
             />
             <CardPagination
               page={page}

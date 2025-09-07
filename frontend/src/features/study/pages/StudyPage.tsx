@@ -34,11 +34,21 @@ export default function StudyPage(){
   // Preferences & detail controls
   const [allowMC,setAllowMC]=useState(true); const [allowTyped,setAllowTyped]=useState(true); const [autoAdvance,setAutoAdvance]=useState(true);
   const [showCardProgress,setShowCardProgress]=useState(false); const [showCardAnswers,setShowCardAnswers]=useState(false);
+  const [autoRead,setAutoRead]=useState(false); const [readLanguage,setReadLanguage]=useState('en-US');
   // Data
   const [library,setLibrary]=useState<LibraryMeta|null>(null);
   const [cards,setCards]=useState<LearnCard[]>([]);
   const [loadingData,setLoadingData]=useState(true);
   const [loadError,setLoadError]=useState<string|null>(null);
+
+  // Function to speak the question using Web Speech API
+  const speakQuestion = (text: string, lang: string) => {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = lang;
+      window.speechSynthesis.speak(utterance);
+    }
+  };
 
   // Load data
   useEffect(()=>{ let cancelled=false; if(!libraryId) return; (async()=>{ setLoadingData(true); setLoadError(null);       try { const meta=await libraryRepository.getLibraryMeta(libraryId); if(!meta){ if(!cancelled) navigate(ROUTES.MY_LIBRARY); return; } const c=await cardRepository.listCards(libraryId); if(cancelled) return; setLibrary(meta); setCards(c.map(cd=> ({...cd, domain: meta.subject || cd.domain }))); } catch(e: unknown){ if(!cancelled) setLoadError(e instanceof Error ? e.message : 'Không tải được dữ liệu'); } finally { if(!cancelled) setLoadingData(false);} })(); return ()=>{ cancelled=true }; }, [libraryId,navigate]);
@@ -59,6 +69,13 @@ export default function StudyPage(){
   const handleNext=useCallback(()=>{ if(!engine) return; setShowResult(false); setUserAnswer(''); setLastResult(null); setSelectedOptionIndex(null); setCorrectOptionIndex(null); const nq=engine.nextQuestion(); setCurrentQuestion(nq); if(!nq || engine.isFinished()) setIsFinished(true); }, [engine]);
 
   useEffect(()=>{ if(showResult && autoAdvance){ const t=setTimeout(()=> handleNext(), 2000); return ()=> clearTimeout(t); } }, [showResult,autoAdvance,handleNext]);
+
+  // Speak the question when it changes
+  useEffect(() => {
+    if (currentQuestion && autoRead) {
+      speakQuestion(currentQuestion.prompt, readLanguage);
+    }
+  }, [currentQuestion, autoRead, readLanguage]);
 
   const handleFinish=()=>{ if(engine){ const s=engine.serialize(); saveProgress(libraryId,s).catch((e: unknown) => console.error(e)); idbSetItem(`study-session-${libraryId}`, s); } if(id) navigate(getLibraryDetailPath(id)); };
   const handleResetSession=()=>{ (async()=>{ try { const { LearnEngine } = await import('@/features/study/utils/learnEngine'); const fresh=new LearnEngine({ cards }); setEngine(fresh); const q=fresh.nextQuestion(); setCurrentQuestion(q); setIsFinished(!q||fresh.isFinished()); const s=fresh.serialize(); idbSetItem(`study-session-${libraryId}`, s); saveProgress(libraryId,s).catch((e: unknown) => console.error(e)); } catch(e){ console.error('Không thể reset phiên học tập:', e);} })(); };
@@ -85,10 +102,14 @@ export default function StudyPage(){
         allowTyped={allowTyped}
         autoAdvance={autoAdvance}
         showCardProgress={showCardProgress}
+        autoRead={autoRead}
+        readLanguage={readLanguage}
         setAllowMC={setAllowMC}
         setAllowTyped={setAllowTyped}
         setAutoAdvance={setAutoAdvance}
         setShowCardProgress={setShowCardProgress}
+        setAutoRead={setAutoRead}
+        setReadLanguage={setReadLanguage}
         handleResetSession={handleResetSession}
       />
     
@@ -105,6 +126,9 @@ export default function StudyPage(){
           selectedOptionIndex={selectedOptionIndex}
           correctOptionIndex={correctOptionIndex}
           autoAdvance={autoAdvance}
+          autoRead={autoRead}
+          readLanguage={readLanguage}
+          speakQuestion={speakQuestion}
           handleAnswer={handleAnswer}
           handleNext={handleNext}
         />
