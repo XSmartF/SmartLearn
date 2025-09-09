@@ -19,6 +19,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           "hover:shadow-md",
           className
         )}
+        whileFocus={{ scale: 1.01 }}
+        transition={{ duration: 0.2 }}
         {...props}
       />
     )

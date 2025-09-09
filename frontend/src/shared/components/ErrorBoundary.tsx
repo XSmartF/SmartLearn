@@ -3,6 +3,7 @@ import { useRouteError, Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
 import { AlertTriangle, Home, RotateCcw } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 interface RouteError {
   status?: number
@@ -43,7 +44,12 @@ export function ErrorBoundary() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
+        <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
             <AlertTriangle className="w-8 h-8 text-red-600" />
@@ -81,6 +87,7 @@ export function ErrorBoundary() {
           )}
         </CardContent>
       </Card>
+      </motion.div>
     </div>
   )
 }
@@ -112,7 +119,12 @@ export class ComponentErrorBoundary extends React.Component<
     if (this.state.hasError) {
       return (
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
-          <Card className="w-full max-w-md">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
+            <Card className="w-full max-w-md">
             <CardHeader className="text-center">
               <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
                 <AlertTriangle className="w-8 h-8 text-red-600" />
@@ -150,6 +162,7 @@ export class ComponentErrorBoundary extends React.Component<
               )}
             </CardContent>
           </Card>
+          </motion.div>
         </div>
       )
     }

@@ -272,7 +272,7 @@ export default function LibraryDetail() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Link to={ROUTES.MY_LIBRARY}>
@@ -282,6 +282,10 @@ export default function LibraryDetail() {
             </Link>
             <div>
               <H1 className="text-3xl font-bold">{library?.title}</H1>
+              <div className="flex items-center gap-2 mt-1">
+                <VisibilityBadge visibility={library?.visibility || 'public'} />
+                {isFavorite && <Heart className="h-4 w-4 fill-red-500 text-red-500" />}
+              </div>
             </div>
           </div>
 
@@ -512,16 +516,19 @@ export default function LibraryDetail() {
               )}
             </div>
 
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 {stats.map((stat, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                  <div key={index} className="bg-muted/30 rounded-lg p-4 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-full bg-background ${stat.color.replace('text-', 'bg-').replace('-600', '-100')}`}>
+                        <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                      </div>
                       <span className="text-sm font-medium">{stat.title}</span>
                     </div>
-                    <div className="text-2xl font-bold">{stat.value}</div>
-                    <Progress value={stat.percentage} className="h-2" />
+                    <div className="text-3xl font-bold">{stat.value}</div>
+                    <Progress value={stat.percentage} className="h-3" />
+                    <div className="text-xs text-muted-foreground">{stat.percentage}%</div>
                   </div>
                 ))}
               </div>
@@ -531,22 +538,34 @@ export default function LibraryDetail() {
       </Card>
 
       {/* FlashCard Learning Section */}
-      <Card id="flashcard-section">
-        <CardContent className="p-6">
+      <Card id="flashcard-section" className="overflow-hidden">
+        <CardContent className="p-0">
           {canStudy ? (
-            <>
-              <div className="flex items-center justify-between mb-6">
+            <div className="p-6 border-b">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                  <H2 className="text-xl font-semibold">Học với Flashcard</H2>
+                  <H2 className="text-2xl font-semibold mb-2">Học với Flashcard</H2>
                   <p className="text-muted-foreground">Lật thẻ để ghi nhớ nhanh</p>
                 </div>
                 <Link to={getStudyPath(id!)}>
-                  <Button variant="outline">
-                    <BookOpen className="h-4 w-4 mr-2" />
+                  <Button variant="outline" size="lg">
+                    <BookOpen className="h-5 w-5 mr-2" />
                     Chế độ học khác
                   </Button>
                 </Link>
               </div>
+            </div>
+          ) : (
+            <div className="p-6">
+              <div className="text-center py-8">
+                <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <H2 className="text-xl font-semibold mb-2">Thư viện riêng tư</H2>
+                <p className="text-muted-foreground">Bạn không có quyền xem các thẻ trong thư viện này.</p>
+              </div>
+            </div>
+          )}
+          {canStudy && (
+            <div className="p-6">
               {cards.length > 0 ? (
                 <FlashCard
                   cards={cards.map(c => ({ id: c.id, front: c.front, back: c.back, status: 'learning', difficulty: 'medium' }))}
@@ -554,12 +573,11 @@ export default function LibraryDetail() {
                   readLanguage={readLanguage}
                 />
               ) : (
-                <div className="text-sm text-muted-foreground">Chưa có thẻ. Thêm thẻ để bắt đầu.</div>
+                <div className="text-center py-12">
+                  <Target className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-lg text-muted-foreground">Chưa có thẻ. Thêm thẻ để bắt đầu học.</p>
+                </div>
               )}
-            </>
-          ) : (
-            <div className="text-sm text-muted-foreground text-center py-4">
-              Thư viện này riêng tư. Bạn không có quyền xem các thẻ.
             </div>
           )}
         </CardContent>
@@ -571,18 +589,115 @@ export default function LibraryDetail() {
         <LeaderboardSection libraryId={id!} currentUserId={currentUserId} />
         {canStudy ? (
           <div className="space-y-4">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <div className="text-sm text-muted-foreground">
-                {selectedIds.length ? `${selectedIds.length} đã chọn` : `${filteredCards.length} thẻ`}
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 p-4 bg-muted/20 rounded-lg">
+              <div className="flex items-center gap-4">
+                <div className="text-sm text-muted-foreground font-medium">
+                  {selectedIds.length ? `${selectedIds.length} đã chọn` : `${filteredCards.length} thẻ`}
+                </div>
+                {canModify && (
+                  <Dialog open={openAddCard} onOpenChange={setOpenAddCard}>
+                    <DialogTrigger asChild>
+                      <Button variant="default" size="sm" className="h-8">
+                        <Target className="h-4 w-4 mr-2" />
+                        Thêm thẻ
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Thêm thẻ {bulkMode ? '(Nhiều)' : ''}</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <Button type="button" variant="ghost" size="sm" className="h-8 px-3 underline-offset-4 hover:underline" onClick={() => setBulkMode(m => !m)}>
+                            {bulkMode ? 'Chế độ 1 thẻ' : 'Chế độ nhiều thẻ'}
+                          </Button>
+                          {bulkMode && <div className="text-sm text-muted-foreground">{bulkPreview.length} dòng hợp lệ</div>}
+                        </div>
+                        {!bulkMode && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium">Mặt trước</label>
+                              <Input value={front} onChange={(e) => setFront(e.target.value)} placeholder="Nhập mặt trước..." />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium">Mặt sau</label>
+                              <Input value={back} onChange={(e) => setBack(e.target.value)} placeholder="Nhập mặt sau..." />
+                            </div>
+                          </div>
+                        )}
+                        {bulkMode && (
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium">Danh sách thẻ (mỗi dòng: mặt trước|mặt sau)</label>
+                            <Textarea
+                              className="h-48 text-sm resize-none"
+                              value={bulkText}
+                              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setBulkText(e.target.value)}
+                              placeholder={`Ví dụ:\nhello|xin chào\nworld|thế giới`}
+                            />
+                            {bulkText && bulkPreview.length === 0 && (
+                              <div className="text-sm text-red-500">Không có dòng hợp lệ. Định dạng: mặt trước|mặt sau</div>
+                            )}
+                            {bulkPreview.length > 0 && (
+                              <div className="max-h-32 overflow-auto border rounded-lg p-3 text-sm space-y-2 bg-muted/30">
+                                {bulkPreview.slice(0, 20).map((p, i) => (
+                                  <div key={i} className="flex justify-between gap-2">
+                                    <span className="truncate font-medium" title={p.front}>{p.front}</span>
+                                    <span className="text-muted-foreground">|</span>
+                                    <span className="truncate" title={p.back}>{p.back}</span>
+                                  </div>
+                                ))}
+                                {bulkPreview.length > 20 && <div className="text-muted-foreground text-xs">... {bulkPreview.length - 20} dòng nữa</div>}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setOpenAddCard(false)}>Hủy</Button>
+                        {!bulkMode && (
+                          <Button disabled={!front || !back || adding} onClick={async () => {
+                            if (!library) return;
+                            try {
+                              setAdding(true);
+                              const tempId = 'temp-' + Date.now();
+                              setCards(prev => [{ id: tempId, front, back } as EngineCard, ...prev]);
+                              await libraryRepository.createCard({ libraryId: library.id, front, back });
+                              setFront(''); setBack(''); setOpenAddCard(false);
+                              toast.success('Đã thêm thẻ');
+                            } finally { setAdding(false); }
+                          }}>{adding ? 'Đang lưu...' : 'Lưu'}</Button>
+                        )}
+                        {bulkMode && (
+                          <Button disabled={bulkPreview.length === 0 || adding} onClick={async () => {
+                            if (!library) return;
+                            try {
+                              setAdding(true);
+                              const baseTs = Date.now();
+                              const temps = bulkPreview.map((p, i) => ({ id: `temp-bulk-${baseTs}-${i}`, front: p.front, back: p.back } as EngineCard));
+                              setCards(prev => [...temps, ...prev]);
+                              const created = await libraryRepository.createCardsBulk(library.id, bulkPreview);
+                              setBulkText(''); setOpenAddCard(false);
+                              toast.success(`Đã thêm ${created} thẻ`);
+                            } finally { setAdding(false); }
+                          }}>{adding ? 'Đang lưu...' : `Lưu (${bulkPreview.length})`}</Button>
+                        )}
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                )}
               </div>
-              <div className="flex flex-col w-full md:w-auto gap-2">
-                <div className="flex flex-wrap items-center gap-2 w-full">
-                  <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-                    <Input placeholder="Tìm kiếm..." value={search} onChange={e => setSearch(e.target.value)} className="h-8 w-full md:w-64" />
-                  </div>
-                  <div className="flex items-center gap-1 ml-auto">
-                    <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('grid')} className="h-8 px-2"><LayoutGrid className="h-4 w-4" /></Button>
-                    <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('list')} className="h-8 px-2"><ListIcon className="h-4 w-4" /></Button>
+              <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                <div className="flex items-center gap-2 flex-1">
+                  <Input placeholder="Tìm kiếm thẻ..." value={search} onChange={e => setSearch(e.target.value)} className="h-9 flex-1" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center border rounded-md p-1">
+                    <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('grid')} className="h-7 px-2">
+                      <LayoutGrid className="h-4 w-4" />
+                    </Button>
+                    <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('list')} className="h-7 px-2">
+                      <ListIcon className="h-4 w-4" />
+                    </Button>
                   </div>
                   {selectedIds.length > 0 && (
                     <ConfirmDialog
@@ -606,7 +721,10 @@ export default function LibraryDetail() {
                       loading={deleting}
                       variant="destructive"
                     >
-                      <Button variant="destructive" size="sm">Xóa ({selectedIds.length})</Button>
+                      <Button variant="destructive" size="sm" className="h-9">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Xóa ({selectedIds.length})
+                      </Button>
                     </ConfirmDialog>
                   )}
                 </div>

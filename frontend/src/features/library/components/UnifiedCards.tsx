@@ -90,31 +90,31 @@ export function UnifiedCards({
   }
   // Grid mode
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {cards.map(c=>{
         const st = map.get(c.id);
         const selected = selectedIds.includes(c.id);
         return (
-          <div key={c.id} className={`border rounded-md p-3 flex flex-col gap-2 relative group bg-background hover:shadow-sm transition ${selected? 'ring-2 ring-blue-500':''}`}>
-            <div className="flex items-start gap-2">
-              <Checkbox className="mt-1" checked={selected} onCheckedChange={()=>onToggleSelect(c.id)} aria-label="Chọn thẻ" />
-              <div className="flex-1">
-                <div className="font-medium text-sm line-clamp-2" title={c.front}>{c.front}</div>
+          <div key={c.id} className={`border rounded-lg p-4 flex flex-col gap-3 relative group bg-card hover:shadow-md transition-all duration-200 ${selected? 'ring-2 ring-primary shadow-md':''}`}>
+            <div className="flex items-start gap-3">
+              <Checkbox className="mt-1 flex-shrink-0" checked={selected} onCheckedChange={()=>onToggleSelect(c.id)} aria-label="Chọn thẻ" />
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-sm line-clamp-2 mb-1" title={c.front}>{c.front}</div>
                 <div className="text-xs text-muted-foreground line-clamp-2" title={c.back}>{c.back}</div>
               </div>
             </div>
             <div className="flex flex-wrap gap-1 text-[10px]">
-              {c.domain && <Badge variant="outline" className="px-1 py-0 text-[10px]">{c.domain}</Badge>}
-              {c.difficulty && <Badge variant="secondary" className="px-1 py-0 text-[10px]">{c.difficulty}</Badge>}
-              {typeof st?.mastery === 'number' && <Badge className="px-1 py-0 bg-blue-600 text-white">M{st.mastery}</Badge>}
-              {typeof st?.seenCount === 'number' && <Badge variant="outline" className="px-1 py-0">S{st.seenCount}</Badge>}
-              {typeof st?.wrongCount === 'number' && st.wrongCount>0 && <Badge variant="destructive" className="px-1 py-0">W{st.wrongCount}</Badge>}
-              {typeof st?.nextDue === 'number' && <Badge variant="outline" className="px-1 py-0">D{st.nextDue}</Badge>}
+              {c.domain && <Badge variant="outline" className="px-2 py-0.5 text-[10px]">{c.domain}</Badge>}
+              {c.difficulty && <Badge variant="secondary" className="px-2 py-0.5 text-[10px]">{c.difficulty}</Badge>}
+              {typeof st?.mastery === 'number' && <Badge className="px-2 py-0.5 bg-blue-600 text-white">M{st.mastery}</Badge>}
+              {typeof st?.seenCount === 'number' && <Badge variant="outline" className="px-2 py-0.5">S{st.seenCount}</Badge>}
+              {typeof st?.wrongCount === 'number' && st.wrongCount>0 && <Badge variant="destructive" className="px-2 py-0.5">W{st.wrongCount}</Badge>}
+              {typeof st?.nextDue === 'number' && <Badge variant="outline" className="px-2 py-0.5">D{st.nextDue}</Badge>}
             </div>
-            <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition">
-              {speakQuestion && <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => speakQuestion(c.front, readLanguage)}><Volume2 className="h-4 w-4" /></Button>}
-              <Button size="sm" variant="outline" className="h-7 px-2" onClick={()=>onEdit(c)} disabled={!canModify}>Sửa</Button>
-              <Button size="sm" variant="destructive" className="h-7 px-2" onClick={()=>onDeleteSingle(c.id)} disabled={!canModify}>Xóa</Button>
+            <div className="flex justify-end gap-2">
+              {speakQuestion && <Button size="sm" variant="ghost" className="h-8 px-2 opacity-70 hover:opacity-100" onClick={() => speakQuestion(c.front, readLanguage)}><Volume2 className="h-4 w-4" /></Button>}
+              <Button size="sm" variant="outline" className="h-8 px-2" onClick={()=>onEdit(c)} disabled={!canModify}>Sửa</Button>
+              <Button size="sm" variant="destructive" className="h-8 px-2" onClick={()=>onDeleteSingle(c.id)} disabled={!canModify}>Xóa</Button>
             </div>
           </div>
         );

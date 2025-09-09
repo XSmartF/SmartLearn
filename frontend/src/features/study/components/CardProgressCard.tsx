@@ -13,35 +13,34 @@ interface CardProgressCardProps {
 
 export function CardProgressCard({ engine, showCardAnswers, setShowCardAnswers }: CardProgressCardProps) {
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between flex-wrap">
-          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-            <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" />
+    <Card className="w-full shadow-lg border-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
+      <CardHeader className="pb-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <CardTitle className="flex items-center gap-3 text-lg sm:text-xl">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+              <BarChart3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            </div>
             Chi tiết tiến độ từng thẻ
           </CardTitle>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowCardAnswers(!showCardAnswers)}
-              className="text-xs sm:text-sm"
-            >
-              {showCardAnswers ? 'Ẩn đáp án' : 'Hiện đáp án'}
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowCardAnswers(!showCardAnswers)}
+            className="hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+          >
+            {showCardAnswers ? 'Ẩn đáp án' : 'Hiện đáp án'}
+          </Button>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-3 sm:space-y-4">
-          {/* Using getCardProgress() */}
+      <CardContent className="px-6">
+        <div className="space-y-4">
           {engine.getCardProgress().map((cardProgress) => {
-            const currentState = engine.getCardState(cardProgress.id) // Using getCardState()
+            const currentState = engine.getCardState(cardProgress.id)
             return (
-              <div key={cardProgress.id} className="border rounded-lg p-3 sm:p-4">
-                <div className="flex justify-between items-start mb-2 gap-2">
+              <div key={cardProgress.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div className="flex justify-between items-start mb-3 gap-3">
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-sm sm:text-base truncate">{cardProgress.front}</div>
+                    <div className="font-semibold text-sm sm:text-base mb-1">{cardProgress.front}</div>
                     <div className="text-xs sm:text-sm text-muted-foreground">
                       {showCardAnswers ? (
                         cardProgress.back
@@ -50,12 +49,15 @@ export function CardProgressCard({ engine, showCardAnswers, setShowCardAnswers }
                       )}
                     </div>
                   </div>
-                  <div className="flex flex-wrap gap-2 ml-4">
-                    <Badge variant={cardProgress.mastery >= 5 ? "default" : "outline"}>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge
+                      variant={cardProgress.mastery >= 5 ? "default" : "outline"}
+                      className={cardProgress.mastery >= 5 ? "bg-green-600" : ""}
+                    >
                       Lv {cardProgress.mastery}
                     </Badge>
                     {cardProgress.wrongCount > 0 && (
-                      <Badge variant="destructive">
+                      <Badge variant="destructive" className="bg-red-100 dark:bg-red-900/30">
                         {cardProgress.wrongCount} sai
                       </Badge>
                     )}
@@ -70,13 +72,13 @@ export function CardProgressCard({ engine, showCardAnswers, setShowCardAnswers }
                   </div>
                 </div>
 
-                {/* Progress bar for this card */}
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                   <div
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      cardProgress.mastery >= 5 ? 'bg-green-500' :
-                      cardProgress.mastery >= 3 ? 'bg-blue-500' :
-                      cardProgress.mastery >= 1 ? 'bg-orange-500' : 'bg-gray-400'
+                    className={`h-3 rounded-full transition-all duration-500 ${
+                      cardProgress.mastery >= 5 ? 'bg-gradient-to-r from-green-400 to-green-600' :
+                      cardProgress.mastery >= 3 ? 'bg-gradient-to-r from-blue-400 to-blue-600' :
+                      cardProgress.mastery >= 1 ? 'bg-gradient-to-r from-orange-400 to-orange-600' :
+                      'bg-gradient-to-r from-gray-400 to-gray-600'
                     }`}
                     style={{ width: `${(cardProgress.mastery / 5) * 100}%` }}
                   />
@@ -85,13 +87,27 @@ export function CardProgressCard({ engine, showCardAnswers, setShowCardAnswers }
             )
           })}
 
-          {/* Summary using getAllCardStates() */}
-          <div className="border-t pt-4 mt-4">
-            <H4 className="font-semibold mb-2">Tổng quan trạng thái</H4>
-            <div className="text-sm text-muted-foreground">
-              Tổng số thẻ: {engine.getAllCardStates().length} |
-              Đã hoàn thành: {engine.getAllCardStates().filter((state) => state.mastery >= 5).length} |
-              Trung bình mastery: {(engine.getAllCardStates().reduce((sum, state) => sum + state.mastery, 0) / engine.getAllCardStates().length).toFixed(2)}
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-6">
+            <H4 className="font-semibold mb-3 text-center">Tổng quan trạng thái</H4>
+            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                <div>
+                  <div className="text-2xl font-bold text-blue-600">{engine.getAllCardStates().length}</div>
+                  <div className="text-sm text-muted-foreground">Tổng số thẻ</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-green-600">
+                    {engine.getAllCardStates().filter((state) => state.mastery >= 5).length}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Đã hoàn thành</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-purple-600">
+                    {(engine.getAllCardStates().reduce((sum, state) => sum + state.mastery, 0) / engine.getAllCardStates().length).toFixed(1)}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Mastery TB</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

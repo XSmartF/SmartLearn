@@ -149,72 +149,84 @@ export default function Calendar() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <H1 className="text-2xl sm:text-3xl font-bold">Lịch học tập</H1>
-          <p className="text-muted-foreground text-sm sm:text-base">
-            Quản lý thời gian biểu và sự kiện học tập
-          </p>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-6 space-y-6">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-center sm:text-left">
+            <H1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+              Lịch học tập
+            </H1>
+            <p className="text-muted-foreground text-base sm:text-lg">
+              Quản lý thời gian biểu và sự kiện học tập của bạn
+            </p>
+          </div>
+          <div className="flex items-center justify-center sm:justify-end">
+            <Button
+              onClick={handleAddEvent}
+              size="lg"
+              className="h-12 px-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              Thêm sự kiện
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button onClick={handleAddEvent} size="sm" className="w-full sm:w-auto">
-            <Plus className="h-4 w-4 mr-2" />
-            Thêm sự kiện
-          </Button>
+
+        {/* Stats */}
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-lg">
+          <Stats stats={stats} />
         </div>
-      </div>
 
-      {/* Stats */}
-      <Stats stats={stats} />
+        <div className="grid gap-6 lg:gap-8">
+          {/* Calendar */}
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-lg">
+            <CalendarGrid
+              currentDate={currentDate}
+              selectedDate={selectedDate}
+              events={events}
+              onDateChange={setSelectedDate}
+              onCurrentDateChange={setCurrentDate}
+              onViewEvent={handleViewEvent}
+              onDeleteEvent={handleDeleteEvent}
+            />
+          </div>
+        </div>
 
-      <div className="grid gap-4 sm:gap-6">
-        {/* Calendar */}
-        <div className="w-full">
-          <CalendarGrid
-            currentDate={currentDate}
-            selectedDate={selectedDate}
+        {/* Task Status Cards */}
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-lg">
+          <TaskStatusCards
             events={events}
-            onDateChange={setSelectedDate}
-            onCurrentDateChange={setCurrentDate}
-            onViewEvent={handleViewEvent}
-            onDeleteEvent={handleDeleteEvent}
+            onView={handleViewEvent}
+            onDelete={handleDeleteEvent}
+            onStatusUpdate={handleStatusUpdate}
+            onEdit={handleEditEvent}
           />
         </div>
+
+        {/* Event Dialog */}
+        <EventDialog
+          isOpen={dialogOpen}
+          onClose={handleDialogClose}
+          onSave={handleSaveEvent}
+          editingEvent={editingEvent}
+          viewOnly={viewOnly}
+          onStatusUpdate={handleStatusUpdate}
+        />
+
+        {/* Delete Confirmation Dialog */}
+        <ConfirmDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          title="Xóa sự kiện"
+          description="Bạn có chắc chắn muốn xóa sự kiện này không? Hành động này không thể hoàn tác."
+          onConfirm={handleDeleteConfirm}
+          confirmText="Xóa"
+          cancelText="Hủy"
+          variant="destructive"
+        >
+          <div />
+        </ConfirmDialog>
       </div>
-
-      {/* Task Status Cards */}
-      <TaskStatusCards
-        events={events}
-        onView={handleViewEvent}
-        onDelete={handleDeleteEvent}
-        onStatusUpdate={handleStatusUpdate}
-        onEdit={handleEditEvent}
-      />
-
-      {/* Event Dialog */}
-      <EventDialog
-        isOpen={dialogOpen}
-        onClose={handleDialogClose}
-        onSave={handleSaveEvent}
-        editingEvent={editingEvent}
-        viewOnly={viewOnly}
-        onStatusUpdate={handleStatusUpdate}
-      />
-
-      {/* Delete Confirmation Dialog */}
-      <ConfirmDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        title="Xóa sự kiện"
-        description="Bạn có chắc chắn muốn xóa sự kiện này không? Hành động này không thể hoàn tác."
-        onConfirm={handleDeleteConfirm}
-        confirmText="Xóa"
-        cancelText="Hủy"
-        variant="destructive"
-      >
-        <div />
-      </ConfirmDialog>
     </div>
   )
 }

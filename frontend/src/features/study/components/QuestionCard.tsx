@@ -54,41 +54,53 @@ export function QuestionCard({
     setHintText('')
   }, [currentQuestion])
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0">
-          <div className="flex items-center space-x-3">
+    <Card className="w-full max-w-4xl mx-auto shadow-lg border-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
+      <CardHeader className="pb-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0">
+          <div className="flex items-center space-x-4">
             {currentQuestion.mode === "MULTIPLE_CHOICE" ? (
-              <BookOpen className="h-6 w-6 text-green-600" />
+              <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-full">
+                <BookOpen className="h-6 w-6 text-green-600 dark:text-green-400" />
+              </div>
             ) : (
-              <Keyboard className="h-6 w-6 text-purple-600" />
+              <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-full">
+                <Keyboard className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+              </div>
             )}
-            <CardTitle>
-              {currentQuestion.mode === "MULTIPLE_CHOICE" ? 'Trắc nghiệm' : 'Nhập đáp án'}
-            </CardTitle>
+            <div>
+              <CardTitle className="text-lg sm:text-xl">
+                {currentQuestion.mode === "MULTIPLE_CHOICE" ? 'Trắc nghiệm' : 'Nhập đáp án'}
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Câu hỏi {engine.serialize().asked + 1} / {engine.getCardProgress().length}
+              </p>
+            </div>
           </div>
 
           {(() => {
             const cardState = engine.getCardState(currentQuestion.cardId)
             if (cardState) {
               return (
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-3">
                   <Button
                     variant="outline"
                     size="icon"
                     onClick={() => speakQuestion(currentQuestion.prompt, readLanguage)}
                     title="Đọc câu hỏi"
+                    className="hover:bg-blue-50 dark:hover:bg-blue-900/20"
                   >
                     <Volume2 className="h-4 w-4" />
                   </Button>
-                  <Badge variant="outline">
-                    Thành thạo: {cardState.mastery}/5
-                  </Badge>
-                  {cardState.wrongCount > 0 && (
-                    <Badge variant="destructive">
-                      Sai: {cardState.wrongCount} lần
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="outline" className="bg-blue-50 dark:bg-blue-900/20">
+                      Thành thạo: {cardState.mastery}/5
                     </Badge>
-                  )}
+                    {cardState.wrongCount > 0 && (
+                      <Badge variant="destructive" className="bg-red-50 dark:bg-red-900/20">
+                        Sai: {cardState.wrongCount}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               )
             }
@@ -97,44 +109,51 @@ export function QuestionCard({
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-8 px-6 sm:px-8">
         {/* Question */}
         <div className="text-center">
-          <H2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">{currentQuestion.prompt}</H2>
+          <H2 className="text-2xl sm:text-3xl font-bold mb-6 leading-relaxed">
+            {currentQuestion.prompt}
+          </H2>
         </div>
 
         {/* Answer Section */}
         {!showResult ? (
-          <div className="space-y-3 sm:space-y-4">
+          <div className="space-y-6">
             {currentQuestion.mode === "MULTIPLE_CHOICE" ? (
               // Multiple Choice
-              <div className="grid gap-2 sm:gap-3 grid-cols-1 sm:grid-cols-2">
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
                 {currentQuestion.options.map((option: string, index: number) => (
                   <Button
                     key={index}
                     variant="outline"
-                    className="p-3 sm:p-4 h-auto text-left justify-start text-sm sm:text-base"
+                    className="p-4 sm:p-6 h-auto text-left justify-start text-base sm:text-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300 transition-all duration-200 group"
                     onClick={() => handleAnswer(option)}
                   >
-                    <span className="font-semibold mr-2 sm:mr-3">{String.fromCharCode(65 + index)}.</span>
-                    {option}
+                    <span className="font-bold mr-3 text-lg group-hover:scale-110 transition-transform">
+                      {String.fromCharCode(65 + index)}.
+                    </span>
+                    <span className="flex-1">{option}</span>
                   </Button>
                 ))}
               </div>
             ) : (
               // Typing
-              <div className="space-y-3 sm:space-y-4">
-                <Input
-                  placeholder="Nhập câu trả lời..."
-                  value={userAnswer}
-                  onChange={(e) => setUserAnswer(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter' && userAnswer.trim()) {
-                      handleAnswer(userAnswer)
-                    }
-                  }}
-                  className="text-base sm:text-lg p-3 sm:p-4"
-                />
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <label className="text-sm font-medium text-muted-foreground">Nhập câu trả lời của bạn</label>
+                  <Input
+                    placeholder="Gõ đáp án..."
+                    value={userAnswer}
+                    onChange={(e) => setUserAnswer(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && userAnswer.trim()) {
+                        handleAnswer(userAnswer)
+                      }
+                    }}
+                    className="text-lg sm:text-xl p-4 sm:p-6 h-14 sm:h-16 border-2 focus:border-blue-500 transition-colors"
+                  />
+                </div>
                 <Button
                   onClick={() => {
                     if (showFullAnswer) {
@@ -150,12 +169,13 @@ export function QuestionCard({
                     }
                   }}
                   disabled={!userAnswer.trim()}
-                  className="w-full"
+                  className="w-full h-12 sm:h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-200"
+                  size="lg"
                 >
                   {showFullAnswer ? "Xác nhận đáp án" : "Kiểm tra"}
                 </Button>
                 {/* Hint and Don't Know buttons */}
-                <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <Button
                     variant="outline"
                     onClick={() => {
@@ -170,7 +190,7 @@ export function QuestionCard({
                         setHintText(hint)
                       }
                     }}
-                    className="flex-1"
+                    className="flex-1 h-11 hover:bg-yellow-50 hover:border-yellow-300 transition-colors"
                     disabled={showHint}
                   >
                     💡 Gợi ý
@@ -182,7 +202,7 @@ export function QuestionCard({
                         setShowFullAnswer(true)
                         setFullAnswerText(currentQuestion.fullAnswer!)
                       }}
-                      className="flex-1"
+                      className="flex-1 h-11 hover:bg-red-50 hover:border-red-300 transition-colors"
                       disabled={showFullAnswer}
                     >
                       🤔 Không biết
@@ -243,51 +263,65 @@ export function QuestionCard({
           </div>
         ) : (
           // Result
-          <div className="text-center space-y-4">
+          <div className="text-center space-y-6">
             {(lastResult === "Correct" || lastResult === "CorrectMinor") ? (
-              <div className="space-y-2">
-                <Check className="h-16 w-16 text-green-500 mx-auto" />
-                <H3 className="text-2xl font-bold text-green-600">
-                  {lastResult === "Correct" ? "Chính xác!" : "Gần đúng!"}
-                </H3>
-                {lastResult === "CorrectMinor" && (
-                  <p className="text-muted-foreground">
-                    Có sai chính tả nhỏ nhưng vẫn được chấp nhận
-                  </p>
-                )}
+              <div className="space-y-4">
+                <div className="mx-auto w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                  <Check className="h-10 w-10 text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                  <H3 className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
+                    {lastResult === "Correct" ? "Tuyệt vời!" : "Gần đúng!"}
+                  </H3>
+                  {lastResult === "CorrectMinor" && (
+                    <p className="text-muted-foreground text-sm sm:text-base">
+                      Có sai chính tả nhỏ nhưng vẫn được chấp nhận
+                    </p>
+                  )}
+                </div>
               </div>
             ) : (
-              <div className="space-y-2">
-                <X className="h-16 w-16 text-red-500 mx-auto" />
-                <H3 className="text-2xl font-bold text-red-600">Chưa đúng!</H3>
-                {(() => {
-                  const card = cards.find(c => c.id.toString() === currentQuestion.cardId)
-                  return card ? (
-                    <p className="text-muted-foreground">
-                      Đáp án đúng: <strong>{card.back}</strong>
-                    </p>
-                  ) : null
-                })()}
+              <div className="space-y-4">
+                <div className="mx-auto w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+                  <X className="h-10 w-10 text-red-600 dark:text-red-400" />
+                </div>
+                <div>
+                  <H3 className="text-2xl sm:text-3xl font-bold text-red-600 dark:text-red-400 mb-2">
+                    Chưa chính xác
+                  </H3>
+                  {(() => {
+                    const card = cards.find(c => c.id.toString() === currentQuestion.cardId)
+                    return card ? (
+                      <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                        <p className="text-sm text-muted-foreground mb-1">Đáp án đúng:</p>
+                        <p className="text-lg font-semibold text-blue-700 dark:text-blue-300">
+                          {card.back}
+                        </p>
+                      </div>
+                    ) : null
+                  })()}
+                </div>
 
                 {/* Show selected vs correct for MC */}
                 {currentQuestion.mode === "MULTIPLE_CHOICE" && selectedOptionIndex !== null && correctOptionIndex !== null && (
-                  <div className="mt-4 space-y-2">
-                    <div className="grid gap-2">
+                  <div className="mt-6 space-y-3">
+                    <p className="text-sm font-medium text-muted-foreground">Xem lại các lựa chọn:</p>
+                    <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
                       {currentQuestion.options.map((option: string, index: number) => (
                         <div
                           key={index}
-                          className={`p-2 rounded text-sm ${
+                          className={`p-3 rounded-lg text-sm border-2 transition-all ${
                             index === correctOptionIndex
-                              ? 'bg-green-100 text-green-800 border border-green-300'
+                              ? 'bg-green-50 border-green-300 text-green-800 dark:bg-green-900/20 dark:border-green-600'
                               : index === selectedOptionIndex
-                              ? 'bg-red-100 text-red-800 border border-red-300'
-                              : 'bg-gray-50 text-gray-600'
+                              ? 'bg-red-50 border-red-300 text-red-800 dark:bg-red-900/20 dark:border-red-600'
+                              : 'bg-gray-50 border-gray-200 text-gray-600 dark:bg-gray-800 dark:border-gray-600'
                           }`}
                         >
-                          <span className="font-semibold mr-2">{String.fromCharCode(65 + index)}.</span>
+                          <span className="font-bold mr-2">{String.fromCharCode(65 + index)}.</span>
                           {option}
-                          {index === correctOptionIndex && <span className="ml-2">✓</span>}
-                          {index === selectedOptionIndex && index !== correctOptionIndex && <span className="ml-2">✗</span>}
+                          {index === correctOptionIndex && <span className="ml-2 text-green-600">✓</span>}
+                          {index === selectedOptionIndex && index !== correctOptionIndex && <span className="ml-2 text-red-600">✗</span>}
                         </div>
                       ))}
                     </div>
@@ -296,13 +330,18 @@ export function QuestionCard({
               </div>
             )}
 
-            {!autoAdvance ? (
-              <Button onClick={handleNext} className="mt-4">
-                Câu tiếp theo
+            {!autoAdvance && (
+              <Button
+                onClick={handleNext}
+                className="h-12 sm:h-14 px-8 text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-200"
+                size="lg"
+              >
+                Tiếp tục
               </Button>
-            ) : (
-              <div className="text-sm text-muted-foreground mt-4">
-                Sẽ tự chuyển sang câu tiếp theo trong giây lát...
+            )}
+            {autoAdvance && (
+              <div className="text-sm text-muted-foreground bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+                ⏱️ Sẽ tự chuyển sang câu tiếp theo trong giây lát...
               </div>
             )}
           </div>

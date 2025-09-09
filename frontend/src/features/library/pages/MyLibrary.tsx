@@ -15,6 +15,7 @@ import { useFavoriteLibraries } from '@/shared/hooks/useFavorites'
 import {
   Star,
   Search,
+  BookOpen,
 } from "lucide-react"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/shared/components/ui/select";
 import { Textarea } from "@/shared/components/ui/textarea";
@@ -136,10 +137,10 @@ export default function MyLibrary() {
   ) : '';
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div>
-  <H1 className="text-2xl sm:text-3xl font-bold">Thư viện của tôi</H1>
-        <p className="text-muted-foreground text-sm sm:text-base">
+    <div className="space-y-6 sm:space-y-8">
+      <div className="text-center sm:text-left">
+        <H1 className="text-3xl sm:text-4xl font-bold mb-2">Thư viện của tôi</H1>
+        <p className="text-muted-foreground text-base sm:text-lg">
           Quản lý và theo dõi tiến độ học flashcard của bạn
         </p>
       </div>
@@ -153,7 +154,7 @@ export default function MyLibrary() {
       />
 
       {/* Controls */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 p-6 bg-muted/20 rounded-xl">
         <LibraryFilters
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -176,16 +177,22 @@ export default function MyLibrary() {
       </div>
 
       {/* Content */}
-      <Tabs defaultValue="all" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="all">Tất cả ({filteredAll.length})</TabsTrigger>
-          <TabsTrigger value="favorites">Yêu thích ({favorites.length})</TabsTrigger>
-          <TabsTrigger value="shared">Được chia sẻ ({shared.length})</TabsTrigger>
+      <Tabs defaultValue="all" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3 h-12 p-1 bg-muted rounded-lg">
+          <TabsTrigger value="all" className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            Tất cả ({filteredAll.length})
+          </TabsTrigger>
+          <TabsTrigger value="favorites" className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            Yêu thích ({favorites.length})
+          </TabsTrigger>
+          <TabsTrigger value="shared" className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            Được chia sẻ ({shared.length})
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="space-y-4">
           {viewMode === 'grid' ? (
-            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredAll.map(flashcard => {
                 const isFav = favoriteIds.includes(flashcard.id);
                 const role = sharedRoleMap.get(flashcard.id);
@@ -209,7 +216,7 @@ export default function MyLibrary() {
               })}
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {filteredAll.map(flashcard => {
                 const role = sharedRoleMap.get(flashcard.id);
                 const owner = ownerProfiles[flashcard.ownerId];
@@ -224,6 +231,13 @@ export default function MyLibrary() {
                   />
                 );
               })}
+            </div>
+          )}
+          {filteredAll.length === 0 && (
+            <div className="text-center py-12">
+              <BookOpen className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+              <H3 className="text-xl font-semibold mb-2">Chưa có thư viện</H3>
+              <p className="text-muted-foreground">Tạo thư viện đầu tiên để bắt đầu học.</p>
             </div>
           )}
         </TabsContent>
@@ -363,13 +377,11 @@ export default function MyLibrary() {
                   <SelectContent>
                     <SelectItem value="private">
                       <div className="flex items-center gap-2">
-                        <span className="text-orange-500">🔒</span>
                         <span>Chỉ mình tôi</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="public">
                       <div className="flex items-center gap-2">
-                        <span className="text-green-500">🌐</span>
                         <span>Mọi người</span>
                       </div>
                     </SelectItem>

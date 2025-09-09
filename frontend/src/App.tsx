@@ -1,4 +1,3 @@
-import './App.css'
 import { Suspense, useEffect } from 'react'
 import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-router-dom'
 import { ErrorBoundary, ComponentErrorBoundary } from './shared/components/ErrorBoundary'

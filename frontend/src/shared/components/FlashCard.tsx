@@ -13,6 +13,7 @@ import {
   Check,
   RotateCw
 } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 
 interface FlashCardData {
   id: string
@@ -128,62 +129,45 @@ export default function FlashCard({ cards, onCardUpdate, onComplete, readLanguag
       </div>
 
       {/* Flash Card */}
-      <div className="relative h-80" style={{ perspective: '1000px' }}>
-        <Card 
-          className="absolute inset-0 cursor-pointer transition-all duration-700"
-          style={{ 
-            transformStyle: 'preserve-3d',
-            transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
-          }}
-          onClick={handleFlip}
-        >
-          {/* Front Side */}
-          <CardContent 
-            className="absolute inset-0 h-full flex items-center justify-center p-8"
-            style={{ 
-              backfaceVisibility: 'hidden',
-              transform: 'rotateY(0deg)'
-            }}
+      <div className="relative h-80">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={isFlipped ? 'back' : 'front'}
+            initial={{ rotateY: isFlipped ? -90 : 90, opacity: 0 }}
+            animate={{ rotateY: 0, opacity: 1 }}
+            exit={{ rotateY: isFlipped ? 90 : -90, opacity: 0 }}
+            transition={{ duration: 0.6, ease: "easeInOut" }}
+            style={{ perspective: '1000px' }}
           >
-            <div className="text-center space-y-4">
-              <div className="text-xs text-muted-foreground uppercase tracking-wide">
-                Câu hỏi
-              </div>
-              <div className="text-2xl font-semibold">
-                {currentCard.front}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Nhấn để xem câu trả lời
-              </div>
-            </div>
-          </CardContent>
-
-          {/* Back Side */}
-          <CardContent 
-            className="absolute inset-0 h-full flex items-center justify-center p-8 bg-blue-50"
-            style={{ 
-              backfaceVisibility: 'hidden',
-              transform: 'rotateY(180deg)'
-            }}
-          >
-            <div className="text-center space-y-4">
-              <div className="text-xs text-muted-foreground uppercase tracking-wide">
-                Câu trả lời
-              </div>
-              <div className="text-2xl font-semibold text-blue-700">
-                {currentCard.back}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Nhấn để lật lại thẻ
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            <Card 
+              className="cursor-pointer h-full"
+              onClick={handleFlip}
+            >
+              <CardContent className="h-full flex items-center justify-center p-8">
+                <div className="text-center space-y-4">
+                  <div className="text-xs text-muted-foreground uppercase tracking-wide">
+                    {isFlipped ? 'Câu trả lời' : 'Câu hỏi'}
+                  </div>
+                  <div className={`text-2xl font-semibold ${isFlipped ? 'text-blue-700' : ''}`}>
+                    {isFlipped ? currentCard.back : currentCard.front}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {isFlipped ? 'Nhấn để lật lại thẻ' : 'Nhấn để xem câu trả lời'}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </AnimatePresence>
 
         {/* Flip Indicator */}
-        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-sm">
+        <motion.div 
+          className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-sm"
+          animate={{ rotate: isFlipped ? 180 : 0 }}
+          transition={{ duration: 0.3 }}
+        >
           <RotateCw className="h-4 w-4 text-muted-foreground" />
-        </div>
+        </motion.div>
       </div>
 
       {/* Navigation Controls */}

@@ -10,6 +10,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/shared/components/ui/alert-dialog';
+import { Loader } from '@/shared/components/ui/loader';
 
 interface ConfirmDialogProps {
   children: React.ReactNode;
@@ -65,7 +66,14 @@ export default function ConfirmDialog({
                 : 'bg-primary text-primary-foreground hover:bg-primary/90'
             }
           >
-            {loading ? 'Đang xử lý...' : confirmText}
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <Loader size="sm" />
+                Đang xử lý...
+              </div>
+            ) : (
+              confirmText
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
