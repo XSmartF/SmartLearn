@@ -181,9 +181,72 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function normalize(s: string): string {
-  return s
+  let normalized = s
     .toLowerCase()
-    .normalize("NFKC")
+    .normalize("NFC"); // Use NFC to preserve composed characters
+
+  // Vietnamese character normalization mapping
+  const vietnameseMap: Record<string, string> = {
+    // Variant forms to standard forms
+    'oá': 'oa', 'oả': 'oa', 'oă': 'oa',
+    'uý': 'uy', 'uỷ': 'uy', 'uả': 'uy', 'uă': 'uy',
+    'aă': 'aa', 'aả': 'aa', 'aá': 'aa',
+    'eé': 'ee', 'eẻ': 'ee', 'eẹ': 'ee',
+    'ií': 'ii', 'iỉ': 'ii', 'iị': 'ii',
+    'oó': 'oo', 'oỏ': 'oo', 'oọ': 'oo',
+    'uú': 'uu', 'uủ': 'uu', 'uụ': 'uu',
+    'ââ': 'aa', 'âả': 'aa', 'âá': 'aa',
+    'êê': 'ee', 'êẻ': 'ee', 'êẹ': 'ee',
+    'ôô': 'oo', 'ôỏ': 'oo', 'ôọ': 'oo',
+    'ưư': 'uu', 'ưủ': 'uu', 'ưụ': 'uu',
+    // Common compound variants
+    'ngă': 'nga', 'ngà': 'nga', 'ngá': 'nga',
+    'chă': 'cha', 'chà': 'cha', 'chá': 'cha',
+    'thưu': 'thuu', 'thúu': 'thuu',
+    'phưu': 'phuu', 'phúu': 'phuu',
+    'tră': 'tra', 'trà': 'tra', 'trá': 'tra',
+    'bră': 'bra', 'brà': 'bra', 'brá': 'bra',
+    'pră': 'pra', 'prà': 'pra', 'prá': 'pra',
+    'sră': 'sra', 'srà': 'sra', 'srá': 'sra',
+    'cră': 'cra', 'crà': 'cra', 'crá': 'cra',
+    'gră': 'gra', 'grà': 'gra', 'grá': 'gra',
+    'fră': 'fra', 'frà': 'fra', 'frá': 'fra',
+    'jră': 'jra', 'jrà': 'jra', 'jrá': 'jra',
+    'kră': 'kra', 'krà': 'kra', 'krá': 'kra',
+    'lră': 'lra', 'lrà': 'lra', 'lrá': 'lra',
+    'mră': 'mra', 'mrà': 'mra', 'mrá': 'mra',
+    'nră': 'nra', 'nrà': 'nra', 'nrá': 'nra',
+    'qră': 'qra', 'qrà': 'qra', 'qrá': 'qra',
+    'rră': 'rra', 'rrà': 'rra', 'rrá': 'rra',
+    'vră': 'vra', 'vrà': 'vra', 'vrá': 'vra',
+    'wră': 'wra', 'wrà': 'wra', 'wrá': 'wra',
+    'xră': 'xra', 'xrà': 'xra', 'xrá': 'xra',
+    'yră': 'yra', 'yrà': 'yra', 'yrá': 'yra',
+    'zră': 'zra', 'zrà': 'zra', 'zrá': 'zra',
+  };
+
+  // Apply all mappings
+  for (const [variant, standard] of Object.entries(vietnameseMap)) {
+    const regex = new RegExp(variant, 'g');
+    normalized = normalized.replace(regex, standard);
+  }
+
+  // Additional general patterns for any remaining variants
+  const generalPatterns = [
+    // Replace any remaining oá/oả patterns with oa
+    { pattern: /([bcdfghjklmnpqrstvwxyz])oá/g, replacement: '$1oa' },
+    { pattern: /([bcdfghjklmnpqrstvwxyz])oả/g, replacement: '$1oa' },
+    { pattern: /([bcdfghjklmnpqrstvwxyz])uý/g, replacement: '$1uy' },
+    { pattern: /([bcdfghjklmnpqrstvwxyz])uỷ/g, replacement: '$1uy' },
+    { pattern: /([bcdfghjklmnpqrstvwxyz])uả/g, replacement: '$1uy' },
+  ];
+
+  // Apply general patterns
+  for (const { pattern, replacement } of generalPatterns) {
+    normalized = normalized.replace(pattern, replacement);
+  }
+
+  return normalized
     .replace(/[\p{P}\p{S}]/gu, " ") // remove punctuation/symbols
     .replace(/\s+/g, " ")
     .trim();
