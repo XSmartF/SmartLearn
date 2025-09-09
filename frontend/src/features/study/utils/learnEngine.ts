@@ -851,3 +851,6 @@ while (!engine.isFinished()) {
   }
 }
 */
+
+// Export normalize function for use in UI components
+export { normalize };

@@ -18,6 +18,7 @@ import {
 import { libraryRepository } from '@/shared/lib/repositories/LibraryRepository'
 import { cardRepository } from '@/shared/lib/repositories/CardRepository'
 import { loadTestQuestionGenerator } from '@/shared/lib/lazyModules'
+import { normalize } from '@/features/study/utils/learnEngine'
 import { idbGetItem } from "@/shared/lib/indexedDB"
 
 interface TestConfig {
@@ -127,7 +128,7 @@ export default function Test() {
     let correctCount = 0
     const questionsWithResults = questions.map((question, index) => {
       const userAnswer = userAnswers[index]
-      const isCorrect = userAnswer === question.correctAnswer
+      const isCorrect = normalize(userAnswer || '') === normalize(question.correctAnswer || '')
       if (isCorrect) correctCount++
       
       return {
@@ -430,13 +431,13 @@ export default function Test() {
             {showAnswer && (
               <div className="mt-4 p-4 bg-muted/50 rounded-lg">
                 <div className="flex items-center space-x-2 mb-2">
-                  {userAnswers[currentQuestionIndex] === currentQuestion.correctAnswer ? (
+                  {normalize(userAnswers[currentQuestionIndex] || '') === normalize(currentQuestion.correctAnswer || '') ? (
                     <CheckCircle className="h-5 w-5 text-green-600" />
                   ) : (
                     <XCircle className="h-5 w-5 text-red-600" />
                   )}
                   <span className="font-medium">
-                    {userAnswers[currentQuestionIndex] === currentQuestion.correctAnswer ? 'Chính xác!' : 'Sai rồi!'}
+                    {normalize(userAnswers[currentQuestionIndex] || '') === normalize(currentQuestion.correctAnswer || '') ? 'Chính xác!' : 'Sai rồi!'}
                   </span>
                 </div>
                 <div className="text-sm text-muted-foreground">

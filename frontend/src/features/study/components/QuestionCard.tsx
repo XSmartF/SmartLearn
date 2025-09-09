@@ -7,6 +7,7 @@ import { BookOpen, Keyboard, Check, X, Volume2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import type { Question, Result, LearnEngine as LearnEngineType } from '@/features/study/utils/learnEngine'
 import type { Card as LearnCard } from '@/features/study/utils/learnEngine'
+import { normalize } from '@/features/study/utils/learnEngine'
 
 interface QuestionCardProps {
   currentQuestion: Question
@@ -167,7 +168,7 @@ export function QuestionCard({
                       if (e.key === 'Enter' && userAnswer.trim()) {
                         if (mustRetryAfterDontKnow) {
                           const correctAnswer = cards.find(c => c.id.toString() === currentQuestion.cardId)?.back || ''
-                          if (userAnswer.toLowerCase().trim() === correctAnswer.toLowerCase().trim()) {
+                          if (normalize(userAnswer) === normalize(correctAnswer)) {
                             // Submit with empty string to count as incorrect
                             handleAnswer('')
                             setMustRetryAfterDontKnow(false)
@@ -189,7 +190,7 @@ export function QuestionCard({
                   onClick={() => {
                     if (mustRetryAfterDontKnow) {
                       const correctAnswer = cards.find(c => c.id.toString() === currentQuestion.cardId)?.back || ''
-                      if (userAnswer.toLowerCase().trim() === correctAnswer.toLowerCase().trim()) {
+                      if (normalize(userAnswer) === normalize(correctAnswer)) {
                         // Submit with empty string to count as incorrect
                         handleAnswer('')
                         setMustRetryAfterDontKnow(false)
