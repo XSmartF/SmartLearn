@@ -8,8 +8,8 @@ export default function NotFound() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-sm sm:max-w-md text-center">
         <CardHeader>
-          <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-            <Search className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
+          <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 bg-muted rounded-full flex items-center justify-center mb-4">
+            <Search className="w-8 h-8 sm:w-10 sm:h-10 text-muted-foreground" />
           </div>
           <CardTitle className="text-xl sm:text-2xl">404 - Không tìm thấy trang</CardTitle>
         </CardHeader>

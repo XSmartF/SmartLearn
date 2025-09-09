@@ -72,9 +72,9 @@ export function RecentActivities() {
           recentActivities.map((activity) => (
             <div key={activity.id} className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border">
               <div className="flex-shrink-0 mt-0.5">
-                {activity.type === 'study' && <Brain className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />}
-                {activity.type === 'progress' && <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />}
-                {activity.type === 'mastery' && <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500" />}
+                {activity.type === 'study' && <Brain className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />}
+                {activity.type === 'progress' && <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-success" />}
+                {activity.type === 'mastery' && <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-info" />}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm sm:text-base truncate">{activity.title}</p>

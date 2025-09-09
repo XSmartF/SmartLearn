@@ -707,10 +707,8 @@ export class LearnEngine {
       .map(item => item.text);
 
     const distractors = sorted.slice(0, Math.max(0, total - 1));
-    const shuffledDistractors = shuffle(distractors);
-    const options = [correct, ...shuffledDistractors]; // Correct always at index 0
+    const options = shuffle([correct, ...distractors]);
 
-    // NOTE: Correct answer is always at index 0. UI should handle shuffling if needed, but for engine consistency, we keep correct at 0.
     return options;
   }
 

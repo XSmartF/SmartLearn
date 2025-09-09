@@ -117,6 +117,17 @@ export default function LibraryDetail() {
   const { stats: progStats, rawState } = useLibraryProgress(id); // basic stats + raw engine state
   const { summary } = useProgressSummary(id); // new detailed summary from engineState
 
+  const [navigatingToStudy, setNavigatingToStudy] = useState(false);
+  const [hasOngoingSession, setHasOngoingSession] = useState(false);
+
+  // Check for ongoing study session
+  useEffect(() => {
+    if (!id) return;
+    idbGetItem(`study-session-${id}`).then(session => {
+      setHasOngoingSession(!!session);
+    });
+  }, [id]);
+
   // Áp dụng search đơn giản (không domain/difficulty/mastery)
   const filteredCards = useMemo(() => {
     if (!search) return cards;
@@ -264,9 +275,9 @@ export default function LibraryDetail() {
   const masteredPct = total ? Math.round((masteredVal / total) * 100) : 0;
   const learningPct = total ? Math.round((learningVal / total) * 100) : 0;
   const stats: { title: string; value: string | number; percentage: number; icon: React.ComponentType<{ className?: string }>; color: string }[] = [
-    { title: 'Tổng thẻ', value: total, percentage: 100, icon: Target, color: 'text-blue-600' },
-    { title: 'Đã thuộc', value: masteredVal, percentage: masteredPct, icon: BookOpen, color: 'text-green-600' },
-    { title: 'Đang học', value: learningVal, percentage: learningPct, icon: BarChart3, color: 'text-orange-600' },
+    { title: 'Tổng thẻ', value: total, percentage: 100, icon: Target, color: 'text-info' },
+    { title: 'Đã thuộc', value: masteredVal, percentage: masteredPct, icon: BookOpen, color: 'text-success' },
+    { title: 'Đang học', value: learningVal, percentage: learningPct, icon: BarChart3, color: 'text-warning' },
   ];
 
   return (
@@ -382,12 +393,20 @@ export default function LibraryDetail() {
 
         {/* Action Buttons */}
         <div className="flex items-center space-x-3">
-          <Link to={canStudy ? getStudyPath(id!) : '#'} onClick={e => { if (!canStudy) e.preventDefault(); }}>
-            <Button size="default" disabled={!canStudy} title={!canStudy ? 'Bạn không có quyền học thư viện riêng tư này' : ''}>
-              <BookOpen className="h-4 w-4 mr-2" />
-              Bắt đầu học
-            </Button>
-          </Link>
+          <Button 
+            size="default" 
+            disabled={!canStudy || navigatingToStudy} 
+            title={!canStudy ? 'Bạn không có quyền học thư viện riêng tư này' : ''}
+            onClick={() => {
+              if (canStudy && !navigatingToStudy) {
+                setNavigatingToStudy(true);
+                navigate(getStudyPath(id!));
+              }
+            }}
+          >
+            <BookOpen className="h-4 w-4 mr-2" />
+            {navigatingToStudy ? 'Đang chuyển...' : (hasOngoingSession ? 'Tiếp tục học' : 'Bắt đầu học')}
+          </Button>
           <Link to={canStudy ? getTestSetupPath(id!) : '#'} onClick={e => { if (!canStudy) e.preventDefault(); }}>
             <Button variant="outline" size="default" disabled={!canStudy} title={!canStudy ? 'Bạn không có quyền kiểm tra thư viện này' : ''}>
               <Target className="h-4 w-4 mr-2" />
@@ -521,7 +540,7 @@ export default function LibraryDetail() {
                 {stats.map((stat, index) => (
                   <div key={index} className="bg-muted/30 rounded-lg p-4 space-y-3">
                     <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-full bg-background ${stat.color.replace('text-', 'bg-').replace('-600', '-100')}`}>
+                      <div className="p-2 rounded-full bg-background">
                         <stat.icon className={`h-5 w-5 ${stat.color}`} />
                       </div>
                       <span className="text-sm font-medium">{stat.title}</span>

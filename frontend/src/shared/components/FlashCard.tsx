@@ -85,10 +85,10 @@ export default function FlashCard({ cards, onCardUpdate, onComplete, readLanguag
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'mastered': return 'bg-green-500'
-      case 'learning': return 'bg-yellow-500' 
-      case 'difficult': return 'bg-red-500'
-      default: return 'bg-gray-500'
+      case 'mastered': return 'bg-success'
+      case 'learning': return 'bg-warning' 
+      case 'difficult': return 'bg-destructive'
+      default: return 'bg-muted'
     }
   }
 
@@ -102,9 +102,9 @@ export default function FlashCard({ cards, onCardUpdate, onComplete, readLanguag
           <span>Tiến độ học</span>
           <span>{currentIndex + 1} / {cards.length}</span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className="w-full bg-muted rounded-full h-2">
           <div 
-            className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+            className="bg-primary h-2 rounded-full transition-all duration-300" 
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -162,7 +162,7 @@ export default function FlashCard({ cards, onCardUpdate, onComplete, readLanguag
 
         {/* Flip Indicator */}
         <motion.div 
-          className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-sm"
+          className="absolute top-4 right-4 bg-card/90 backdrop-blur-sm rounded-full p-2 shadow-sm"
           animate={{ rotate: isFlipped ? 180 : 0 }}
           transition={{ duration: 0.3 }}
         >

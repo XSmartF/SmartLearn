@@ -51,17 +51,17 @@ export function StudyHeader({
   handleResetSession
 }: StudyHeaderProps) {
   return (
-    <div className='bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700'>
+    <div className='bg-card/80 backdrop-blur-sm border-b border-border'>
       <div className='container mx-auto px-4 py-4'>
         <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0'>
           <div className='flex items-center space-x-4'>
             <Link to={getLibraryDetailPath(libraryId)}>
-              <Button variant='ghost' size='icon' className='hover:bg-gray-100 dark:hover:bg-gray-700'>
+              <Button variant='ghost' size='icon' className='hover:bg-accent'>
                 <ArrowLeft className='h-5 w-5'/>
               </Button>
             </Link>
             <div>
-              <H1 className='text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent'>
+              <H1 className='text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent'>
                 Học với {library.title}
               </H1>
               <p className='text-muted-foreground text-sm sm:text-base'>
@@ -71,7 +71,7 @@ export function StudyHeader({
           </div>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant='outline' size='icon' className='hover:bg-gray-100 dark:hover:bg-gray-700'>
+              <Button variant='outline' size='icon' className='hover:bg-accent'>
                 <Settings className='h-5 w-5'/>
               </Button>
             </PopoverTrigger>
@@ -136,7 +136,7 @@ export function StudyHeader({
                     variant='outline'
                     size='sm'
                     onClick={handleResetSession}
-                    className='w-full justify-start hover:bg-red-50 hover:border-red-200'
+                    className='w-full justify-start hover:bg-destructive/10 hover:border-destructive'
                   >
                     <RotateCcw className='h-4 w-4 mr-2'/>
                     Reset phiên học
@@ -151,7 +151,7 @@ export function StudyHeader({
                     {showCardProgress ? 'Ẩn chi tiết thẻ' : 'Xem chi tiết thẻ'}
                   </Button>
                 </div>
-                <div className='text-xs text-muted-foreground bg-blue-50 dark:bg-blue-900/20 p-2 rounded'>
+                <div className='text-xs text-muted-foreground bg-primary/10 p-2 rounded'>
                   💾 Phiên được tự động lưu
                 </div>
               </div>

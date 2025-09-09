@@ -26,11 +26,21 @@ export interface GeneratedQuestion {
   correctAnswer: string
 }
 
+// Fisher-Yates shuffle algorithm for better randomization
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled
+}
+
 export function generateQuestions(config: TestConfigLite, cards: CardLite[]): GeneratedQuestion[] {
   const pool = config.selectedCardIds && config.selectedCardIds.length
     ? cards.filter(c => config.selectedCardIds!.includes(c.id))
     : cards
-  const shuffledPool = [...pool].sort(() => Math.random() - 0.5)
+  const shuffledPool = shuffleArray(pool)
   const need = config.questionCount
   const baseCards = shuffledPool.slice(0, Math.min(need, shuffledPool.length))
   const questions: GeneratedQuestion[] = []
@@ -39,14 +49,14 @@ export function generateQuestions(config: TestConfigLite, cards: CardLite[]): Ge
     const qType = config.questionTypes[i % config.questionTypes.length]
     if (qType === 'multiple-choice') {
       const wrongOptions = cards.filter(c => c.id !== card.id).sort(() => Math.random() - 0.5).slice(0, 3).map(c => c.back)
-      const opts = [card.back, ...wrongOptions].sort(() => Math.random() - 0.5)
+      const opts = shuffleArray([card.back, ...wrongOptions])
       questions.push({ id: i, type: qType, question: card.front, correctAnswer: card.back, options: opts })
     } else if (qType === 'true-false') {
       const showCorrect = Math.random() < 0.5 || cards.length < 2
       let shownAnswer = card.back
       if (!showCorrect) {
         const other = cards.filter(c => c.id !== card.id)
-        if (other.length) shownAnswer = other[Math.floor(Math.random() * other.length)].back
+        if (other.length) shownAnswer = shuffleArray(other)[0].back
       }
       const statement = `${card.front} = ${shownAnswer}`
       questions.push({ id: i, type: qType, question: statement, correctAnswer: showCorrect ? 'Đúng' : 'Sai', options: ['Đúng', 'Sai'] })

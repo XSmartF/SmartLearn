@@ -106,7 +106,7 @@ export function EventList({ events, onView, onDelete, onStatusUpdate }: EventLis
                         Xem chi tiết
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        className="text-red-600"
+                        className="text-destructive"
                         onClick={() => onDelete?.(event.id)}
                       >
                         Xóa sự kiện

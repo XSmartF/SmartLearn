@@ -51,8 +51,8 @@ export function ErrorBoundary() {
       >
         <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-            <AlertTriangle className="w-8 h-8 text-red-600" />
+          <div className="mx-auto w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mb-4">
+            <AlertTriangle className="w-8 h-8 text-destructive" />
           </div>
           <CardTitle className="text-xl">
             {getErrorStatus() ? `Lỗi ${getErrorStatus()}` : 'Đã xảy ra lỗi'}
@@ -80,7 +80,7 @@ export function ErrorBoundary() {
           </div>
           
           {process.env.NODE_ENV === 'development' && error instanceof Error && (
-            <details className="mt-4 p-2 bg-gray-100 rounded text-xs">
+            <details className="mt-4 p-2 bg-muted rounded text-xs">
               <summary className="cursor-pointer font-medium">Chi tiết lỗi (Development)</summary>
               <pre className="mt-2 whitespace-pre-wrap">{error.stack}</pre>
             </details>
@@ -126,8 +126,8 @@ export class ComponentErrorBoundary extends React.Component<
           >
             <Card className="w-full max-w-md">
             <CardHeader className="text-center">
-              <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                <AlertTriangle className="w-8 h-8 text-red-600" />
+              <div className="mx-auto w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mb-4">
+                <AlertTriangle className="w-8 h-8 text-destructive" />
               </div>
               <CardTitle className="text-xl">Component Error</CardTitle>
             </CardHeader>
@@ -155,7 +155,7 @@ export class ComponentErrorBoundary extends React.Component<
               </div>
               
               {process.env.NODE_ENV === 'development' && this.state.error && (
-                <details className="mt-4 p-2 bg-gray-100 rounded text-xs">
+                <details className="mt-4 p-2 bg-muted rounded text-xs">
                   <summary className="cursor-pointer font-medium">Chi tiết lỗi (Development)</summary>
                   <pre className="mt-2 whitespace-pre-wrap">{this.state.error.stack}</pre>
                 </details>

@@ -173,13 +173,13 @@ export default function Calendar() {
         </div>
 
         {/* Stats */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-lg">
+        <div className="bg-card/80 backdrop-blur-sm rounded-xl p-6 shadow-lg">
           <Stats stats={stats} />
         </div>
 
         <div className="grid gap-6 lg:gap-8">
           {/* Calendar */}
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-lg">
+          <div className="bg-card/80 backdrop-blur-sm rounded-xl p-6 shadow-lg">
             <CalendarGrid
               currentDate={currentDate}
               selectedDate={selectedDate}
@@ -193,7 +193,7 @@ export default function Calendar() {
         </div>
 
         {/* Task Status Cards */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-lg">
+        <div className="bg-card/80 backdrop-blur-sm rounded-xl p-6 shadow-lg">
           <TaskStatusCards
             events={events}
             onView={handleViewEvent}

@@ -54,7 +54,7 @@ export default function TestNavigation({
           <Button
             onClick={onFinish}
             disabled={!canFinish}
-            className="bg-green-600 hover:bg-green-700 flex-1 sm:flex-none"
+            className="bg-success hover:bg-success/90 flex-1 sm:flex-none"
           >
             <CheckCircle className="h-4 w-4 mr-2" />
             <span className="hidden sm:inline">Hoàn thành</span>

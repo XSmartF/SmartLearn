@@ -54,7 +54,7 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-muted py-8 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-sm sm:max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-xl sm:text-2xl font-bold">SmartLearn</CardTitle>

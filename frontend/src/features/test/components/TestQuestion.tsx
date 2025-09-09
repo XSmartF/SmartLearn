@@ -63,8 +63,8 @@ export default function TestQuestion({
               key={index}
               variant={isSelected ? "default" : "outline"}
               className={`w-full justify-start text-left p-3 sm:p-4 h-auto text-sm sm:text-base ${
-                isCorrect ? 'bg-green-100 border-green-500 text-green-800' :
-                isIncorrect ? 'bg-red-100 border-red-500 text-red-800' : ''
+                isCorrect ? 'bg-success/10 border-success text-success' :
+                isIncorrect ? 'bg-destructive/10 border-destructive text-destructive' : ''
               }`}
               onClick={() => !showAnswer && onAnswerSelect(option)}
               disabled={showAnswer}
@@ -72,8 +72,8 @@ export default function TestQuestion({
               <div className="flex items-center space-x-2 sm:space-x-3">
                 <span className="font-medium">{String.fromCharCode(65 + index)}.</span>
                 <span className="flex-1">{option}</span>
-                {isCorrect && <CheckCircle className="h-4 w-4 text-green-600" />}
-                {isIncorrect && <XCircle className="h-4 w-4 text-red-600" />}
+                {isCorrect && <CheckCircle className="h-4 w-4 text-success" />}
+                {isIncorrect && <XCircle className="h-4 w-4 text-destructive" />}
               </div>
             </Button>
           )
@@ -103,8 +103,8 @@ export default function TestQuestion({
         {renderOptions()}
 
         {showAnswer && question.type === 'fill-blank' && (
-          <div className="mt-4 p-3 bg-gray-50 rounded-md">
-            <p className="text-sm text-gray-600">
+          <div className="mt-4 p-3 bg-muted rounded-md">
+            <p className="text-sm text-muted-foreground">
               <strong>Đáp án đúng:</strong> {question.correctAnswer}
             </p>
             {userAnswer && (

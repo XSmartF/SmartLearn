@@ -69,7 +69,7 @@ export default function StudyPage(){
   // Answer handling
   const debounceTimerRef = useRef<number | undefined>(undefined);
   const DEBOUNCE_MS=4000;
-  const handleAnswer=useCallback((answer:string|number)=>{ if(!engine||!currentQuestion) return; let ans=answer; let sel:number|null=null; let cor:number|null=null; if(currentQuestion.mode==='MULTIPLE_CHOICE' && typeof answer==='string'){ sel=currentQuestion.options.findIndex((o: string)=>o===answer); const card=cards.find((c: LearnCard)=>c.id.toString()===currentQuestion.cardId); if(card){ cor=currentQuestion.options.findIndex((o: string)=>o===card.back); ans= sel===cor?0:sel; } } const result=engine.submitAnswer(currentQuestion.cardId, ans); try { const state=engine.serialize(); idbSetItem(`study-session-${libraryId}`, state); if(debounceTimerRef.current) window.clearTimeout(debounceTimerRef.current); debounceTimerRef.current=window.setTimeout(()=>{ saveProgress(libraryId,state).catch((e: unknown) => console.error(e)); }, DEBOUNCE_MS); } catch(e){ console.error(e); } setLastResult(result); setShowResult(true); setSelectedOptionIndex(sel); setCorrectOptionIndex(cor); }, [engine, currentQuestion, cards, libraryId]);
+  const handleAnswer=useCallback((answer:string|number)=>{ if(!engine||!currentQuestion) return; let ans=answer; if(currentQuestion.mode==='MULTIPLE_CHOICE' && typeof answer==='string'){ ans=answer; } const result=engine.submitAnswer(currentQuestion.cardId, ans); try { const state=engine.serialize(); idbSetItem(`study-session-${libraryId}`, state); if(debounceTimerRef.current) window.clearTimeout(debounceTimerRef.current); debounceTimerRef.current=window.setTimeout(()=>{ saveProgress(libraryId,state).catch((e: unknown) => console.error(e)); }, DEBOUNCE_MS); } catch(e){ console.error(e); } setLastResult(result); setShowResult(true); setSelectedOptionIndex(typeof answer==='string' && currentQuestion.mode==='MULTIPLE_CHOICE' ? currentQuestion.options.findIndex((o: string)=>o===answer) : null); setCorrectOptionIndex(typeof answer==='string' && currentQuestion.mode==='MULTIPLE_CHOICE' ? currentQuestion.options.findIndex((o: string)=>o===cards.find((c: LearnCard)=>c.id.toString()===currentQuestion.cardId)?.back) : null); }, [engine, currentQuestion, cards, libraryId]);
 
   const handleNext=useCallback(()=>{ if(!engine) return; setShowResult(false); setUserAnswer(''); setLastResult(null); setSelectedOptionIndex(null); setCorrectOptionIndex(null); const nq=engine.nextQuestion(); setCurrentQuestion(nq); if(!nq || engine.isFinished()) setIsFinished(true); }, [engine]);
 
@@ -210,38 +210,38 @@ export default function StudyPage(){
           {/* Keyboard Shortcuts Help */}
           {showKeyboardShortcuts && (
             <div className='w-full'>
-              <Alert className="border-blue-200 bg-blue-50/50 dark:bg-blue-950/20 dark:border-blue-800">
-                <AlertTitle className="text-blue-800 dark:text-blue-200 flex items-center gap-2">
+              <Alert className="border-info bg-info/10">
+                <AlertTitle className="text-info flex items-center gap-2">
                   ⌨️ Phím tắt bàn phím
                 </AlertTitle>
                 <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
                   <div className="flex items-center gap-2">
-                    <kbd className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs font-mono">1-4</kbd>
-                    <span className="text-blue-700 dark:text-blue-300">Chọn đáp án trắc nghiệm</span>
+                    <kbd className="px-2 py-1 bg-info/20 text-info rounded text-xs font-mono">1-4</kbd>
+                    <span className="text-info">Chọn đáp án trắc nghiệm</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <kbd className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs font-mono">Enter</kbd>
-                    <span className="text-blue-700 dark:text-blue-300">Gửi câu trả lời</span>
+                    <kbd className="px-2 py-1 bg-info/20 text-info rounded text-xs font-mono">Enter</kbd>
+                    <span className="text-info">Gửi câu trả lời</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <kbd className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs font-mono">Space/→</kbd>
-                    <span className="text-blue-700 dark:text-blue-300">Câu hỏi tiếp theo</span>
+                    <kbd className="px-2 py-1 bg-info/20 text-info rounded text-xs font-mono">Space/→</kbd>
+                    <span className="text-info">Câu hỏi tiếp theo</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <kbd className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs font-mono">Esc</kbd>
-                    <span className="text-blue-700 dark:text-blue-300">Xóa câu trả lời</span>
+                    <kbd className="px-2 py-1 bg-info/20 text-info rounded text-xs font-mono">Esc</kbd>
+                    <span className="text-info">Xóa câu trả lời</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <kbd className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs font-mono">R</kbd>
-                    <span className="text-blue-700 dark:text-blue-300">Reset phiên học</span>
+                    <kbd className="px-2 py-1 bg-info/20 text-info rounded text-xs font-mono">R</kbd>
+                    <span className="text-info">Reset phiên học</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <kbd className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs font-mono">S</kbd>
-                    <span className="text-blue-700 dark:text-blue-300">Bật/tắt đọc tự động</span>
+                    <kbd className="px-2 py-1 bg-info/20 text-info rounded text-xs font-mono">S</kbd>
+                    <span className="text-info">Bật/tắt đọc tự động</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <kbd className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs font-mono">D/Q</kbd>
-                    <span className="text-blue-700 dark:text-blue-300">Đọc câu hỏi</span>
+                    <kbd className="px-2 py-1 bg-info/20 text-info rounded text-xs font-mono">D/Q</kbd>
+                    <span className="text-info">Đọc câu hỏi</span>
                   </div>
                 </div>
               </Alert>

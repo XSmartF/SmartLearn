@@ -20,34 +20,34 @@ export function StatsCard({ progress }: StatsCardProps) {
       icon: BookOpen,
       value: progress.total,
       label: 'Tổng thuật ngữ',
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-100 dark:bg-blue-900/30'
+      color: 'text-primary',
+      bgColor: 'bg-primary/10'
     },
     {
       icon: CheckCircle,
       value: progress.masteryLevels.level5.count,
       label: 'Đã thành thạo',
-      color: 'text-green-600',
-      bgColor: 'bg-green-100 dark:bg-green-900/30'
+      color: 'text-success',
+      bgColor: 'bg-success/10'
     },
     {
       icon: Clock,
       value: learningCount,
       label: 'Đang học',
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-100 dark:bg-orange-900/30'
+      color: 'text-warning',
+      bgColor: 'bg-warning/10'
     },
     {
       icon: Target,
       value: `${Math.round(progress.accuracyOverall * 100)}%`,
       label: 'Độ chính xác',
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-100 dark:bg-purple-900/30'
+      color: 'text-info',
+      bgColor: 'bg-info/10'
     }
   ]
 
   return (
-    <Card className="w-full shadow-lg border-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
+    <Card className="w-full shadow-lg border-0 bg-card backdrop-blur-sm">
       <CardHeader className="pb-4">
         <CardTitle className="text-lg sm:text-xl font-semibold text-center">
           Tiến độ học tập
