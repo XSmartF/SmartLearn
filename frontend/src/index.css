@@ -167,11 +167,6 @@
   pointer-events: none;
 }
 
-/* Framer Motion specific styles */
-[data-framer-appear-id] {
-  opacity: 0;
-}
-
 /* Smooth page transitions */
 .page-enter {
   opacity: 0;
@@ -193,26 +188,4 @@
   opacity: 0;
   transform: translateY(-20px);
   transition: opacity 300ms, transform 300ms;
-}
-
-/* Enhanced glass morphism for motion */
-.glass-motion {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.2s ease;
-}
-
-.dark .glass-motion {
-  background: rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.glass-motion:hover {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(12px);
-}
-
-.dark .glass-motion:hover {
-  background: rgba(0, 0, 0, 0.15);
 }

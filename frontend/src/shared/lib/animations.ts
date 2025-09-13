@@ -1,4 +1,4 @@
-import type { Variants } from "framer-motion";
+type Variants = Record<string, any>;
 
 export const scaleIn: Variants = {
   initial: {

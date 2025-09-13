@@ -1,14 +1,13 @@
 import * as React from "react"
-import { motion, type HTMLMotionProps } from "framer-motion"
 
 import { cn } from "@/shared/lib/utils"
 
-type InputProps = React.ComponentProps<"input"> & HTMLMotionProps<"input">
+type InputProps = React.ComponentProps<"input">
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, ...props }, ref) => {
     return (
-      <motion.input
+      <input
         ref={ref}
         type={type}
         data-slot="input"
@@ -19,8 +18,6 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           "hover:shadow-md",
           className
         )}
-        whileFocus={{ scale: 1.01 }}
-        transition={{ duration: 0.2 }}
         {...props}
       />
     )

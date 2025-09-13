@@ -1,24 +1,19 @@
 import * as React from "react"
-import { motion, type HTMLMotionProps } from "framer-motion"
 
 import { cn } from "@/shared/lib/utils"
 
-type CardProps = React.ComponentProps<"div"> & HTMLMotionProps<"div">
+type CardProps = React.ComponentProps<"div">
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, ...props }, ref) => {
     return (
-      <motion.div
+      <div
         ref={ref}
         data-slot="card"
         className={cn(
           "bg-card text-card-foreground flex flex-col gap-6 rounded-2xl border border-border/50 py-6 shadow-lg shadow-black/5 backdrop-blur-sm transition-all duration-200 hover:shadow-xl hover:shadow-black/10",
           className
         )}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        whileHover={{ y: -5, scale: 1.02 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
         {...props}
       />
     )

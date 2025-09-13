@@ -1,81 +1,43 @@
 import React from "react"
-import { motion, type Variants, type HTMLMotionProps } from "framer-motion"
 import { cn } from "@/shared/lib/utils"
 
-interface MotionWrapperProps extends HTMLMotionProps<"div"> {
+interface MotionWrapperProps {
   children: React.ReactNode
-  variant?: Variants
   className?: string
-  delay?: number
 }
 
 export const MotionWrapper: React.FC<MotionWrapperProps> = ({
   children,
-  variant,
   className,
-  delay = 0,
-  ...props
 }) => {
-  const defaultVariants: Variants = {
-    initial: {
-      opacity: 0,
-    },
-    animate: {
-      opacity: 1,
-      transition: {
-        duration: 0.3,
-        delay,
-      },
-    },
-  }
-
   return (
-    <motion.div
-      className={cn("", className)}
-      variants={variant || defaultVariants}
-      initial="initial"
-      animate="animate"
-      {...props}
-    >
+    <div className={cn("", className)}>
       {children}
-    </motion.div>
+    </div>
   )
 }
 
-interface StaggerWrapperProps extends HTMLMotionProps<"div"> {
+interface StaggerWrapperProps {
   children: React.ReactNode
   className?: string
-  staggerDelay?: number
 }
 
 export const StaggerWrapper: React.FC<StaggerWrapperProps> = ({
   children,
   className,
-  staggerDelay = 0.05,
-  ...props
 }) => {
   return (
-    <motion.div
-      className={cn("", className)}
-      initial="initial"
-      animate="animate"
-      {...props}
-    >
+    <div className={cn("", className)}>
       {React.Children.map(children, (child, index) => (
-        <motion.div
-          key={index}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: index * staggerDelay }}
-        >
+        <div key={index}>
           {child}
-        </motion.div>
+        </div>
       ))}
-    </motion.div>
+    </div>
   )
 }
 
-interface PageTransitionProps extends HTMLMotionProps<"div"> {
+interface PageTransitionProps {
   children: React.ReactNode
   className?: string
 }
@@ -83,36 +45,10 @@ interface PageTransitionProps extends HTMLMotionProps<"div"> {
 export const PageTransition: React.FC<PageTransitionProps> = ({
   children,
   className,
-  ...props
 }) => {
-  const pageVariants: Variants = {
-    initial: {
-      opacity: 0,
-    },
-    animate: {
-      opacity: 1,
-      transition: {
-        duration: 0.3,
-      },
-    },
-    exit: {
-      opacity: 0,
-      transition: {
-        duration: 0.2,
-      },
-    },
-  }
-
   return (
-    <motion.div
-      className={cn("", className)}
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      {...props}
-    >
+    <div className={cn("", className)}>
       {children}
-    </motion.div>
+    </div>
   )
 }

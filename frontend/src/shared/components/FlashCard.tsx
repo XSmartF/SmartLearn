@@ -13,7 +13,6 @@ import {
   Check,
   RotateCw
 } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
 
 interface FlashCardData {
   id: string
@@ -130,44 +129,35 @@ export default function FlashCard({ cards, onCardUpdate, onComplete, readLanguag
 
       {/* Flash Card */}
       <div className="relative h-80">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={isFlipped ? 'back' : 'front'}
-            initial={{ rotateY: isFlipped ? -90 : 90, opacity: 0 }}
-            animate={{ rotateY: 0, opacity: 1 }}
-            exit={{ rotateY: isFlipped ? 90 : -90, opacity: 0 }}
-            transition={{ duration: 0.6, ease: "easeInOut" }}
-            style={{ perspective: '1000px' }}
+        <div
+          key={isFlipped ? 'back' : 'front'}
+        >
+          <Card 
+            className="cursor-pointer h-full"
+            onClick={handleFlip}
           >
-            <Card 
-              className="cursor-pointer h-full"
-              onClick={handleFlip}
-            >
-              <CardContent className="h-full flex items-center justify-center p-8">
-                <div className="text-center space-y-4">
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">
-                    {isFlipped ? 'Câu trả lời' : 'Câu hỏi'}
-                  </div>
-                  <div className={`text-2xl font-semibold ${isFlipped ? 'text-blue-700' : ''}`}>
-                    {isFlipped ? currentCard.back : currentCard.front}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    {isFlipped ? 'Nhấn để lật lại thẻ' : 'Nhấn để xem câu trả lời'}
-                  </div>
+            <CardContent className="h-full flex items-center justify-center p-8">
+              <div className="text-center space-y-4">
+                <div className="text-xs text-muted-foreground uppercase tracking-wide">
+                  {isFlipped ? 'Câu trả lời' : 'Câu hỏi'}
                 </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </AnimatePresence>
+                <div className={`text-2xl font-semibold ${isFlipped ? 'text-blue-700' : ''}`}>
+                  {isFlipped ? currentCard.back : currentCard.front}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {isFlipped ? 'Nhấn để lật lại thẻ' : 'Nhấn để xem câu trả lời'}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Flip Indicator */}
-        <motion.div 
+        <div 
           className="absolute top-4 right-4 bg-card/90 backdrop-blur-sm rounded-full p-2 shadow-sm"
-          animate={{ rotate: isFlipped ? 180 : 0 }}
-          transition={{ duration: 0.3 }}
         >
           <RotateCw className="h-4 w-4 text-muted-foreground" />
-        </motion.div>
+        </div>
       </div>
 
       {/* Navigation Controls */}

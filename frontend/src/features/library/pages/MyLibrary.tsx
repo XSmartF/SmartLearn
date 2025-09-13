@@ -192,26 +192,27 @@ export default function MyLibrary() {
 
         <TabsContent value="all" className="space-y-4">
           {viewMode === 'grid' ? (
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-stretch">
               {filteredAll.map(flashcard => {
                 const isFav = favoriteIds.includes(flashcard.id);
                 const role = sharedRoleMap.get(flashcard.id);
                 const owner = ownerProfiles[flashcard.ownerId];
                 const authorLabel = flashcard.ownerId === currentUserId ? 'Bạn' : (owner?.displayName || owner?.email || owner?.id?.slice(0, 6) || '—');
                 return (
-                  <FlashcardCard
-                    key={flashcard.id}
-                    flashcard={flashcard}
-                    isFav={isFav}
-                    role={role}
-                    owner={owner}
-                    authorLabel={authorLabel}
-                    onToggleFavorite={toggleFavorite}
-                    onEdit={setEditLib}
-                    onDelete={handleDeleteLibrary}
-                    currentUserId={currentUserId}
-                    favUpdating={favUpdating}
-                  />
+                  <div key={flashcard.id} className="h-full">
+                    <FlashcardCard
+                      flashcard={flashcard}
+                      isFav={isFav}
+                      role={role}
+                      owner={owner}
+                      authorLabel={authorLabel}
+                      onToggleFavorite={toggleFavorite}
+                      onEdit={setEditLib}
+                      onDelete={handleDeleteLibrary}
+                      currentUserId={currentUserId}
+                      favUpdating={favUpdating}
+                    />
+                  </div>
                 );
               })}
             </div>
@@ -252,26 +253,28 @@ export default function MyLibrary() {
               </p>
             </div>
           ) : viewMode === 'grid' ? (
-            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 items-stretch">
               {favorites.map(f => {
                 const isFav = favoriteIds.includes(f.id);
                 const role = sharedRoleMap.get(f.id);
                 const owner = ownerProfiles[f.ownerId];
                 const authorLabel = f.ownerId === currentUserId ? 'Bạn' : (owner?.displayName || owner?.email || owner?.id?.slice(0, 6) || '—');
                 return (
-                  <FlashcardCard
-                    key={f.id}
-                    flashcard={f}
-                    isFav={isFav}
-                    role={role}
-                    owner={owner}
-                    authorLabel={authorLabel}
-                    onToggleFavorite={toggleFavorite}
-                    onEdit={setEditLib}
-                    onDelete={handleDeleteLibrary}
-                    currentUserId={currentUserId}
-                    favUpdating={favUpdating}
-                  />
+                  <div key={f.id} className="h-full">
+                    <FlashcardCard
+                      key={f.id}
+                      flashcard={f}
+                      isFav={isFav}
+                      role={role}
+                      owner={owner}
+                      authorLabel={authorLabel}
+                      onToggleFavorite={toggleFavorite}
+                      onEdit={setEditLib}
+                      onDelete={handleDeleteLibrary}
+                      currentUserId={currentUserId}
+                      favUpdating={favUpdating}
+                    />
+                  </div>
                 );
               })}
             </div>
@@ -300,26 +303,28 @@ export default function MyLibrary() {
             <div className="text-center py-8 text-sm text-muted-foreground">Chưa có thư viện được chia sẻ.</div>
           )}
           {!sharedLoading && shared.length > 0 && (viewMode === 'grid' ? (
-            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 items-stretch">
               {shared.map(s => {
                 const isFav = favoriteIds.includes(s.lib.id);
                 const role = s.role;
                 const owner = ownerProfiles[s.lib.ownerId];
                 const authorLabel = s.lib.ownerId === currentUserId ? 'Bạn' : (owner?.displayName || owner?.email || owner?.id?.slice(0, 6) || '—');
                 return (
-                  <FlashcardCard
-                    key={s.lib.id}
-                    flashcard={s.lib}
-                    isFav={isFav}
-                    role={role}
-                    owner={owner}
-                    authorLabel={authorLabel}
-                    onToggleFavorite={toggleFavorite}
-                    onEdit={setEditLib}
-                    onDelete={handleDeleteLibrary}
-                    currentUserId={currentUserId}
-                    favUpdating={favUpdating}
-                  />
+                  <div key={s.lib.id} className="h-full">
+                    <FlashcardCard
+                      key={s.lib.id}
+                      flashcard={s.lib}
+                      isFav={isFav}
+                      role={role}
+                      owner={owner}
+                      authorLabel={authorLabel}
+                      onToggleFavorite={toggleFavorite}
+                      onEdit={setEditLib}
+                      onDelete={handleDeleteLibrary}
+                      currentUserId={currentUserId}
+                      favUpdating={favUpdating}
+                    />
+                  </div>
                 );
               })}
             </div>

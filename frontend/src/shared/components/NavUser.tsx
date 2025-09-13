@@ -8,7 +8,6 @@ import { Avatar } from '@/shared/components/ui/avatar'
 import { usePersistentTheme } from '@/shared/hooks/usePersistentTheme'
 import { useNavigate } from 'react-router-dom'
 import { ROUTES } from '@/shared/constants/routes'
-import { motion } from 'framer-motion'
 
 export function NavUser() {
 interface User {
@@ -33,11 +32,8 @@ interface User {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <motion.button 
+        <button 
           className={cn('flex w-full items-center gap-2 sm:gap-3 rounded-md px-2 py-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-left text-sm transition-colors duration-200')}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          transition={{ type: "spring", stiffness: 400, damping: 17 }}
         >
           <div className="relative h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-semibold overflow-hidden">
             {user.avatarUrl ? <Avatar src={user.avatarUrl} alt={user.displayName || user.email} size={32} className="h-full w-full" fallback={initials} /> : initials}
@@ -47,7 +43,7 @@ interface User {
             <span className="text-xs text-muted-foreground truncate hidden sm:block">{user.email}</span>
           </div>
           <span className="ml-auto text-xs text-muted-foreground">{open ? '▲' : '▼'}</span>
-        </motion.button>
+        </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent side="top" align="start" className="z-50 min-w-[220px] rounded-md border bg-popover p-1 text-popover-foreground shadow-md focus:outline-none">
         <DropdownMenuLabel className="px-2 py-1.5 text-xs font-medium text-muted-foreground">Tài khoản</DropdownMenuLabel>

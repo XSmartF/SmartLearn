@@ -41,8 +41,8 @@ export const FlashcardCard: React.FC<FlashcardCardProps> = ({
   favUpdating
 }) => {
   return (
-    <Link to={getLibraryDetailPath(flashcard.id)}>
-      <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+    <Link to={getLibraryDetailPath(flashcard.id)} className="h-full">
+      <Card className="hover:shadow-lg transition-shadow cursor-pointer group h-full flex flex-col">
         <CardHeader className="pb-2 sm:pb-3">
           <div className="flex items-start justify-between gap-2">
             <div className="space-y-1 flex-1 min-w-0">
@@ -91,7 +91,7 @@ export const FlashcardCard: React.FC<FlashcardCardProps> = ({
             </DropdownMenu>
           </div>
         </CardHeader>
-        <CardContent className="space-y-3 sm:space-y-4">
+        <CardContent className="space-y-3 sm:space-y-4 flex-grow">
           <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
             {(flashcard.tags || []).slice(0, 3).map(t => <Badge key={t} variant="secondary" className="text-xs">{t}</Badge>)}
           </div>

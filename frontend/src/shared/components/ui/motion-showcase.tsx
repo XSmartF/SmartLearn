@@ -1,27 +1,20 @@
 import React from "react"
-import { motion } from "framer-motion"
 import { Button } from "@/shared/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Input } from "@/shared/components/ui/input"
-import { MotionWrapper, StaggerWrapper, PageTransition } from "@/shared/components/ui/motion-wrapper"
-import { scaleIn } from "@/shared/lib/animations"
 
-// Example component showcasing Framer Motion usage
+// Example component showcasing static UI
 export const MotionShowcase: React.FC = () => {
   return (
-    <PageTransition className="container mx-auto p-6 space-y-8">
-      <MotionWrapper>
+    <div className="container mx-auto p-6 space-y-8">
+      <div>
         <h1 className="text-4xl font-bold text-center mb-8 gradient-text">
-          Framer Motion Showcase
+          UI Showcase
         </h1>
-      </MotionWrapper>
+      </div>
 
-      <StaggerWrapper className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div>
           <Card className="glass-motion">
             <CardHeader>
               <CardTitle>Fade In</CardTitle>
@@ -35,13 +28,9 @@ export const MotionShowcase: React.FC = () => {
               </Button>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.1 }}
-        >
+        <div>
           <Card className="glass-motion">
             <CardHeader>
               <CardTitle>Hover Effects</CardTitle>
@@ -53,13 +42,9 @@ export const MotionShowcase: React.FC = () => {
               <Input placeholder="Animated input field" />
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.2 }}
-        >
+        <div>
           <Card className="glass-motion">
             <CardHeader>
               <CardTitle>Tap Animation</CardTitle>
@@ -76,25 +61,18 @@ export const MotionShowcase: React.FC = () => {
               </Button>
             </CardContent>
           </Card>
-        </motion.div>
-      </StaggerWrapper>
+        </div>
+      </div>
 
-      <MotionWrapper variant={scaleIn} className="text-center">
-        <motion.div
-          className="inline-block p-6 rounded-2xl glass-motion"
-          whileHover={{
-            scale: 1.02,
-            transition: { duration: 0.2 }
-          }}
-          whileTap={{ scale: 0.98 }}
-        >
+      <div className="text-center">
+        <div className="inline-block p-6 rounded-2xl glass-motion">
           <h2 className="text-2xl font-semibold mb-4">Interactive Element</h2>
           <p className="text-muted-foreground">
             Subtle hover and tap animations
           </p>
-        </motion.div>
-      </MotionWrapper>
-    </PageTransition>
+        </div>
+      </div>
+    </div>
   )
 }
 
