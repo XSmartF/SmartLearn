@@ -1,6 +1,6 @@
 import { Button } from '@/shared/components/ui/button'
 import { Card, CardContent } from '@/shared/components/ui/card'
-import { Trophy, RotateCcw, Home } from 'lucide-react'
+import { Trophy, RotateCcw, Home, PartyPopper } from 'lucide-react'
 
 interface StudyFinishedProps {
   handleFinish: () => void
@@ -46,7 +46,8 @@ export function StudyFinished({ handleFinish, handleResetSession }: StudyFinishe
           </div>
 
           <div className="text-sm text-muted-foreground bg-primary/10 p-3 rounded-lg">
-            🎉 Chúc mừng! Tiếp tục học tập để củng cố kiến thức của bạn.
+            <PartyPopper className="h-4 w-4 inline mr-1" />
+            Chúc mừng! Tiếp tục học tập để củng cố kiến thức của bạn.
           </div>
         </CardContent>
       </Card>

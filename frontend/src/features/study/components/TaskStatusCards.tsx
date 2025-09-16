@@ -3,6 +3,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { H4 } from '@/shared/components/ui/typography';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
+import { Calendar, Target } from "lucide-react";
 import type { StudyEvent } from '../types/calendar';
 import {
   getEventIcon,
@@ -60,8 +61,8 @@ export function TaskStatusCards({ events, onView, onDelete, onStatusUpdate, onEd
                   <p className="text-sm text-muted-foreground mb-1">{event.description}</p>
                   <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                     <span>{formatTime(event.startTime)} - {formatTime(event.endTime)}</span>
-                    <span>📅 {formatDate(event.startTime)}</span>
-                    <span>🎯 {event.cardCount > 0 ? `${event.cardCount} thẻ` : 'Tạo mới'}</span>
+                    <span><Calendar className="h-3 w-3 inline mr-1" /> {formatDate(event.startTime)}</span>
+                    <span><Target className="h-3 w-3 inline mr-1" /> {event.cardCount > 0 ? `${event.cardCount} thẻ` : 'Tạo mới'}</span>
                     <Badge variant="outline" className="text-xs">{event.flashcardSet}</Badge>
                   </div>
                 </div>

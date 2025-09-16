@@ -1,4 +1,5 @@
 import React from 'react'
+import { Lock, Globe } from "lucide-react"
 import type { LibraryVisibility } from '@/shared/lib/models'
 
 interface VisibilityBadgeProps {
@@ -13,7 +14,7 @@ export const VisibilityBadge: React.FC<VisibilityBadgeProps> = ({
   if (visibility === 'private') {
     return (
       <div className={`flex items-center gap-1 text-xs ${className}`}>
-        <span className="text-orange-500">🔒</span>
+        <Lock className="h-3 w-3 text-orange-500" />
         <span>Chỉ mình tôi</span>
       </div>
     )
@@ -21,7 +22,7 @@ export const VisibilityBadge: React.FC<VisibilityBadgeProps> = ({
 
   return (
     <div className={`flex items-center gap-1 text-xs ${className}`}>
-      <span className="text-green-500">🌐</span>
+      <Globe className="h-3 w-3 text-green-500" />
       <span>Mọi người</span>
     </div>
   )
@@ -37,7 +38,7 @@ export const VisibilitySelectItem: React.FC<VisibilitySelectItemProps> = ({
   if (value === 'private') {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-orange-500">🔒</span>
+        <Lock className="h-4 w-4 text-orange-500" />
         <span>Chỉ mình tôi</span>
       </div>
     )
@@ -45,7 +46,7 @@ export const VisibilitySelectItem: React.FC<VisibilitySelectItemProps> = ({
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-green-500">🌐</span>
+      <Globe className="h-4 w-4 text-green-500" />
       <span>Mọi người</span>
     </div>
   )

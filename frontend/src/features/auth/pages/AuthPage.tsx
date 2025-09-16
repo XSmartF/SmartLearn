@@ -54,24 +54,56 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted py-8 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-sm sm:max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-xl sm:text-2xl font-bold">SmartLearn</CardTitle>
-          <CardDescription className="text-sm sm:text-base">
-            Nền tảng học tập thông minh của bạn
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <AuthTab
-            onLogin={handleLogin}
-            onRegister={handleRegister}
-            onGoogleSignIn={handleGoogleSignIn}
-            loading={loading}
-            error={error}
-          />
-        </CardContent>
-      </Card>
+    <div className="min-h-screen flex bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* Left side - Background with branding */}
+      <div className="hidden lg:flex lg:flex-1 lg:flex-col lg:justify-center lg:px-8 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="relative z-10 text-white max-w-md mx-auto text-center">
+          <div className="mb-8">
+            <img src="/smartlearn.svg" alt="SmartLearn" className="w-16 h-16 mx-auto mb-4 animate-pulse" />
+            <h1 className="text-4xl font-bold mb-4 animate-fade-in">SmartLearn</h1>
+            <p className="text-xl opacity-90 animate-fade-in-delay">
+              Nền tảng học tập thông minh của bạn
+            </p>
+          </div>
+          <div className="relative">
+            <p className="text-lg opacity-90 mb-4 animate-fade-in-delay">
+              Học tập thông minh, tương lai tươi sáng
+            </p>
+            <div className="typing-container">
+              <span className="typing-text">
+                Khám phá kiến thức mới mỗi ngày...
+              </span>
+            </div>
+          </div>
+        </div>
+        {/* Decorative elements */}
+        <div className="absolute top-20 left-20 w-32 h-32 bg-white/10 rounded-full animate-float"></div>
+        <div className="absolute bottom-20 right-20 w-24 h-24 bg-white/10 rounded-full animate-float-delay"></div>
+      </div>
+
+      {/* Right side - Auth form */}
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="w-full max-w-md animate-fade-in-up">
+          <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-sm">
+            <CardHeader className="text-center pb-2">
+              <CardTitle className="text-2xl font-bold text-gray-800">Chào mừng</CardTitle>
+              <CardDescription className="text-gray-600">
+                Đăng nhập hoặc tạo tài khoản mới
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AuthTab
+                onLogin={handleLogin}
+                onRegister={handleRegister}
+                onGoogleSignIn={handleGoogleSignIn}
+                loading={loading}
+                error={error}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

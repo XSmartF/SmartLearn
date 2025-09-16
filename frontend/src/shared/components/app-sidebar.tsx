@@ -8,7 +8,25 @@ import {
   Home,
   Settings2,
   Bell,
-  Library
+  Library,
+  BookOpen,
+  Apple,
+  Star,
+  Briefcase,
+  Target,
+  Brain,
+  Handshake,
+  Palette,
+  PenTool,
+  Image,
+  Music,
+  DollarSign,
+  Wrench,
+  Calendar as CalendarIcon,
+  Luggage,
+  Map,
+  Globe,
+  Camera
 } from "lucide-react"
 
 import { NavFavorites } from "@/shared/components/nav-favorites"
@@ -80,106 +98,106 @@ const baseData = {
   workspaces: [
     {
       name: "Personal Life Management",
-      emoji: "🏠",
+      icon: Home,
       pages: [
         {
           name: "Daily Journal & Reflection",
           url: "#",
-          emoji: "📔",
+          icon: BookOpen,
         },
         {
           name: "Health & Wellness Tracker",
           url: "#",
-          emoji: "🍏",
+          icon: Apple,
         },
         {
           name: "Personal Growth & Learning Goals",
           url: "#",
-          emoji: "🌟",
+          icon: Star,
         },
       ],
     },
     {
       name: "Professional Development",
-      emoji: "💼",
+      icon: Briefcase,
       pages: [
         {
           name: "Career Objectives & Milestones",
           url: "#",
-          emoji: "🎯",
+          icon: Target,
         },
         {
           name: "Skill Acquisition & Training Log",
           url: "#",
-          emoji: "🧠",
+          icon: Brain,
         },
         {
           name: "Networking Contacts & Events",
           url: "#",
-          emoji: "🤝",
+          icon: Handshake,
         },
       ],
     },
     {
       name: "Creative Projects",
-      emoji: "🎨",
+      icon: Palette,
       pages: [
         {
           name: "Writing Ideas & Story Outlines",
           url: "#",
-          emoji: "✍️",
+          icon: PenTool,
         },
         {
           name: "Art & Design Portfolio",
           url: "#",
-          emoji: "🖼️",
+          icon: Image,
         },
         {
           name: "Music Composition & Practice Log",
           url: "#",
-          emoji: "🎵",
+          icon: Music,
         },
       ],
     },
     {
       name: "Home Management",
-      emoji: "🏡",
+      icon: Home,
       pages: [
         {
           name: "Household Budget & Expense Tracking",
           url: "#",
-          emoji: "💰",
+          icon: DollarSign,
         },
         {
           name: "Home Maintenance Schedule & Tasks",
           url: "#",
-          emoji: "🔧",
+          icon: Wrench,
         },
         {
           name: "Family Calendar & Event Planning",
           url: "#",
-          emoji: "📅",
+          icon: CalendarIcon,
         },
       ],
     },
     {
       name: "Travel & Adventure",
-      emoji: "🧳",
+      icon: Luggage,
       pages: [
         {
           name: "Trip Planning & Itineraries",
           url: "#",
-          emoji: "🗺️",
+          icon: Map,
         },
         {
           name: "Travel Bucket List & Inspiration",
           url: "#",
-          emoji: "🌎",
+          icon: Globe,
         },
         {
           name: "Travel Journal & Photo Gallery",
           url: "#",
-          emoji: "📸",
+          icon: Camera,
         },
       ],
     },

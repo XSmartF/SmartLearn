@@ -124,6 +124,27 @@ export default function MyLibrary() {
     (lib.description?.toLowerCase().includes(deferredSearch.toLowerCase()))
   ), [allLibraries, deferredSearch]);
 
+  const sortedFiltered = useMemo(() => {
+    const sorted = [...filteredAll];
+    switch (sortBy) {
+      case 'newest':
+        sorted.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+        break;
+      case 'oldest':
+        sorted.sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
+        break;
+      case 'name':
+        sorted.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case 'name-desc':
+        sorted.sort((a, b) => b.title.localeCompare(a.title));
+        break;
+      default:
+        break;
+    }
+    return sorted;
+  }, [filteredAll, sortBy]);
+
 
 
   // Derive error message safely
@@ -163,7 +184,7 @@ export default function MyLibrary() {
           sortBy={sortBy}
           onSortChange={setSortBy}
           totalLibraries={allLibraries.length}
-          filteredCount={filteredAll.length}
+          filteredCount={sortedFiltered.length}
         />
         <CreateLibraryDialog
           onCreateLibrary={async (title, description, visibility) => {
@@ -180,7 +201,7 @@ export default function MyLibrary() {
       <Tabs defaultValue="all" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3 h-12 p-1 bg-muted rounded-lg">
           <TabsTrigger value="all" className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm">
-            Tất cả ({filteredAll.length})
+            Tất cả ({sortedFiltered.length})
           </TabsTrigger>
           <TabsTrigger value="favorites" className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm">
             Yêu thích ({favorites.length})
@@ -193,7 +214,7 @@ export default function MyLibrary() {
         <TabsContent value="all" className="space-y-4">
           {viewMode === 'grid' ? (
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-stretch">
-              {filteredAll.map(flashcard => {
+              {sortedFiltered.map(flashcard => {
                 const isFav = favoriteIds.includes(flashcard.id);
                 const role = sharedRoleMap.get(flashcard.id);
                 const owner = ownerProfiles[flashcard.ownerId];
@@ -218,7 +239,7 @@ export default function MyLibrary() {
             </div>
           ) : (
             <div className="space-y-3">
-              {filteredAll.map(flashcard => {
+              {sortedFiltered.map(flashcard => {
                 const role = sharedRoleMap.get(flashcard.id);
                 const owner = ownerProfiles[flashcard.ownerId];
                 const authorLabel = flashcard.ownerId === currentUserId ? 'Bạn' : (owner?.displayName || owner?.email || owner?.id?.slice(0, 6) || '—');
@@ -234,7 +255,7 @@ export default function MyLibrary() {
               })}
             </div>
           )}
-          {filteredAll.length === 0 && (
+          {sortedFiltered.length === 0 && (
             <div className="text-center py-12">
               <BookOpen className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
               <H3 className="text-xl font-semibold mb-2">Chưa có thư viện</H3>
@@ -409,7 +430,7 @@ export default function MyLibrary() {
         </DialogContent>
       </Dialog>
 
-      {filteredAll.length === 0 && searchQuery && (
+      {sortedFiltered.length === 0 && searchQuery && (
         <div className="text-center py-8">
           <Search className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
             <H3 className="text-lg font-semibold mb-2">Không tìm thấy kết quả</H3>

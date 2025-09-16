@@ -6,6 +6,7 @@ import { progressRepository } from '@/shared/lib/repositories/ProgressRepository
 import { userRepository } from '@/shared/lib/repositories/UserRepository';
 import { shareRepository } from '@/shared/lib/repositories/ShareRepository';
 import { libraryRepository } from '@/shared/lib/repositories/LibraryRepository';
+import { Trophy, Medal, Award, Star, Sprout } from "lucide-react";
 import type { UserLibraryProgressSummary } from '@/shared/lib/repositories/ProgressRepository';
 
 interface LeaderboardEntry {
@@ -133,16 +134,16 @@ export function LeaderboardSection({ libraryId, currentUserId }: LeaderboardSect
   }, [libraryId]);
 
   const getAchievementIcon = (rank: number, percentage: number) => {
-    if (rank === 1) return '🏆';
-    if (rank === 2) return '🥈';
-    if (rank === 3) return '🥉';
+    if (rank === 1) return <Trophy className="h-5 w-5 text-yellow-500" />;
+    if (rank === 2) return <Medal className="h-5 w-5 text-gray-400" />;
+    if (rank === 3) return <Award className="h-5 w-5 text-amber-600" />;
     
-    if (percentage >= 100) return '⭐⭐⭐⭐⭐';
-    if (percentage >= 80) return '⭐⭐⭐⭐';
-    if (percentage >= 60) return '⭐⭐⭐';
-    if (percentage >= 40) return '⭐⭐';
-    if (percentage >= 20) return '⭐';
-    return '🌱';
+    if (percentage >= 100) return <div className="flex gap-0.5">{Array(5).fill(0).map((_, i) => <Star key={i} className="h-3 w-3 text-yellow-400 fill-current" />)}</div>;
+    if (percentage >= 80) return <div className="flex gap-0.5">{Array(4).fill(0).map((_, i) => <Star key={i} className="h-3 w-3 text-yellow-400 fill-current" />)}</div>;
+    if (percentage >= 60) return <div className="flex gap-0.5">{Array(3).fill(0).map((_, i) => <Star key={i} className="h-3 w-3 text-yellow-400 fill-current" />)}</div>;
+    if (percentage >= 40) return <div className="flex gap-0.5">{Array(2).fill(0).map((_, i) => <Star key={i} className="h-3 w-3 text-yellow-400 fill-current" />)}</div>;
+    if (percentage >= 20) return <Star className="h-3 w-3 text-yellow-400 fill-current" />;
+    return <Sprout className="h-5 w-5 text-green-500" />;
   };
 
   const getUserDisplayName = (profile: LeaderboardEntry['userProfile']) => {
@@ -154,7 +155,7 @@ export function LeaderboardSection({ libraryId, currentUserId }: LeaderboardSect
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            🏆 Bảng xếp hạng
+            <Trophy className="h-5 w-5" /> Bảng xếp hạng
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -169,7 +170,7 @@ export function LeaderboardSection({ libraryId, currentUserId }: LeaderboardSect
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            🏆 Bảng xếp hạng
+            <Trophy className="h-5 w-5" /> Bảng xếp hạng
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -183,7 +184,7 @@ export function LeaderboardSection({ libraryId, currentUserId }: LeaderboardSect
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          🏆 Bảng xếp hạng ({entries.length} người học)
+          <Trophy className="h-5 w-5" /> Bảng xếp hạng ({entries.length} người học)
         </CardTitle>
       </CardHeader>
       <CardContent>

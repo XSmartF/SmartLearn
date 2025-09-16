@@ -3,7 +3,7 @@ import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Badge } from '@/shared/components/ui/badge'
 import { H2, H3 } from '@/shared/components/ui/typography'
-import { BookOpen, Keyboard, Check, X, Volume2 } from 'lucide-react'
+import { BookOpen, Keyboard, Check, X, Volume2, Lightbulb, Frown, Timer } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import type { Question, Result, LearnEngine as LearnEngineType } from '@/features/study/utils/learnEngine'
 import type { Card as LearnCard } from '@/features/study/utils/learnEngine'
@@ -229,7 +229,8 @@ export function QuestionCard({
                     className="flex-1 h-11 hover:bg-warning/10 hover:border-warning transition-colors"
                     disabled={showHint}
                   >
-                    💡 Gợi ý
+                    <Lightbulb className="h-4 w-4 mr-2" />
+                    Gợi ý
                   </Button>
                   {currentQuestion.fullAnswer && (
                     <Button
@@ -243,7 +244,8 @@ export function QuestionCard({
                       className="flex-1 h-11 hover:bg-destructive/10 hover:border-destructive transition-colors"
                       disabled={showFullAnswer}
                     >
-                      🤔 Không biết
+                      <Frown className="h-4 w-4 mr-2" />
+                      Không biết
                     </Button>
                   )}
                 </div>
@@ -265,7 +267,7 @@ export function QuestionCard({
                         }}
                         className="text-warning-foreground hover:text-warning"
                       >
-                        ✕
+                        <X className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
@@ -291,7 +293,7 @@ export function QuestionCard({
                         }}
                         className="text-info hover:text-info-foreground"
                       >
-                        ✕
+                        <X className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
@@ -367,8 +369,8 @@ export function QuestionCard({
                         >
                           <span className="font-bold mr-2">{String.fromCharCode(65 + index)}.</span>
                           {option}
-                          {index === correctOptionIndex && <span className="ml-2 text-success">✓</span>}
-                          {index === selectedOptionIndex && index !== correctOptionIndex && <span className="ml-2 text-destructive">✗</span>}
+                          {index === correctOptionIndex && <Check className="h-4 w-4 ml-2 text-success inline" />}
+                          {index === selectedOptionIndex && index !== correctOptionIndex && <X className="h-4 w-4 ml-2 text-destructive inline" />}
                         </div>
                       ))}
                     </div>
@@ -388,7 +390,8 @@ export function QuestionCard({
             )}
             {autoAdvance && (
               <div className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
-                ⏱️ Sẽ tự chuyển sang câu tiếp theo trong giây lát...
+                <Timer className="h-4 w-4 inline mr-1" />
+                Sẽ tự chuyển sang câu tiếp theo trong giây lát...
               </div>
             )}
           </div>

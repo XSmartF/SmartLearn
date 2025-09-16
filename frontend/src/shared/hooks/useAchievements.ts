@@ -48,7 +48,7 @@ export function useAchievements(): AchievementsResult {
             description: 'Hoàn thành ít nhất 1 thẻ (mastery đạt ngưỡng).',
             earned: totalMastered >= 1,
             progress: Math.min(1, totalMastered / 1),
-            icon: '🚀'
+            icon: 'Rocket'
           },
           {
             id: 'master-10',
@@ -56,7 +56,7 @@ export function useAchievements(): AchievementsResult {
             description: 'Master 10 thẻ.',
             earned: totalMastered >= 10,
             progress: Math.min(1, totalMastered / 10),
-            icon: '🎯'
+            icon: 'Target'
           },
           {
             id: 'master-50',
@@ -64,7 +64,7 @@ export function useAchievements(): AchievementsResult {
             description: 'Master 50 thẻ.',
             earned: totalMastered >= 50,
             progress: Math.min(1, totalMastered / 50),
-            icon: '🏅'
+            icon: 'Medal'
           },
           {
             id: 'cards-100',
@@ -72,7 +72,7 @@ export function useAchievements(): AchievementsResult {
             description: 'Tổng số thẻ trong các thư viện >= 100.',
             earned: totalCards >= 100,
             progress: Math.min(1, totalCards / 100),
-            icon: '📚'
+            icon: 'BookOpen'
           },
           {
             id: 'sessions-5',
@@ -80,7 +80,7 @@ export function useAchievements(): AchievementsResult {
             description: 'Tham gia 5 phiên học khác nhau.',
             earned: totalSessions >= 5,
             progress: Math.min(1, totalSessions / 5),
-            icon: '⏱️'
+            icon: 'Timer'
           },
           {
             id: 'accuracy-80',
@@ -88,7 +88,7 @@ export function useAchievements(): AchievementsResult {
             description: 'Đạt độ chính xác trung bình >= 80%.',
             earned: avgAccuracy >= 0.8,
             progress: Math.min(1, avgAccuracy / 0.8),
-            icon: '✅',
+            icon: 'CheckCircle',
             meta: { avgAccuracy }
           }
         ];

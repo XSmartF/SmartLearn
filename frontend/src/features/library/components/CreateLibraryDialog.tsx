@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Input } from '@/shared/components/ui/input'
 import { Textarea } from "@/shared/components/ui/textarea"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/shared/components/ui/select"
-import { Plus } from "lucide-react"
+import { Plus, Lock, Globe } from "lucide-react"
 import { toast } from 'sonner'
 import type { LibraryVisibility } from '@/shared/lib/models'
 
@@ -79,13 +79,13 @@ export default function CreateLibraryDialog({ onCreateLibrary }: CreateLibraryDi
               <SelectContent>
                 <SelectItem value="private">
                   <div className="flex items-center gap-2">
-                    <span className="text-orange-500">🔒</span>
+                    <Lock className="h-4 w-4 text-orange-500" />
                     <span>Chỉ mình tôi</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="public">
                   <div className="flex items-center gap-2">
-                    <span className="text-green-500">🌐</span>
+                    <Globe className="h-4 w-4 text-green-500" />
                     <span>Mọi người</span>
                   </div>
                 </SelectItem>

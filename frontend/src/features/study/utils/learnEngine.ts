@@ -1,3 +1,5 @@
+import Fuse from 'fuse.js';
+
 /**
  * Learn Mode (rule-based) – TypeScript single-file implementation
  * Focus: Multiple Choice + Typed Recall (no ML models)
@@ -252,23 +254,22 @@ function normalize(s: string): string {
     .trim();
 }
 
-function levenshtein(a: string, b: string): number {
-  // classic DP O(|a|*|b|)
-  const m = a.length, n = b.length;
-  const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
-  for (let i = 0; i <= m; i++) dp[i][0] = i;
-  for (let j = 0; j <= n; j++) dp[0][j] = j;
-  for (let i = 1; i <= m; i++) {
-    for (let j = 1; j <= n; j++) {
-      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-      dp[i][j] = Math.min(
-        dp[i - 1][j] + 1,
-        dp[i][j - 1] + 1,
-        dp[i - 1][j - 1] + cost
-      );
-    }
+export function fuzzySimilarity(userInput: string, correctAnswer: string): number {
+  if (userInput === correctAnswer) return 1; // exact match
+
+  const fuse = new Fuse([correctAnswer], {
+    includeScore: true,
+    threshold: 1, // allow all matches
+    keys: [''],
+  });
+
+  const result = fuse.search(userInput);
+  if (result.length > 0) {
+    // Fuse score is 0-1 where 0 is perfect match, 1 is no match
+    // Convert to similarity: 1 - score
+    return 1 - (result[0].score || 1);
   }
-  return dp[m][n];
+  return 0; // no match
 }
 
 ///////////////////////////////
@@ -419,11 +420,11 @@ export class LearnEngine {
       // typed recall
       const u = normalize(String(rawAnswer ?? ""));
       const g = normalize(card.back);
-      const dist = levenshtein(u, g);
-      if (u === g) {
+      const similarity = fuzzySimilarity(u, g);
+      if (similarity >= 0.9) { // high similarity threshold for correct
         result = "Correct";
         quality = 5;
-      } else if (dist <= this.params.lenientDistance) {
+      } else if (similarity >= 0.7) { // medium similarity for minor correct
         result = "CorrectMinor";
         quality = 4;
       } else {
@@ -769,7 +770,9 @@ export class LearnEngine {
       .sort((a, b) => a.score - b.score)
       .map(item => item.text);
 
-    const distractors = sorted.slice(0, Math.max(0, total - 1));
+    // Ensure unique distractors by removing duplicates
+    const uniqueDistractors = [...new Set(sorted)];
+    const distractors = uniqueDistractors.slice(0, Math.max(0, total - 1));
     const options = shuffle([correct, ...distractors]);
 
     return options;

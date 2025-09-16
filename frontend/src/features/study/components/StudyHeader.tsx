@@ -4,7 +4,7 @@ import { H1 } from '@/shared/components/ui/typography'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover'
 import { Switch } from '@/shared/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
-import { ArrowLeft, Settings, RotateCcw, BarChart3 } from 'lucide-react'
+import { ArrowLeft, Settings, RotateCcw, BarChart3, Save } from 'lucide-react'
 import type { Question } from '@/features/study/utils/learnEngine'
 import type { LibraryMeta } from '@/shared/lib/models'
 import { getLibraryDetailPath } from '@/shared/constants/routes'
@@ -152,7 +152,8 @@ export function StudyHeader({
                   </Button>
                 </div>
                 <div className='text-xs text-muted-foreground bg-primary/10 p-2 rounded'>
-                  💾 Phiên được tự động lưu
+                  <Save className="h-3 w-3 inline mr-1" />
+                  Phiên được tự động lưu
                 </div>
               </div>
             </PopoverContent>

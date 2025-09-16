@@ -48,7 +48,20 @@ export function generateQuestions(config: TestConfigLite, cards: CardLite[]): Ge
     const card = baseCards[i % baseCards.length]
     const qType = config.questionTypes[i % config.questionTypes.length]
     if (qType === 'multiple-choice') {
-      const wrongOptions = cards.filter(c => c.id !== card.id).sort(() => Math.random() - 0.5).slice(0, 3).map(c => c.back)
+      // Collect unique wrong answers from other cards, excluding the correct answer
+      const allWrongAnswers = cards
+        .filter(c => c.id !== card.id && c.back !== card.back)
+        .map(c => c.back)
+      
+      // Remove duplicates to ensure uniqueness
+      const uniqueWrongAnswers = [...new Set(allWrongAnswers)]
+      
+      // Shuffle and take up to 3 unique wrong options
+      const shuffledWrong = shuffleArray(uniqueWrongAnswers)
+      const wrongOptions = shuffledWrong.slice(0, 3)
+      
+      // If we don't have enough unique wrong options, we might need to handle this case
+      // For now, we'll proceed with what we have
       const opts = shuffleArray([card.back, ...wrongOptions])
       questions.push({ id: i, type: qType, question: card.front, correctAnswer: card.back, options: opts })
     } else if (qType === 'true-false') {

@@ -1,4 +1,4 @@
-type Variants = Record<string, any>;
+type Variants = Record<string, unknown>;
 
 export const scaleIn: Variants = {
   initial: {
