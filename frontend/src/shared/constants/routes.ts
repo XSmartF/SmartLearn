@@ -31,6 +31,26 @@ export const ROUTES = {
   STUDY: '/study/:id',
   CALENDAR: '/calendar',
 
+  // Games routes
+  GAMES: '/games',
+  MEMORY_GAME: '/games/memory/play',
+  MEMORY_SETTINGS: '/games/memory/settings',
+  QUIZ_GAME: '/games/quiz/play',
+  QUIZ_SETTINGS: '/games/quiz/settings',
+  SPEED_GAME: '/games/speed/play',
+  SPEED_SETTINGS: '/games/speed/settings',
+  TRUE_FALSE_GAME: '/games/true-false/play',
+  TRUE_FALSE_SETTINGS: '/games/true-false/settings',
+  FILL_BLANK_GAME: '/games/fill-blank/play',
+  FILL_BLANK_SETTINGS: '/games/fill-blank/settings',
+  WORD_SCRAMBLE_GAME: '/games/word-scramble/play',
+  WORD_SCRAMBLE_SETTINGS: '/games/word-scramble/settings',
+  MATCHING_GAME: '/games/matching/play',
+  MATCHING_SETTINGS: '/games/matching/settings',
+  SPELLING_BEE_GAME: '/games/spelling-bee/play',
+  SPELLING_BEE_SETTINGS: '/games/spelling-bee/settings',
+  GAME_SETTINGS: '/games/:gameId/settings',
+
   // Test routes
   TEST_SETUP: '/test-setup/:id',
   TEST: '/test/:id',

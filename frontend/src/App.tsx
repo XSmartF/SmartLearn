@@ -140,6 +140,141 @@ const router = createBrowserRouter([
             handle: { breadcrumb: 'Cài đặt' }
           },
           {
+            path: ROUTES.GAMES,
+            lazy: async () => {
+              const mod = await import('./features/games/pages/GamesPage')
+              return { Component: mod.default }
+            },
+            errorElement: <ErrorBoundary />,
+            handle: { breadcrumb: 'Trò chơi' }
+          },
+          {
+            path: ROUTES.GAME_SETTINGS,
+            lazy: async () => {
+              const mod = await import('./features/games/pages/GameSettingsPage')
+              return { Component: mod.default }
+            },
+            errorElement: <ErrorBoundary />,
+            handle: { breadcrumb: 'Cài đặt trò chơi' }
+          },
+          {
+            path: ROUTES.MEMORY_GAME,
+            lazy: async () => {
+              const mod = await import('./features/games/components/MemoryGame')
+              return { Component: mod.default }
+            },
+            errorElement: <ErrorBoundary />,
+            handle: { breadcrumb: 'Trò chơi ghi nhớ' }
+          },
+          {
+            path: ROUTES.QUIZ_GAME,
+            lazy: async () => {
+              const mod = await import('./features/games/components/QuizGame')
+              return { Component: mod.default }
+            },
+            errorElement: <ErrorBoundary />,
+            handle: { breadcrumb: 'Đố vui kiến thức' }
+          },
+          {
+            path: ROUTES.SPEED_GAME,
+            lazy: async () => {
+              const mod = await import('./features/games/components/SpeedGame')
+              return { Component: mod.default }
+            },
+            errorElement: <ErrorBoundary />,
+            handle: { breadcrumb: 'Trò chơi tốc độ' }
+          },
+          {
+            path: ROUTES.TRUE_FALSE_SETTINGS,
+            lazy: async () => {
+              const mod = await import('./features/games/pages/TrueFalseSettingsPage')
+              return { Component: mod.default }
+            },
+            errorElement: <ErrorBoundary />,
+            handle: { breadcrumb: 'Cài đặt đúng/sai' }
+          },
+          {
+            path: ROUTES.TRUE_FALSE_GAME,
+            lazy: async () => {
+              const mod = await import('./features/games/components/TrueFalseGame')
+              return { Component: mod.default }
+            },
+            errorElement: <ErrorBoundary />,
+            handle: { breadcrumb: 'Trò chơi đúng/sai' }
+          },
+          {
+            path: ROUTES.MATCHING_SETTINGS,
+            lazy: async () => {
+              const mod = await import('./features/games/pages/MatchingSettingsPage')
+              return { Component: mod.default }
+            },
+            errorElement: <ErrorBoundary />,
+            handle: { breadcrumb: 'Cài đặt ghép đôi' }
+          },
+          {
+            path: ROUTES.MATCHING_GAME,
+            lazy: async () => {
+              const mod = await import('./features/games/components/MatchingGame')
+              return { Component: mod.default }
+            },
+            errorElement: <ErrorBoundary />,
+            handle: { breadcrumb: 'Trò chơi ghép đôi' }
+          },
+          {
+            path: ROUTES.SPELLING_BEE_SETTINGS,
+            lazy: async () => {
+              const mod = await import('./features/games/pages/SpellingBeeSettingsPage')
+              return { Component: mod.default }
+            },
+            errorElement: <ErrorBoundary />,
+            handle: { breadcrumb: 'Cài đặt Spelling Bee' }
+          },
+          {
+            path: ROUTES.SPELLING_BEE_GAME,
+            lazy: async () => {
+              const mod = await import('./features/games/components/SpellingBeeGame')
+              return { Component: mod.default }
+            },
+            errorElement: <ErrorBoundary />,
+            handle: { breadcrumb: 'Spelling Bee' }
+          },
+          {
+            path: ROUTES.FILL_BLANK_GAME,
+            lazy: async () => {
+              const mod = await import('./features/games/pages/FillBlankGamePage')
+              return { Component: mod.default }
+            },
+            errorElement: <ErrorBoundary />,
+            handle: { breadcrumb: 'Điền khuyết' }
+          },
+          {
+            path: ROUTES.FILL_BLANK_SETTINGS,
+            lazy: async () => {
+              const mod = await import('./features/games/pages/FillBlankSettingsPage')
+              return { Component: mod.default }
+            },
+            errorElement: <ErrorBoundary />,
+            handle: { breadcrumb: 'Cài đặt điền khuyết' }
+          },
+          {
+            path: ROUTES.WORD_SCRAMBLE_GAME,
+            lazy: async () => {
+              const mod = await import('./features/games/pages/WordScrambleGamePage')
+              return { Component: mod.default }
+            },
+            errorElement: <ErrorBoundary />,
+            handle: { breadcrumb: 'Xáo trộn từ' }
+          },
+          {
+            path: ROUTES.WORD_SCRAMBLE_SETTINGS,
+            lazy: async () => {
+              const mod = await import('./features/games/pages/WordScrambleSettingsPage')
+              return { Component: mod.default }
+            },
+            errorElement: <ErrorBoundary />,
+            handle: { breadcrumb: 'Cài đặt xáo trộn từ' }
+          },
+          {
             path: ROUTES.PROFILE,
             lazy: async () => {
               const mod = await import('./features/dashboard/pages/Profile')

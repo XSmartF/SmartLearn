@@ -26,7 +26,8 @@ import {
   Luggage,
   Map,
   Globe,
-  Camera
+  Camera,
+  Gamepad2
 } from "lucide-react"
 
 import { NavFavorites } from "@/shared/components/nav-favorites"
@@ -92,6 +93,11 @@ const baseData = {
       title: "Thông báo",
       url: ROUTES.NOTIFICATIONS,
       icon: Bell,
+    },
+    {
+      title: "Trò chơi",
+      url: ROUTES.GAMES,
+      icon: Gamepad2,
     },
   ],
   // favorites removed (dynamic)
@@ -225,6 +231,10 @@ export const AppSidebar = React.memo(function AppSidebar({ ...props }: React.Com
     if (url.startsWith('/library')) import('@/features/library/pages/LibraryDetail').catch(()=>{});  
     else if (url === ROUTES.MY_LIBRARY) import('@/features/library/pages/MyLibrary').catch(()=>{});  
     else if (url === ROUTES.NOTIFICATIONS) import('@/features/notification/pages/Notifications').catch(()=>{});  
+    else if (url === ROUTES.GAMES) import('@/features/games/pages/GamesPage').catch(()=>{});  
+    else if (url === ROUTES.MEMORY_GAME) import('@/features/games/components/MemoryGame').catch(()=>{});  
+    else if (url === ROUTES.QUIZ_GAME) import('@/features/games/components/QuizGame').catch(()=>{});  
+    else if (url === ROUTES.SPEED_GAME) import('@/features/games/components/SpeedGame').catch(()=>{});  
   };  return (
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
