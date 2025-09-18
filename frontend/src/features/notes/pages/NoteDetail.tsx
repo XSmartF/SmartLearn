@@ -10,6 +10,7 @@ import "@blocknote/shadcn/style.css";
 import { useNote, useNoteFavorites } from '@/shared/hooks/useNotes'
 import { noteRepository } from '@/shared/lib/repositories/NoteRepository'
 import { Loader } from '@/shared/components/ui/loader'
+import { usePersistentTheme } from '@/shared/hooks/usePersistentTheme'
 
 export default function NoteDetail() {
     const { id } = useParams<{ id: string }>();
@@ -19,6 +20,7 @@ export default function NoteDetail() {
     const [title, setTitle] = useState('');
     const [saving, setSaving] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
+    const { resolvedTheme } = usePersistentTheme();
 
     const editor = useCreateBlockNote({
         initialContent: note?.content ? JSON.parse(note.content) : undefined,
@@ -134,7 +136,7 @@ export default function NoteDetail() {
             <div className="min-h-[600px] border rounded-lg p-4 bg-background">
                 <BlockNoteView
                     editor={editor}
-                    theme="light"
+                    theme={resolvedTheme as "light" | "dark" | undefined}
                     className="w-full"
                 />
             </div>
