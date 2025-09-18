@@ -3,6 +3,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Avatar } from '@/shared/components/ui/avatar';
 import { Button } from "@/shared/components/ui/button";
 import { Brain } from "lucide-react";
+import { Loader } from '@/shared/components/ui/loader';
 import type { LibraryMeta } from '@/shared/lib/models';
 import { getStudyPath } from '@/shared/constants/routes';
 
@@ -50,7 +51,9 @@ export function RecentFlashcardsSection({
       </CardHeader>
       <CardContent className="space-y-3 sm:space-y-4">
         {libsLoading && recentFlashcards.length === 0 && (
-          <div className="text-sm text-muted-foreground">Đang tải...</div>
+          <div className="flex justify-center">
+            <Loader size="sm" />
+          </div>
         )}
         {recentFlashcards.map((flashcard) => (
           <div key={flashcard.id} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">

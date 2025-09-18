@@ -7,6 +7,7 @@ import { userRepository } from '@/shared/lib/repositories/UserRepository';
 import { shareRepository } from '@/shared/lib/repositories/ShareRepository';
 import { libraryRepository } from '@/shared/lib/repositories/LibraryRepository';
 import { Trophy, Medal, Award, Star, Sprout } from "lucide-react";
+import { Loader } from '@/shared/components/ui/loader';
 import type { UserLibraryProgressSummary } from '@/shared/lib/repositories/ProgressRepository';
 
 interface LeaderboardEntry {
@@ -159,7 +160,9 @@ export function LeaderboardSection({ libraryId, currentUserId }: LeaderboardSect
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-sm text-muted-foreground">Đang tải...</div>
+          <div className="flex justify-center">
+            <Loader size="sm" />
+          </div>
         </CardContent>
       </Card>
     );

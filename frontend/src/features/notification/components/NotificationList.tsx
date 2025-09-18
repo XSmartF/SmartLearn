@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/shared/components/ui/card"
 import { Badge } from "@/shared/components/ui/badge"
 import { Button } from "@/shared/components/ui/button"
+import { Loader } from '@/shared/components/ui/loader'
 import { H3 } from '@/shared/components/ui/typography'
 import {
   Bell,
@@ -105,7 +106,9 @@ export function NotificationList({
   if (notifLoading) {
     return (
       <Card>
-        <CardContent className="p-6 text-sm text-muted-foreground">Đang tải...</CardContent>
+        <CardContent className="p-6 flex justify-center">
+          <Loader size="sm" />
+        </CardContent>
       </Card>
     )
   }

@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Button } from "@/shared/components/ui/button"
+import { Loader } from '@/shared/components/ui/loader'
 import { userRepository } from '@/shared/lib/repositories/UserRepository'
 
 interface AccessRequest {
@@ -37,7 +38,9 @@ export function AccessRequests({
       </CardHeader>
       <CardContent className="space-y-3">
         {loadingRequests && (
-          <div className="text-xs text-muted-foreground">Đang tải...</div>
+          <div className="flex justify-center">
+            <Loader size="sm" />
+          </div>
         )}
         {!loadingRequests && accessRequests.length === 0 && (
           <div className="text-xs text-muted-foreground">Không có yêu cầu.</div>

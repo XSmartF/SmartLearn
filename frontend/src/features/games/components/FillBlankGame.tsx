@@ -5,7 +5,8 @@ import { Badge } from '@/shared/components/ui/badge';
 import { Progress } from '@/shared/components/ui/progress';
 import { Input } from '@/shared/components/ui/input';
 import { H1 } from '@/shared/components/ui/typography';
-import { ArrowLeft, RotateCcw, Target, Trophy, CheckCircle, XCircle, Lightbulb, Loader2, HelpCircle, FileText } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Target, Trophy, CheckCircle, XCircle, Lightbulb, HelpCircle, FileText } from 'lucide-react';
+import { Loader } from '@/shared/components/ui/loader';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAllGameCards, type GameCard } from '../hooks/useGameCards';
 
@@ -230,10 +231,7 @@ export default function FillBlankGame({ difficulty = 'easy' }: FillBlankGameProp
     return (
       <div className="container mx-auto p-6 max-w-2xl">
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-            <p>Đang tải dữ liệu...</p>
-          </div>
+          <Loader size="lg" label="Đang tải dữ liệu" />
         </div>
       </div>
     );

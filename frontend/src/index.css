@@ -145,28 +145,6 @@
   transform: rotateY(180deg);
 }
 
-/* Shimmer effect for skeletons */
-@keyframes shimmer {
-  0% { background-position: -1000px 0; }
-  100% { background-position: 1000px 0; }
-}
-
-.shimmer {
-  position: relative;
-  overflow: hidden;
-}
-
-.shimmer:before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.4) 40%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0.4) 60%, transparent 100%);
-  background-size: 1000px 100%;
-  animation: shimmer 1.8s linear infinite;
-  mix-blend-mode: plus-lighter;
-  pointer-events: none;
-}
-
 /* Smooth page transitions */
 .page-enter {
   opacity: 0;

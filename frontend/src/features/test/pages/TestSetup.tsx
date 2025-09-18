@@ -21,6 +21,7 @@ import { cardRepository } from '@/shared/lib/repositories/CardRepository'
 import { getLibraryDetailPath, getTestPath, ROUTES } from '@/shared/constants/routes'
 import { idbSetItem } from "@/shared/lib/indexedDB"
 import { loadTestQuestionGenerator } from '@/shared/lib/lazyModules'
+import { Loader } from '@/shared/components/ui/loader'
 
 export default function TestSetup() {
   const { id } = useParams()
@@ -156,7 +157,13 @@ export default function TestSetup() {
         <div>
           <H1 className="text-2xl sm:text-3xl font-bold">Cài đặt kiểm tra</H1>
           <p className="text-muted-foreground text-sm">
-            {loadingLib ? 'Đang tải...' : `${libraryTitle} • ${cardCountState} thẻ`}
+            {loadingLib ? (
+              <div className="flex items-center gap-2">
+                <Loader size="sm" />
+              </div>
+            ) : (
+              `${libraryTitle} • ${cardCountState} thẻ`
+            )}
           </p>
         </div>
       </div>

@@ -28,6 +28,7 @@ import {
 } from "@/shared/components/ui/sidebar"
 import { useSidebar } from '@/shared/hooks/useSidebar';
 import { useFavoriteLibraries } from '@/shared/hooks/useFavorites';
+import { Loader } from '@/shared/components/ui/loader';
 import { getStudyPath, getTestSetupPath } from '@/shared/constants/routes';
 
 import React from 'react'
@@ -107,8 +108,7 @@ function NavFavoritesBase({
         {loading && favorites.length === 0 && (
           <SidebarMenuItem>
             <SidebarMenuButton disabled>
-              <Folder className="h-4 w-4" />
-              <span>Đang tải...</span>
+              <Loader size="sm" className="h-4 w-4" />
             </SidebarMenuButton>
           </SidebarMenuItem>
         )}

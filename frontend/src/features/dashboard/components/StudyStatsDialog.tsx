@@ -5,6 +5,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Progress } from "@/shared/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import { BarChart3, TrendingUp, Calendar, Target, BookOpen, Clock } from "lucide-react";
+import { Loader } from '@/shared/components/ui/loader';
 import { loadProgressSummary, type ProgressSummaryLite } from '@/shared/lib/firebaseProgressService';
 import { useUserLibraries } from '@/shared/hooks/useLibraries';
 
@@ -114,10 +115,7 @@ export function StudyStatsDialog({ open, onOpenChange }: StudyStatsDialogProps) 
 
         {loading ? (
           <div className="flex items-center justify-center py-8">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-              <p className="text-sm text-muted-foreground">Đang tải thống kê...</p>
-            </div>
+            <Loader size="md" label="Đang tải thống kê" />
           </div>
         ) : stats ? (
           <Tabs defaultValue="overview" className="w-full">

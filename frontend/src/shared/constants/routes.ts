@@ -27,6 +27,10 @@ export const ROUTES = {
   MY_LIBRARY: '/my-library',
   LIBRARY_DETAIL: '/library/:id',
 
+  // Notes routes
+  NOTES: '/notes',
+  NOTE_DETAIL: '/notes/:id',
+
   // Study routes
   STUDY: '/study/:id',
   CALENDAR: '/calendar',
@@ -71,6 +75,7 @@ export const ROUTES = {
 // Helper functions for dynamic routes
 export const getLibraryDetailPath = (id: string) => ROUTES.LIBRARY_DETAIL.replace(':id', id);
 export const getStudyPath = (id: string) => ROUTES.STUDY.replace(':id', id);
+export const getNoteDetailPath = (id: string) => ROUTES.NOTE_DETAIL.replace(':id', id);
 export const getTestSetupPath = (id: string) => ROUTES.TEST_SETUP.replace(':id', id);
 export const getTestPath = (id: string) => ROUTES.TEST.replace(':id', id);
 

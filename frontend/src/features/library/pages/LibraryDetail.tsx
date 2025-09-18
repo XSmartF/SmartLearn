@@ -1,6 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
 import { H1, H2, H3 } from '@/shared/components/ui/typography';
-import LibraryDetailSkeleton from '@/features/library/components/LibraryDetailSkeleton'
 import { useParams, Link, useLoaderData, useNavigate } from 'react-router-dom'
 import { Card, CardContent } from "@/shared/components/ui/card"
 import { Badge } from "@/shared/components/ui/badge"
@@ -46,6 +45,7 @@ import { ProgressSummarySection, ShareManager, UnifiedCards, LeaderboardSection 
 
 import { Progress } from "@/shared/components/ui/progress"
 import { getTestSetupPath, getStudyPath, ROUTES } from '@/shared/constants/routes'
+import { Loader } from '@/shared/components/ui/loader'
 
 export default function LibraryDetail() {
   const { id } = useParams()
@@ -237,11 +237,13 @@ export default function LibraryDetail() {
   // Lookup by email debounce (simple)
   useEffect(() => { if (!inviteEmail) { setEmailLookupResults([]); return; } const t = setTimeout(async () => { setLookupLoading(true); try { const res = await userRepository.findUserByEmail(inviteEmail.trim()); setEmailLookupResults(res); } finally { setLookupLoading(false); } }, 400); return () => clearTimeout(t); }, [inviteEmail]);
 
-  // Hiển thị skeleton khi đang tải
+  // Hiển thị loader khi đang tải
   if (loading) {
-    let preferList = false;
-    try { if (typeof window !== 'undefined') { preferList = localStorage.getItem('library_view_mode') === 'list'; } } catch {/* ignore */ }
-    return <LibraryDetailSkeleton listView={preferList} />
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <Loader size="lg" label="Đang tải thư viện" />
+      </div>
+    )
   }
 
   // Nếu không tìm thấy thư viện, redirect về trang library

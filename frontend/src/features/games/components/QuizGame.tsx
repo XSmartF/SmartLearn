@@ -4,7 +4,8 @@ import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import { Progress } from '@/shared/components/ui/progress';
 import { H1 } from '@/shared/components/ui/typography';
-import { ArrowLeft, RotateCcw, Clock, CheckCircle, XCircle, HelpCircle, Trophy, Loader2 } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Clock, CheckCircle, XCircle, HelpCircle, Trophy } from 'lucide-react';
+import { Loader } from '@/shared/components/ui/loader';
 import { useNavigate } from 'react-router-dom';
 import {
   createQuizGame,
@@ -65,10 +66,7 @@ export default function QuizGame({ difficulty = 'easy' }: QuizGameProps) {
     return (
       <div className="container mx-auto p-6 max-w-2xl">
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-            <p>Đang tải dữ liệu...</p>
-          </div>
+          <Loader size="lg" label="Đang tải dữ liệu" />
         </div>
       </div>
     );

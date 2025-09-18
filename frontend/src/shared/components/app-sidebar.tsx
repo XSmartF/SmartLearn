@@ -31,11 +31,11 @@ import {
 } from "lucide-react"
 
 import { NavFavorites } from "@/shared/components/nav-favorites"
+import { NavFavoriteNotes } from "@/shared/components/nav-favorite-notes"
 import { useFavoriteLibraries } from '@/shared/hooks/useFavorites';
+import { useNoteFavorites } from '@/shared/hooks/useNotes';
 import { NavMain } from "@/shared/components/nav-main"
 import { userRepository } from '@/shared/lib/repositories/UserRepository'
-// Removed NavSecondary per requirement
-// import { TeamSwitcher } from "@/shared/components/team-switcher" // replaced by Brand
 import {
   Sidebar,
   SidebarContent,
@@ -48,7 +48,6 @@ import { Brand } from '@/shared/components/Brand'
 import { NavUser } from '@/shared/components/NavUser'
 import { ROUTES } from '@/shared/constants/routes'
 
-// Static navigation items; favorites now dynamic
 const baseData = {
   teams: [
     {
@@ -80,6 +79,11 @@ const baseData = {
       icon: Library,
     },
     {
+      title: "Ghi chép",
+      url: ROUTES.NOTES,
+      icon: BookOpen,
+    },
+    {
       title: "Lịch trình",
       url: ROUTES.CALENDAR,
       icon: Calendar,
@@ -100,7 +104,6 @@ const baseData = {
       icon: Gamepad2,
     },
   ],
-  // favorites removed (dynamic)
   workspaces: [
     {
       name: "Personal Life Management",
@@ -212,6 +215,7 @@ const baseData = {
 
 export const AppSidebar = React.memo(function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { favorites, loading } = useFavoriteLibraries();
+  const { favorites: noteFavorites } = useNoteFavorites();
   const [unreadCount, setUnreadCount] = React.useState(0);
   const [pendingReqCount, setPendingReqCount] = React.useState(0);
 
@@ -230,6 +234,7 @@ export const AppSidebar = React.memo(function AppSidebar({ ...props }: React.Com
   const prefetchRoute = (url: string) => {
     if (url.startsWith('/library')) import('@/features/library/pages/LibraryDetail').catch(()=>{});  
     else if (url === ROUTES.MY_LIBRARY) import('@/features/library/pages/MyLibrary').catch(()=>{});  
+    else if (url === ROUTES.NOTES) import('@/features/notes/pages/NotesPage').catch(()=>{});  
     else if (url === ROUTES.NOTIFICATIONS) import('@/features/notification/pages/Notifications').catch(()=>{});  
     else if (url === ROUTES.GAMES) import('@/features/games/pages/GamesPage').catch(()=>{});  
     else if (url === ROUTES.MEMORY_GAME) import('@/features/games/components/MemoryGame').catch(()=>{});  
@@ -251,6 +256,7 @@ export const AppSidebar = React.memo(function AppSidebar({ ...props }: React.Com
       </SidebarHeader>
       <SidebarContent>
         <NavFavorites favorites={favorites.map(f => ({ name: f.title, url: `/library/${f.id}` }))} loading={loading} />
+        <NavFavoriteNotes favorites={noteFavorites} />
       </SidebarContent>
       <SidebarSeparator />
       <SidebarFooter>

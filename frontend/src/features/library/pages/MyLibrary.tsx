@@ -18,6 +18,7 @@ import {
   BookOpen,
 } from "lucide-react"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/shared/components/ui/select";
+import { Loader } from '@/shared/components/ui/loader';
 import { Textarea } from "@/shared/components/ui/textarea";
 import type { LibraryMeta, ShareRole, LibraryVisibility } from '@/shared/lib/models'
 // Extracted components
@@ -319,7 +320,11 @@ export default function MyLibrary() {
           )}
         </TabsContent>
         <TabsContent value="shared" className="space-y-4">
-          {sharedLoading && <div className="text-sm text-muted-foreground">Đang tải...</div>}
+          {sharedLoading && (
+            <div className="flex justify-center">
+              <Loader size="sm" />
+            </div>
+          )}
           {!sharedLoading && shared.length === 0 && (
             <div className="text-center py-8 text-sm text-muted-foreground">Chưa có thư viện được chia sẻ.</div>
           )}
@@ -439,7 +444,11 @@ export default function MyLibrary() {
           </p>
         </div>
       )}
-      {loading && <div className="text-sm text-muted-foreground">Đang tải...</div>}
+      {loading && (
+        <div className="flex justify-center">
+          <Loader size="sm" />
+        </div>
+      )}
       {hasError && (
         <div className="text-sm text-red-600">
           Lỗi: {errorMessage}

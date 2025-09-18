@@ -86,6 +86,24 @@ const router = createBrowserRouter([
       handle: { breadcrumb: (match: { params: Record<string,string>; data?: { library?: { title?: string|null } | null } }) => match.data?.library?.title || `Thư viện #${match.params.id}` }
           },
           {
+            path: ROUTES.NOTES,
+            lazy: async () => {
+              const mod = await import('./features/notes/pages/NotesPage')
+              return { Component: mod.default }
+            },
+            errorElement: <ErrorBoundary />,
+            handle: { breadcrumb: 'Ghi chép' }
+          },
+          {
+            path: ROUTES.NOTE_DETAIL,
+            lazy: async () => {
+              const mod = await import('./features/notes/pages/NoteDetail')
+              return { Component: mod.default }
+            },
+            errorElement: <ErrorBoundary />,
+            handle: { breadcrumb: 'Chi tiết ghi chép' }
+          },
+          {
             path: ROUTES.STUDY,
             lazy: async () => {
               const mod = await import('./features/study/pages/StudyPage')

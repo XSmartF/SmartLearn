@@ -5,6 +5,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { userRepository } from '@/shared/lib/repositories/UserRepository'
 import { UserPlus } from "lucide-react"
 import ConfirmDialog from "@/shared/components/ConfirmDialog"
+import { Loader } from '@/shared/components/ui/loader'
 
 interface ShareManagerProps {
   libraryId: string;
@@ -63,7 +64,11 @@ export function ShareManager(props: ShareManagerProps) {
       </div>
       <div className="space-y-2">
         <div className="text-sm font-medium flex items-center gap-2"><UserPlus className="h-4 w-4" /> Người được chia sẻ</div>
-        {loading ? <div className="text-xs text-muted-foreground">Đang tải...</div> : (
+        {loading ? (
+          <div className="flex justify-center">
+            <Loader size="sm" />
+          </div>
+        ) : (
           <div className="border rounded-md divide-y">
             {shares.length === 0 && <div className="p-3 text-xs text-muted-foreground">Chưa chia sẻ cho ai.</div>}
             {shares.map(s => (

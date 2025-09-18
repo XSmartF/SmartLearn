@@ -3,7 +3,8 @@ import { Card, CardContent } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import { H1 } from '@/shared/components/ui/typography';
-import { ArrowLeft, RotateCcw, Clock, Target, Trophy, Loader2, XCircle, HelpCircle } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Clock, Target, Trophy, XCircle, HelpCircle } from 'lucide-react';
+import { Loader } from '@/shared/components/ui/loader';
 import { useNavigate } from 'react-router-dom';
 import {
   createMemoryGame,
@@ -76,10 +77,7 @@ export default function MemoryGame({ difficulty = 'easy' }: MemoryGameProps) {
     return (
       <div className="container mx-auto p-6 max-w-4xl">
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-            <p>Đang tải dữ liệu...</p>
-          </div>
+          <Loader size="lg" label="Đang tải dữ liệu" />
         </div>
       </div>
     );
