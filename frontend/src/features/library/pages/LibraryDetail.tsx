@@ -269,7 +269,7 @@ export default function LibraryDetail() {
   const isOwner = library && currentUserId && library.ownerId === currentUserId;
   const hasShareAccess = shares.some(s => s.targetUserId === currentUserId) || !!liveShareRole;
   const canStudy = !!library && (library.visibility === 'public' || isOwner || hasShareAccess);
-  const canModify = !!library && (isOwner || hasShareAccess); // contributors/viewers gating could refine later
+  const canModify = !!library && (isOwner || liveShareRole === 'contributor');
   const hasPendingRequest = !canStudy && accessRequests.some(r => r.status === 'pending');
   // Prefer realtime summary if available
   const masteredVal = summary ? summary.mastered : progStats.mastered;
