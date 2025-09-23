@@ -25,6 +25,7 @@ export interface SerializedState {
   modePrefs?: { mc: boolean; typed: boolean };
   currentGroup: string[]; // array of card IDs in current group
   nextCardIndex: number;
+  reviewQueue: string[]; // queue for cards to review in session
 }
 
 ///////////////////////////////
@@ -303,6 +304,7 @@ export class LearnEngine {
   private groupSize = 7; // initial group size
   private lastAccuracyCheck = 0;
   private accuracyCheckInterval = 10; // check every 10 questions
+  private reviewQueue: string[] = []; // queue for cards to review again in session
 
   constructor(init: LearnInit) {
     this.cards = init.cards.slice();
@@ -363,6 +365,23 @@ export class LearnEngine {
   }
 
   private generateQuestionFromCandidates(candidates: CardState[]): Question | null {
+    // Prioritize cards from review queue (hard cards to review again in session)
+    if (this.reviewQueue.length > 0) {
+      const reviewCardId = this.reviewQueue.shift()!; // take first from queue
+      const reviewState = candidates.find(s => s.id === reviewCardId);
+      if (reviewState) {
+        const card = this.getCard(reviewState.id);
+        const mode = this.chooseMode(reviewState);
+        if (mode === "MULTIPLE_CHOICE") {
+          const options = this.generateMCOptions(card, this.params.mcOptions);
+          return { mode, cardId: card.id, prompt: card.front, options };
+        } else {
+          const hint = (reviewState.mastery < 2 && reviewState.wrongCount > 0) ? this.generateHint(card.back) : undefined;
+          return { mode, cardId: card.id, prompt: card.front, hint, fullAnswer: card.back };
+        }
+      }
+    }
+
     // pick candidates due now; if none, pick closest-to-due
     const due: CardState[] = [];
     let minNextDue = Infinity;
@@ -534,6 +553,13 @@ export class LearnEngine {
     return { mode, cardId: card.id, prompt: card.front, hint, fullAnswer: card.back };
   }
 
+  /** Mark a card as hard to review again in session */
+  public markCardAsHard(cardId: string): void {
+    if (!this.reviewQueue.includes(cardId)) {
+      this.reviewQueue.push(cardId);
+    }
+  }
+
   /** Serialize learning state to persist across sessions */
   public serialize(): SerializedState {
     return {
@@ -547,7 +573,8 @@ export class LearnEngine {
       states: [...this.state.values()].map(s => ({...s})),
       modePrefs: { ...this.modePrefs },
       currentGroup: this.currentGroup.map(s => s.id),
-      nextCardIndex: this.nextCardIndex
+      nextCardIndex: this.nextCardIndex,
+      reviewQueue: [...this.reviewQueue]
     };
   }
 
@@ -598,6 +625,7 @@ export class LearnEngine {
       }
     }
     this.nextCardIndex = snapshot.nextCardIndex;
+    this.reviewQueue = snapshot.reviewQueue ? [...snapshot.reviewQueue] : [];
   }
 
   // Get current session stats
@@ -814,6 +842,8 @@ export class LearnEngine {
       // reinsert soon (1-2 items later)
       s.nextDue = this.sessionIndex + rngInt(1, 2);
       s.lastResult = "Incorrect";
+      // Add to review queue for immediate review in session
+      this.reviewQueue.push(s.id);
     } else { // Skip or other
       s.nextDue = this.sessionIndex + 1;
       s.lastResult = "Incorrect"; // treat as not learned

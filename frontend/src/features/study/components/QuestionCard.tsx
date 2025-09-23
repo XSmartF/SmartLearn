@@ -232,6 +232,18 @@ export function QuestionCard({
                     <Lightbulb className="h-4 w-4 mr-2" />
                     Gợi ý
                   </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      engine.markCardAsHard(currentQuestion.cardId)
+                      // Có thể thêm feedback như toast
+                      alert("Đã đánh dấu thẻ này là khó, sẽ ôn lại sớm!")
+                    }}
+                    className="flex-1 h-11 hover:bg-orange/10 hover:border-orange transition-colors"
+                  >
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    Đánh dấu khó
+                  </Button>
                   {currentQuestion.fullAnswer && (
                     <Button
                       variant="outline"
