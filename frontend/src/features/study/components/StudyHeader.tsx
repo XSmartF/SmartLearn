@@ -4,7 +4,7 @@ import { H1 } from '@/shared/components/ui/typography'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover'
 import { Switch } from '@/shared/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
-import { ArrowLeft, Settings, RotateCcw, BarChart3, Save } from 'lucide-react'
+import { ArrowLeft, Settings, RotateCcw, BarChart3, Save, FlipHorizontal2 } from 'lucide-react'
 import type { Question } from '@/features/study/utils/learnEngine'
 import type { LibraryMeta } from '@/shared/lib/models'
 import { getLibraryDetailPath } from '@/shared/constants/routes'
@@ -20,6 +20,7 @@ interface StudyHeaderProps {
   autoRead: boolean
   readLanguage: string
   showKeyboardShortcuts: boolean
+  answerSide: 'front' | 'back'
   setAllowMC: (value: boolean) => void
   setAllowTyped: (value: boolean) => void
   setAutoAdvance: (value: boolean) => void
@@ -27,6 +28,7 @@ interface StudyHeaderProps {
   setAutoRead: (value: boolean) => void
   setReadLanguage: (value: string) => void
   setShowKeyboardShortcuts: (value: boolean) => void
+  setAnswerSide: (side: 'front' | 'back') => void
   handleResetSession: () => void
 }
 
@@ -41,6 +43,7 @@ export function StudyHeader({
   autoRead,
   readLanguage,
   showKeyboardShortcuts,
+  answerSide,
   setAllowMC,
   setAllowTyped,
   setAutoAdvance,
@@ -48,6 +51,7 @@ export function StudyHeader({
   setAutoRead,
   setReadLanguage,
   setShowKeyboardShortcuts,
+  setAnswerSide,
   handleResetSession
 }: StudyHeaderProps) {
   return (
@@ -82,6 +86,32 @@ export function StudyHeader({
                   <p className='text-xs text-muted-foreground'>Điều chỉnh cách bạn muốn học</p>
                 </div>
                 <div className='space-y-3'>
+                  <div className='flex items-center justify-between'>
+                    <label className='text-sm flex items-center gap-2'>
+                      <FlipHorizontal2 className='h-4 w-4 opacity-70' />
+                      Trả lời bằng
+                    </label>
+                    <div className='flex rounded-md overflow-hidden border'>
+                      <Button
+                        type='button'
+                        variant={answerSide === 'back' ? 'default' : 'ghost'}
+                        size='sm'
+                        className='rounded-none'
+                        onClick={() => setAnswerSide('back')}
+                      >
+                        Mặt sau
+                      </Button>
+                      <Button
+                        type='button'
+                        variant={answerSide === 'front' ? 'default' : 'ghost'}
+                        size='sm'
+                        className='rounded-none'
+                        onClick={() => setAnswerSide('front')}
+                      >
+                        Mặt trước
+                      </Button>
+                    </div>
+                  </div>
                   <div className='flex items-center justify-between'>
                     <label className='text-sm'>Trắc nghiệm</label>
                     <Switch

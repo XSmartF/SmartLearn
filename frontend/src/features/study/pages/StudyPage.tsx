@@ -60,6 +60,8 @@ export default function StudyPage(){
   const [showCardProgress,setShowCardProgress]=useState(false); const [showCardAnswers,setShowCardAnswers]=useState(false);
   const [autoRead,setAutoRead]=useState(false); const [readLanguage,setReadLanguage]=useState('en-US');
   const [showKeyboardShortcuts,setShowKeyboardShortcuts]=useState(true);
+  // Which side is the answer when prompting (default back)
+  const [answerSide, setAnswerSide] = useState<'front' | 'back'>('back');
   // Data
   const [library,setLibrary]=useState<LibraryMeta|null>(null);
   const [cards,setCards]=useState<LearnCard[]>([]);
@@ -134,7 +136,9 @@ export default function StudyPage(){
   }, [libraryId,navigate,isReviewSession]);
 
   // Init engine & restore
-  useEffect(()=>{ let cancelled=false; async function init(){ if(loadingData||!library||!cards.length) return; try { const { LearnEngine } = await import('@/features/study/utils/learnEngine'); if(cancelled) return; const eng=new LearnEngine({ cards }); let restored=false; try { const remote=await loadProgress(libraryId); if(remote){ eng.restore(remote); restored=true; } } catch(e){ console.error(e); } if(!restored){ try { const local=await idbGetItem<SerializedState | null>(`study-session-${libraryId}`); if(local && 'params' in local && 'states' in local){ eng.restore(local); restored=true; } } catch(e){ console.error(e); } } if(cancelled) return; setEngine(eng); const q=eng.nextQuestion(); setCurrentQuestion(q); if(!q||eng.isFinished()) setIsFinished(true); } catch(e){ console.error('Khởi tạo LearnEngine thất bại:', e);} } init(); return ()=>{ cancelled=true }; }, [cards,library,libraryId,loadingData]);
+  useEffect(()=>{ let cancelled=false; async function init(){ if(loadingData||!library||!cards.length) return; try { const { LearnEngine } = await import('@/features/study/utils/learnEngine'); if(cancelled) return; const eng=new LearnEngine({ cards }); let restored=false; try { const remote=await loadProgress(libraryId); if(remote){ eng.restore(remote); restored=true; } } catch(e){ console.error(e); } if(!restored){ try { const local=await idbGetItem<SerializedState | null>(`study-session-${libraryId}`); if(local && 'params' in local && 'states' in local){ eng.restore(local); restored=true; } } catch(e){ console.error(e); } } if(cancelled) return; // set answer side from restored snapshot if any
+  try { const snap = eng.serialize(); if (snap.answerSide) { setAnswerSide(snap.answerSide); eng.setAnswerSide(snap.answerSide); } else { eng.setAnswerSide('back'); } } catch { /* ignore */ }
+    setEngine(eng); const q=eng.nextQuestion(); setCurrentQuestion(q); if(!q||eng.isFinished()) setIsFinished(true); } catch(e){ console.error('Khởi tạo LearnEngine thất bại:', e);} } init(); return ()=>{ cancelled=true }; }, [cards,library,libraryId,loadingData]);
 
   // Autosave
   useEffect(()=>{ const saveFn=()=>{ if(engine && !isFinished){ const s=engine.serialize(); idbSetItem(`study-session-${libraryId}`, s); saveProgress(libraryId, s).catch((e: unknown) => console.error(e)); } }; const vis=()=>{ if(document.visibilityState==='hidden') saveFn(); }; window.addEventListener('beforeunload', saveFn); document.addEventListener('visibilitychange', vis); return ()=>{ saveFn(); window.removeEventListener('beforeunload', saveFn); document.removeEventListener('visibilitychange', vis);} }, [engine,isFinished,libraryId]);
@@ -142,10 +146,13 @@ export default function StudyPage(){
   // Mode preference sync
   useEffect(()=>{ if(!engine) return; if(!allowMC && !allowTyped){ setAllowMC(true); engine.setModePreferences({ mc:true, typed:false }); return; } engine.setModePreferences({ mc:allowMC, typed:allowTyped }); if(currentQuestion){ const needChange=(currentQuestion.mode==='MULTIPLE_CHOICE' && !allowMC) || (currentQuestion.mode==='TYPED_RECALL' && !allowTyped); if(needChange){ try { const regen=engine.generateQuestionForCard(currentQuestion.cardId); setCurrentQuestion(regen); setShowResult(false); setUserAnswer(''); setLastResult(null); setSelectedOptionIndex(null); setCorrectOptionIndex(null); } catch(e){ console.error(e); const fb=engine.nextQuestion(); setCurrentQuestion(fb); } } } }, [allowMC,allowTyped,engine,currentQuestion]);
 
+  // Sync answer side preference to engine and regenerate current question to reflect side
+  useEffect(() => { if (!engine) return; engine.setAnswerSide(answerSide); if (currentQuestion) { try { const regen = engine.generateQuestionForCard(currentQuestion.cardId); setCurrentQuestion(regen); setShowResult(false); setUserAnswer(''); setLastResult(null); setSelectedOptionIndex(null); setCorrectOptionIndex(null); } catch(e) { console.error(e); } } }, [answerSide, engine, currentQuestion]);
+
   // Answer handling
   const debounceTimerRef = useRef<number | undefined>(undefined);
   const DEBOUNCE_MS=4000;
-  const handleAnswer=useCallback((answer:string|number)=>{ if(!engine||!currentQuestion) return; let ans=answer; if(currentQuestion.mode==='MULTIPLE_CHOICE' && typeof answer==='string'){ ans=answer; } const result=engine.submitAnswer(currentQuestion.cardId, ans); try { const state=engine.serialize(); idbSetItem(`study-session-${libraryId}`, state); if(debounceTimerRef.current) window.clearTimeout(debounceTimerRef.current); debounceTimerRef.current=window.setTimeout(()=>{ saveProgress(libraryId,state).catch((e: unknown) => console.error(e)); }, DEBOUNCE_MS); } catch(e){ console.error(e); } setLastResult(result); setShowResult(true); setSelectedOptionIndex(typeof answer==='string' && currentQuestion.mode==='MULTIPLE_CHOICE' ? currentQuestion.options.findIndex((o: string)=>o===answer) : null); setCorrectOptionIndex(typeof answer==='string' && currentQuestion.mode==='MULTIPLE_CHOICE' ? currentQuestion.options.findIndex((o: string)=>o===cards.find((c: LearnCard)=>c.id.toString()===currentQuestion.cardId)?.back) : null); const meta=engine.getDifficultyMeta(currentQuestion.cardId); if(meta?.shouldPrompt){ const cardDetail=cards.find((c: LearnCard)=>c.id.toString()===currentQuestion.cardId); setDifficultyPrompt({ cardId: currentQuestion.cardId, front: cardDetail?.front ?? currentQuestion.prompt, back: cardDetail?.back ?? '', meta }); } else if(difficultyPrompt?.cardId===currentQuestion.cardId){ setDifficultyPrompt(null); } }, [engine, currentQuestion, cards, libraryId, difficultyPrompt]);
+  const handleAnswer=useCallback((answer:string|number)=>{ if(!engine||!currentQuestion) return; let ans=answer; if(currentQuestion.mode==='MULTIPLE_CHOICE' && typeof answer==='string'){ ans=answer; } const result=engine.submitAnswer(currentQuestion.cardId, ans); try { const state=engine.serialize(); idbSetItem(`study-session-${libraryId}`, state); if(debounceTimerRef.current) window.clearTimeout(debounceTimerRef.current); debounceTimerRef.current=window.setTimeout(()=>{ saveProgress(libraryId,state).catch((e: unknown) => console.error(e)); }, DEBOUNCE_MS); } catch(e){ console.error(e); } setLastResult(result); setShowResult(true); setSelectedOptionIndex(typeof answer==='string' && currentQuestion.mode==='MULTIPLE_CHOICE' ? currentQuestion.options.findIndex((o: string)=>o===answer) : null); setCorrectOptionIndex(typeof answer==='string' && currentQuestion.mode==='MULTIPLE_CHOICE' ? (()=>{ const card=cards.find((c: LearnCard)=>c.id.toString()===currentQuestion.cardId); const correctAnswer= answerSide==='back' ? card?.back : card?.front; return currentQuestion.options.findIndex((o: string)=>o===correctAnswer); })() : null); const meta=engine.getDifficultyMeta(currentQuestion.cardId); if(meta?.shouldPrompt){ const cardDetail=cards.find((c: LearnCard)=>c.id.toString()===currentQuestion.cardId); setDifficultyPrompt({ cardId: currentQuestion.cardId, front: cardDetail?.front ?? currentQuestion.prompt, back: cardDetail?.back ?? '', meta }); } else if(difficultyPrompt?.cardId===currentQuestion.cardId){ setDifficultyPrompt(null); } }, [engine, currentQuestion, cards, libraryId, difficultyPrompt, answerSide]);
 
   const handleDifficultyChoice=useCallback((choice: ReviewDifficultyChoice)=>{ if(!engine || !difficultyPrompt) return; setSubmittingChoice(choice); try { engine.recordDifficultyChoice(difficultyPrompt.cardId, choice); scheduleAutoReview({ cardId: difficultyPrompt.cardId, libraryId, cardFront: difficultyPrompt.front, cardBack: difficultyPrompt.back || undefined, libraryTitle: library?.title, choice }); const state=engine.serialize(); idbSetItem(`study-session-${libraryId}`, state); if(debounceTimerRef.current) window.clearTimeout(debounceTimerRef.current); debounceTimerRef.current=window.setTimeout(()=>{ saveProgress(libraryId,state).catch((e: unknown) => console.error(e)); }, DEBOUNCE_MS); const updatedMeta=engine.getDifficultyMeta(difficultyPrompt.cardId); if(updatedMeta?.shouldPrompt){ setDifficultyPrompt(prev=> prev ? { ...prev, meta: updatedMeta } : prev); } else { setDifficultyPrompt(null); } } finally { setSubmittingChoice(null); } }, [engine,difficultyPrompt,libraryId,library]);
 
@@ -278,6 +285,7 @@ export default function StudyPage(){
             autoRead={autoRead}
             readLanguage={readLanguage}
             showKeyboardShortcuts={showKeyboardShortcuts}
+            answerSide={answerSide}
             setAllowMC={setAllowMC}
             setAllowTyped={setAllowTyped}
             setAutoAdvance={setAutoAdvance}
@@ -285,6 +293,7 @@ export default function StudyPage(){
             setAutoRead={setAutoRead}
             setReadLanguage={setReadLanguage}
             setShowKeyboardShortcuts={setShowKeyboardShortcuts}
+            setAnswerSide={setAnswerSide}
             handleResetSession={handleResetSession}
           />
 
@@ -365,6 +374,7 @@ export default function StudyPage(){
                   handleAnswer={handleAnswer}
                   handleNext={handleNext}
                   disableNext={promptActive}
+                  answerSide={answerSide}
                 />
               )}
             </div>

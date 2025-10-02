@@ -25,6 +25,7 @@ interface QuestionCardProps {
   handleAnswer: (answer: string | number) => void
   handleNext: () => void
   disableNext?: boolean
+  answerSide: 'front' | 'back'
 }
 
 export function QuestionCard({
@@ -42,7 +43,8 @@ export function QuestionCard({
   speakQuestion,
   handleAnswer,
   handleNext,
-  disableNext = false
+  disableNext = false,
+  answerSide
 }: QuestionCardProps) {
   const [showFullAnswer, setShowFullAnswer] = useState(false)
   const [fullAnswerText, setFullAnswerText] = useState('')
@@ -138,7 +140,8 @@ export function QuestionCard({
                     onClick={() => {
                       if (mustRetryAfterDontKnow) {
                         // Only allow selecting the correct answer
-                        const correctAnswer = cards.find(c => c.id.toString() === currentQuestion.cardId)?.back
+                        const cardObj = cards.find(c => c.id.toString() === currentQuestion.cardId)
+                        const correctAnswer = answerSide === 'back' ? cardObj?.back : cardObj?.front
                         if (option === correctAnswer) {
                           // Submit with wrong answer to count as incorrect
                           handleAnswer(currentQuestion.options[0] !== correctAnswer ? currentQuestion.options[0] : currentQuestion.options[1] || '')
@@ -169,7 +172,8 @@ export function QuestionCard({
                     onKeyPress={(e) => {
                       if (e.key === 'Enter' && userAnswer.trim()) {
                         if (mustRetryAfterDontKnow) {
-                          const correctAnswer = cards.find(c => c.id.toString() === currentQuestion.cardId)?.back || ''
+                          const cardObj = cards.find(c => c.id.toString() === currentQuestion.cardId)
+                          const correctAnswer = (answerSide === 'back' ? cardObj?.back : cardObj?.front) || ''
                           if (normalize(userAnswer) === normalize(correctAnswer)) {
                             // Submit with empty string to count as incorrect
                             handleAnswer('')
@@ -191,7 +195,8 @@ export function QuestionCard({
                 <Button
                   onClick={() => {
                     if (mustRetryAfterDontKnow) {
-                      const correctAnswer = cards.find(c => c.id.toString() === currentQuestion.cardId)?.back || ''
+                      const cardObj = cards.find(c => c.id.toString() === currentQuestion.cardId)
+                      const correctAnswer = (answerSide === 'back' ? cardObj?.back : cardObj?.front) || ''
                       if (normalize(userAnswer) === normalize(correctAnswer)) {
                         // Submit with empty string to count as incorrect
                         handleAnswer('')
@@ -357,9 +362,7 @@ export function QuestionCard({
                     return card ? (
                       <div className="bg-info/10 p-4 rounded-lg">
                         <p className="text-sm text-muted-foreground mb-1">Đáp án đúng:</p>
-                        <p className="text-lg font-semibold text-info">
-                          {card.back}
-                        </p>
+                        <p className="text-lg font-semibold text-info">{answerSide === 'back' ? card.back : card.front}</p>
                       </div>
                     ) : null
                   })()}

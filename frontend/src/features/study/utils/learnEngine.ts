@@ -27,6 +27,8 @@ export interface SerializedState {
   currentGroup: string[]; // array of card IDs in current group
   nextCardIndex: number;
   reviewQueue: string[]; // queue for cards to review in session
+  /** Which side is considered the answer side for prompts (default 'back') */
+  answerSide?: 'front' | 'back';
 }
 
 ///////////////////////////////
@@ -142,6 +144,8 @@ export interface SerializedState {
   recentMs: number[]; 
   states: CardState[];
   modePrefs?: { mc: boolean; typed: boolean }; // optional for backward compatibility
+  /** Which side is considered the answer side for prompts (default 'back') */
+  answerSide?: 'front' | 'back';
 }
 
 ///////////////////////////////
@@ -325,6 +329,8 @@ export class LearnEngine {
   private lastAccuracyCheck = 0;
   private accuracyCheckInterval = 10; // check every 10 questions
   private reviewQueue: string[] = []; // queue for cards to review again in session
+  // Which side is considered the answer side (default: back)
+  private answerSide: 'front' | 'back' = 'back';
 
   constructor(init: LearnInit) {
     this.cards = init.cards.slice();
@@ -358,6 +364,15 @@ export class LearnEngine {
 
   public getModePreferences() {
     return { ...this.modePrefs };
+  }
+
+  /** Set which side is the answer side ('back' by default). If 'front', prompts will use back and answers will be front. */
+  public setAnswerSide(side: 'front' | 'back') {
+    this.answerSide = side;
+  }
+
+  public getAnswerSide(): 'front' | 'back' {
+    return this.answerSide;
   }
 
   isFinished(): boolean {
@@ -395,11 +410,14 @@ export class LearnEngine {
         const card = this.getCard(reviewState.id);
         const mode = this.chooseMode(reviewState);
         if (mode === "MULTIPLE_CHOICE") {
-          const options = this.generateMCOptions(card, this.params.mcOptions);
-          return { mode, cardId: card.id, prompt: card.front, options };
+          const options = this.generateMCOptions(card, this.params.mcOptions, this.answerSide);
+          const prompt = this.answerSide === 'back' ? card.front : card.back;
+          return { mode, cardId: card.id, prompt, options };
         } else {
-          const hint = (reviewState.mastery < 2 && reviewState.wrongCount > 0) ? this.generateHint(card.back) : undefined;
-          return { mode, cardId: card.id, prompt: card.front, hint, fullAnswer: card.back };
+          const answer = this.answerSide === 'back' ? card.back : card.front;
+          const prompt = this.answerSide === 'back' ? card.front : card.back;
+          const hint = (reviewState.mastery < 2 && reviewState.wrongCount > 0) ? this.generateHint(answer) : undefined;
+          return { mode, cardId: card.id, prompt, hint, fullAnswer: answer };
         }
       }
     }
@@ -422,19 +440,23 @@ export class LearnEngine {
     const mode = this.chooseMode(picked);
 
     if (mode === "MULTIPLE_CHOICE") {
-      const options = this.generateMCOptions(card, this.params.mcOptions);
-      return { mode, cardId: card.id, prompt: card.front, options };
+      const options = this.generateMCOptions(card, this.params.mcOptions, this.answerSide);
+      const prompt = this.answerSide === 'back' ? card.front : card.back;
+      return { mode, cardId: card.id, prompt, options };
     } else {
       // For typed recall, add hint if mastery is low and wrong count > 0
-      const hint = (picked.mastery < 2 && picked.wrongCount > 0) ? this.generateHint(card.back) : undefined;
-      return { mode, cardId: card.id, prompt: card.front, hint, fullAnswer: card.back };
+      const answer = this.answerSide === 'back' ? card.back : card.front;
+      const prompt = this.answerSide === 'back' ? card.front : card.back;
+      const hint = (picked.mastery < 2 && picked.wrongCount > 0) ? this.generateHint(answer) : undefined;
+      return { mode, cardId: card.id, prompt, hint, fullAnswer: answer };
     }
   }
 
   submitAnswer(cardId: string, rawAnswer: string | number | null, meta?: { ms?: number }): Result {
     const s = this.state.get(cardId);
     if (!s) throw new Error("Unknown card state");
-    const card = this.getCard(cardId);
+  const card = this.getCard(cardId);
+  const correctAnswer = this.answerSide === 'back' ? card.back : card.front;
 
     let result: Result = "Incorrect";
     let quality = 0; // 0-5 for SM-2
@@ -450,7 +472,7 @@ export class LearnEngine {
         result = rawAnswer === 0 ? "Correct" : "Incorrect";
         quality = rawAnswer === 0 ? 5 : 0;
       } else if (typeof rawAnswer === "string") {
-        const isCorrect = normalize(rawAnswer) === normalize(card.back);
+        const isCorrect = normalize(rawAnswer) === normalize(correctAnswer);
         result = isCorrect ? "Correct" : "Incorrect";
         quality = isCorrect ? 5 : 0;
       } else {
@@ -460,7 +482,7 @@ export class LearnEngine {
     } else {
       // typed recall
       const u = normalize(String(rawAnswer ?? ""));
-      const g = normalize(card.back);
+      const g = normalize(correctAnswer);
       const similarity = fuzzySimilarity(u, g);
       if (similarity >= 0.9) { // high similarity threshold for correct
         result = "Correct";
@@ -576,12 +598,15 @@ export class LearnEngine {
     const card = this.getCard(cardId);
     const mode = this.chooseMode(s);
     if (mode === "MULTIPLE_CHOICE") {
-      const options = this.generateMCOptions(card, this.params.mcOptions);
-      return { mode, cardId: card.id, prompt: card.front, options };
+      const options = this.generateMCOptions(card, this.params.mcOptions, this.answerSide);
+      const prompt = this.answerSide === 'back' ? card.front : card.back;
+      return { mode, cardId: card.id, prompt, options };
     }
     // For typed recall, add hint if mastery is low and wrong count > 0
-    const hint = (s.mastery < 2 && s.wrongCount > 0) ? this.generateHint(card.back) : undefined;
-    return { mode, cardId: card.id, prompt: card.front, hint, fullAnswer: card.back };
+    const answer = this.answerSide === 'back' ? card.back : card.front;
+    const prompt = this.answerSide === 'back' ? card.front : card.back;
+    const hint = (s.mastery < 2 && s.wrongCount > 0) ? this.generateHint(answer) : undefined;
+    return { mode, cardId: card.id, prompt, hint, fullAnswer: answer };
   }
 
   /** Mark a card as hard to review again in session */
@@ -685,7 +710,8 @@ export class LearnEngine {
       modePrefs: { ...this.modePrefs },
       currentGroup: this.currentGroup.map(s => s.id),
       nextCardIndex: this.nextCardIndex,
-      reviewQueue: [...this.reviewQueue]
+      reviewQueue: [...this.reviewQueue],
+      answerSide: this.answerSide,
     };
   }
 
@@ -736,6 +762,8 @@ export class LearnEngine {
     if (snapshot.modePrefs) {
       this.modePrefs = { ...snapshot.modePrefs };
     }
+    // Restore answer side preference (default to 'back')
+    this.answerSide = snapshot.answerSide === 'front' ? 'front' : 'back';
     // Restore group state
     this.currentGroup = [];
     for (const cardId of snapshot.currentGroup) {
@@ -890,18 +918,20 @@ export class LearnEngine {
   return "TYPED_RECALL";
   }
 
-  private generateMCOptions(card: Card, total: number): string[] {
-    const correct = card.back;
+  private generateMCOptions(card: Card, total: number, side: 'front' | 'back'): string[] {
+    const correct = side === 'back' ? card.back : card.front;
     const others = this.cards.filter(c => c.id !== card.id);
 
     // Prefer same domain distractors; else fallback to all
-    const sameDomain = card.domain ? others.filter(o => o.domain === card.domain) : [];
-    let pool = (sameDomain.length >= total - 1 ? sameDomain : others).map(x => x.back);
+  const sameDomain = card.domain ? others.filter(o => o.domain === card.domain) : [];
+  let pool = (sameDomain.length >= total - 1 ? sameDomain : others).map(x => side === 'back' ? x.back : x.front);
 
     // Ensure we have enough unique distractors
     if (pool.length < total - 1) {
       // If not enough, add more from all cards, excluding duplicates
-      const allPool = others.map(x => x.back).filter(back => !pool.includes(back) && normalize(back) !== normalize(correct));
+      const allPool = others
+        .map(x => side === 'back' ? x.back : x.front)
+        .filter(ans => !pool.includes(ans) && normalize(ans) !== normalize(correct));
       pool = [...pool, ...allPool];
     }
 
@@ -911,7 +941,7 @@ export class LearnEngine {
       .map(other => {
         const lengthDiff = Math.abs(other.length - correct.length);
         // Prefer distractors with similar difficulty
-        const cardObj = this.cards.find(c => c.back === other);
+        const cardObj = this.cards.find(c => (side === 'back' ? c.back === other : c.front === other));
         const difficultyMatch = cardObj?.difficulty === card.difficulty ? 0 : 1;
         return { text: other, score: lengthDiff + difficultyMatch * 10 }; // lower score better
       })
