@@ -26,7 +26,7 @@ export default defineConfig({
             // Don't manually chunk dynamic imports, let Vite handle them
             return;
           }
-          
+
           if (id.includes('node_modules')) {
             // React ecosystem
             if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
