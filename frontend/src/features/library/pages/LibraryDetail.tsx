@@ -321,23 +321,23 @@ export default function LibraryDetail() {
     <div className="space-y-8">
       {/* Header */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-start md:justify-between">
+          <div className="flex items-start gap-3 sm:gap-4 flex-wrap min-w-0">
             <Link to={ROUTES.MY_LIBRARY}>
               <Button variant="ghost" size="icon">
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             </Link>
-            <div>
-              <H1 className="text-3xl font-bold">{library?.title}</H1>
-              <div className="flex items-center gap-2 mt-2">
+            <div className="min-w-0">
+              <H1 className="text-2xl sm:text-3xl font-bold leading-tight break-words">{library?.title}</H1>
+              <div className="flex flex-wrap items-center gap-2 mt-2">
                 <VisibilityBadge visibility={library?.visibility || 'public'} />
                 {isFavorite && <Heart className="h-4 w-4 fill-red-500 text-red-500" />}
               </div>
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-start md:justify-end">
             <Button
               variant="ghost"
               size="icon"
@@ -429,7 +429,7 @@ export default function LibraryDetail() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <Button 
             size="default" 
             disabled={!canStudy || navigatingToStudy} 

@@ -25,23 +25,23 @@ export function PageHeader({
   const descriptionWrap = align === 'center' ? 'mx-auto' : 'mx-0';
 
   return (
-    <header className={cn('flex flex-col gap-6', className)}>
-      <div className={cn('flex flex-col gap-3', alignment)}>
+    <header className={cn('flex flex-col gap-4 sm:gap-6', className)}>
+      <div className={cn('flex flex-col gap-2 sm:gap-3', alignment)}>
         {(icon || eyebrow) && (
-          <div className={cn('flex items-center gap-2 text-sm font-medium text-primary/90', align === 'center' ? 'justify-center' : 'justify-start')}>
+          <div className={cn('hidden sm:flex items-center gap-2 text-sm font-medium text-primary/90', align === 'center' ? 'justify-center' : 'justify-start')}>
             {icon ? <span className="inline-flex items-center justify-center">{icon}</span> : null}
             {eyebrow ? <span className="uppercase tracking-wide text-primary/70">{eyebrow}</span> : null}
           </div>
         )}
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl text-foreground">{title}</h1>
+        <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-foreground break-words">{title}</h1>
         {description ? (
-          <p className={cn('text-lg text-muted-foreground sm:text-xl max-w-3xl', descriptionWrap)}>
+          <p className={cn('hidden sm:block text-lg text-muted-foreground sm:text-xl max-w-3xl', descriptionWrap)}>
             {description}
           </p>
         ) : null}
       </div>
       {actions ? (
-        <div className={cn('flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center', actionJustify)}>
+        <div className={cn('flex flex-wrap gap-2 sm:gap-3 sm:flex-row sm:flex-wrap sm:items-center', actionJustify)}>
           {actions}
         </div>
       ) : null}

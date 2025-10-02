@@ -21,9 +21,7 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-  RadialBarChart,
-  RadialBar,
-  PolarAngleAxis
+  
 } from 'recharts';
 import {
   RecentFlashcardsSection,
@@ -32,7 +30,6 @@ import {
 import {
   useDashboardAnalytics,
   type DashboardProductivityPoint,
-  type DashboardTopicCompletion,
 } from '../hooks/useDashboardAnalytics';
 
 export default function DashboardPage() {
@@ -53,10 +50,7 @@ export default function DashboardPage() {
   const [studyEvents, setStudyEvents] = useState<StudyEvent[]>([]);
   const [ownerProfiles, setOwnerProfiles] = useState<Record<string, { id: string; displayName?: string; email?: string; avatarUrl?: string }>>({});
 
-  const {
-    productivity: fallbackProductivity,
-    completion: fallbackCompletion,
-  } = useDashboardAnalytics();
+  const { productivity: fallbackProductivity } = useDashboardAnalytics();
 
   useEffect(() => {
     const unsubscribe = listenUserStudyEvents((events) => {
@@ -204,41 +198,7 @@ export default function DashboardPage() {
     return { totalCards, totalMastered, totalSessions, averageAccuracy };
   }, [allLibraries, summaries]);
 
-  const completionFromSummaries = useMemo<DashboardTopicCompletion[]>(() => {
-    const palette = chartPalette.radial.length
-      ? chartPalette.radial
-      : ['#8b5cf6', '#38bdf8', '#34d399', '#fbbf24', '#f472b6'];
-    return allLibraries.slice(0, 5).map((lib, index) => {
-      const summary = summaries[lib.id];
-      const completion = summary ? Math.round(summary.percentMastered ?? 0) : 0;
-      return {
-        topic: lib.title,
-        completion,
-        color: palette[index % palette.length],
-      };
-    });
-  }, [allLibraries, summaries, chartPalette.radial]);
-
-  const hasCompletionData = completionFromSummaries.some((item) => item.completion > 0);
-  const chartCompletion = hasCompletionData ? completionFromSummaries : fallbackCompletion;
-
-  const completionChartConfig = useMemo<ChartConfig>(() => {
-    return chartCompletion.reduce<ChartConfig>((acc, item) => {
-      acc[item.topic] = { label: item.topic, color: item.color };
-      return acc;
-    }, {});
-  }, [chartCompletion]);
-
-  const radialData = useMemo(
-    () => chartCompletion.map((item) => ({ ...item, fill: item.color })),
-    [chartCompletion]
-  );
-
-  const averageCompletion = useMemo(() => {
-    if (chartCompletion.length === 0) return 0;
-    const total = chartCompletion.reduce((sum, item) => sum + item.completion, 0);
-    return Math.round(total / chartCompletion.length);
-  }, [chartCompletion]);
+  // Removed completion chart and related calculations
 
   const chartProductivity = useMemo<DashboardProductivityPoint[]>(() => {
     if (!aggregates.totalSessions) return fallbackProductivity;
@@ -308,7 +268,7 @@ export default function DashboardPage() {
       {/* Bento Grid Layout - fixed height to fit screen */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 flex-1 min-h-0">
         {/* Recent Flashcards - takes 2 rows, 2 cols on left */}
-        <div className="lg:col-span-2 lg:row-span-2 min-h-0">
+        <div className="lg:col-span-2 lg:row-span-2 min-h-[600px] sm:min-h-[700px] md:min-h-[800px] lg:min-h-0">
           <RecentFlashcardsSection
             recentFlashcards={recentFlashcards}
             libsLoading={libsLoading}
@@ -319,13 +279,13 @@ export default function DashboardPage() {
         </div>
 
         {/* Productivity Chart - top right, spans 2 cols */}
-        <div className="lg:col-span-2 min-h-0 max-h-[240px] lg:max-h-none">
+        <div className="lg:col-span-2 min-h-[480px] sm:min-h-[560px] md:min-h-[640px] lg:min-h-0">
           <Card className="flex flex-col h-full">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">Hiệu suất học tập</CardTitle>
               <CardDescription className="text-[10px]">Thời gian tập trung và phiên ôn tập</CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 min-h-0">
+            <CardContent className="flex-1 min-h-[440px] sm:min-h-[520px] md:min-h-[600px] lg:min-h-0">
               <ChartContainer config={productivityChartConfig} className="h-full w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={chartProductivity} margin={{ left: 0, right: 0, top: 8, bottom: 0 }}>
@@ -354,41 +314,10 @@ export default function DashboardPage() {
         </div>
 
         {/* Upcoming Events - bottom right, left col */}
-        <div className="lg:col-span-1 min-h-0 max-h-[240px] lg:max-h-none">
+        <div className="lg:col-span-2 min-h-[520px] sm:min-h-[600px] md:min-h-[680px] lg:min-h-0">
           <UpcomingEventsSection upcomingEvents={upcomingEvents} />
         </div>
-
-        {/* Completion Chart - bottom right, right col */}
-        <div className="lg:col-span-1 min-h-0 max-h-[240px] lg:max-h-none">
-          <Card className="flex flex-col h-full">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Hoàn thành chủ đề</CardTitle>
-              <CardDescription className="text-[10px]">Trung bình {averageCompletion}%</CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1 min-h-0">
-              <ChartContainer config={completionChartConfig} className="h-full w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadialBarChart
-                    data={radialData}
-                    innerRadius="20%"
-                    outerRadius="90%"
-                    startAngle={180}
-                    endAngle={0}
-                  >
-                    <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-                    <Tooltip content={<ChartTooltipContent indicator="line" />} />
-                    <Legend verticalAlign="bottom" content={<ChartLegendContent />} wrapperStyle={{ fontSize: '10px' }} />
-                    <RadialBar
-                      background={{ fill: isDarkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(15, 23, 42, 0.08)' }}
-                      cornerRadius={8}
-                      dataKey="completion"
-                    />
-                  </RadialBarChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-        </div>
+        {/** Removed completion chart; UpcomingEvents now spans full right side */}
       </div>
     </div>
   );

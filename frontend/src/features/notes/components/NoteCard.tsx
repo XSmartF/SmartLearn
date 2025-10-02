@@ -72,11 +72,11 @@ export const NoteCard: React.FC<NoteCardProps> = ({
   const contentPreview = note.content ? extractTextFromContent(note.content) : ''
 
   return (
-    <div className="h-full group">
+    <div className="h-full group min-w-0 max-w-full">
       <Card className={cn(
-        "h-full w-full flex flex-col relative overflow-hidden transition-all duration-300",
+        "h-full w-full max-w-full flex flex-col relative overflow-hidden transition-all duration-300",
         "supports-[hover:hover]:hover:shadow-2xl supports-[hover:hover]:hover:scale-[1.03] supports-[hover:hover]:hover:-translate-y-2",
-        "bg-gradient-to-br border-2",
+        "bg-gradient-to-br border sm:border-2",
         cardGradient
       )}>
         {/* Favorite star indicator */}
@@ -89,32 +89,32 @@ export const NoteCard: React.FC<NoteCardProps> = ({
         )}
 
         {/* Decorative corner accent */}
-        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white/40 to-transparent dark:from-white/10 rounded-bl-full transform translate-x-12 -translate-y-12 group-hover:scale-150 transition-transform duration-500" />
+  <div className="hidden sm:block absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white/30 to-transparent dark:from-white/10 rounded-bl-full transform translate-x-12 -translate-y-12 group-hover:scale-150 transition-transform duration-500" />
 
-  <Link to={getNoteDetailPath(note.id)} className="flex-1 flex flex-col min-w-0">
-          <CardHeader className="pb-3 relative z-10">
+  <Link to={getNoteDetailPath(note.id)} className="flex-1 flex flex-col min-w-0 w-full max-w-full">
+          <CardHeader className="pb-2 sm:pb-3 relative z-10">
             <div className="flex items-start justify-between gap-3">
-              <div className="space-y-2.5 flex-1 min-w-0">
+              <div className="space-y-2 sm:space-y-2.5 flex-1 min-w-0">
                 {/* Title with icon */}
                 <div className="flex items-start gap-2.5">
-                  <div className="mt-0.5 p-2 rounded-lg bg-white/60 dark:bg-white/10 backdrop-blur-sm shadow-sm">
+                  <div className="mt-0.5 p-1.5 sm:p-2 rounded-lg bg-white/50 dark:bg-white/10 backdrop-blur-sm shadow-sm">
                     <BookOpen className="h-4 w-4 text-primary" />
                   </div>
-                  <CardTitle className="text-base sm:text-lg font-bold group-hover:text-primary transition-colors line-clamp-2 flex-1">
+                  <CardTitle className="text-sm sm:text-lg font-bold group-hover:text-primary transition-colors line-clamp-2 break-words leading-snug flex-1">
                     {note.title}
                   </CardTitle>
                 </div>
 
                 {/* Tags */}
                 {note.tags && note.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="hidden sm:flex flex-wrap gap-1.5">
                     {note.tags.slice(0, 3).map(tag => (
-                      <Badge key={tag} variant="outline" className="text-xs font-medium bg-white/60 dark:bg-white/10 backdrop-blur-sm">
+                      <Badge key={tag} variant="outline" className="text-[10px] sm:text-xs font-medium bg-white/50 dark:bg-white/10 backdrop-blur-sm">
                         {tag}
                       </Badge>
                     ))}
                     {note.tags.length > 3 && (
-                      <Badge variant="outline" className="text-xs font-medium bg-white/60 dark:bg-white/10 backdrop-blur-sm">
+                      <Badge variant="outline" className="text-[10px] sm:text-xs font-medium bg-white/50 dark:bg-white/10 backdrop-blur-sm">
                         +{note.tags.length - 3}
                       </Badge>
                     )}
@@ -124,15 +124,15 @@ export const NoteCard: React.FC<NoteCardProps> = ({
             </div>
           </CardHeader>
 
-          <CardContent className="pt-0 flex-1 flex flex-col justify-between relative z-10">
+          <CardContent className="pt-0 sm:pt-0 flex-1 flex flex-col justify-between relative z-10">
             {/* Content preview */}
-            <div className="mb-4 flex-1">
+            <div className="mb-3 sm:mb-4 flex-1">
               {contentPreview ? (
-                <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+                <p className="text-[13px] sm:text-sm text-muted-foreground line-clamp-2 sm:line-clamp-3 leading-relaxed break-words">
                   {contentPreview}
                 </p>
               ) : (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground/60 italic">
+                <div className="flex items-center gap-2 text-[13px] sm:text-sm text-muted-foreground/60 italic">
                   <FileText className="h-4 w-4" />
                   <span>Chưa có nội dung</span>
                 </div>
@@ -140,12 +140,12 @@ export const NoteCard: React.FC<NoteCardProps> = ({
             </div>
 
             {/* Footer info */}
-            <div className="flex items-center justify-between pt-3 border-t border-border/50">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="flex flex-wrap items-center justify-between gap-y-2 pt-2 sm:pt-3 border-t border-border/50">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs text-muted-foreground min-w-0">
                 <div className="p-1 rounded-md bg-primary/10">
                   <Calendar className="h-3 w-3 text-primary" />
                 </div>
-                <span className="font-medium">
+                <span className="font-medium truncate">
                   {new Date(note.updatedAt).toLocaleDateString('vi-VN', { 
                     day: '2-digit', 
                     month: '2-digit', 
@@ -154,13 +154,17 @@ export const NoteCard: React.FC<NoteCardProps> = ({
                 </span>
               </div>
               {note.visibility && (
-                <Badge 
-                  variant={note.visibility === 'private' ? 'default' : 'outline'} 
-                  className="text-xs font-medium gap-1"
+                <div
+                  className={cn(
+                    "flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full border text-primary-foreground/70 shrink-0",
+                    note.visibility === 'private'
+                      ? 'bg-orange-100 border-orange-200 text-orange-500'
+                      : 'bg-green-100 border-green-200 text-green-600'
+                  )}
+                  aria-label={note.visibility === 'private' ? 'Ghi chép riêng tư' : 'Ghi chép công khai'}
                 >
-                  <Eye className="h-3 w-3" />
-                  {note.visibility === 'private' ? 'Riêng tư' : 'Công khai'}
-                </Badge>
+                  <Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5" aria-hidden="true" />
+                </div>
               )}
             </div>
           </CardContent>

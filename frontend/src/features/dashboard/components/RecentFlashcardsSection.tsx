@@ -39,12 +39,12 @@ export function RecentFlashcardsSection({
   libraries,
 }: RecentFlashcardsSectionProps) {
   return (
-    <Card className="h-full flex flex-col">
+    <Card className="flex flex-col">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg">Bộ flashcard gần đây</CardTitle>
         <CardDescription className="text-xs">Tiếp tục từ nơi bạn đã dừng lại</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-3 flex-1 overflow-auto">
+      <CardContent className="space-y-3">
         {libsLoading && recentFlashcards.length === 0 && (
           <div className="flex justify-center py-8">
             <Loader size="sm" />
@@ -94,10 +94,10 @@ export function RecentFlashcardsSection({
               </div>
             </div>
             <div className="flex-shrink-0">
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="text-xs h-8" 
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs h-8"
                 onClick={() => window.location.href = getStudyPath(flashcard.id)}
               >
                 Tiếp tục học

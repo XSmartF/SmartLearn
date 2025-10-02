@@ -279,9 +279,18 @@ export default function NoteDetail() {
                                     {tag}
                                 </Badge>
                             ))}
-                            <Badge variant={note.visibility === 'private' ? 'default' : 'outline'} className="text-xs">
-                                {note.visibility === 'private' ? 'Riêng tư' : 'Công khai'}
-                            </Badge>
+                            <div
+                                className={cn(
+                                    "flex h-7 w-7 items-center justify-center rounded-full border",
+                                    note.visibility === 'private'
+                                        ? 'bg-orange-100 border-orange-200 text-orange-500'
+                                        : 'bg-green-100 border-green-200 text-green-600'
+                                )}
+                                aria-label={note.visibility === 'private' ? 'Ghi chép riêng tư' : 'Ghi chép công khai'}
+                                title={note.visibility === 'private' ? 'Riêng tư' : 'Công khai'}
+                            >
+                                <Eye className="h-3 w-3" aria-hidden="true" />
+                            </div>
                         </div>
                     )}
                 </div>

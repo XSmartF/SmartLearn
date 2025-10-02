@@ -207,20 +207,20 @@ export default function ReviewPage() {
       </Card>
 
       <Tabs defaultValue="all" className="space-y-4">
-        <TabsList className="w-full justify-start gap-2 bg-muted/40 p-1">
-          <TabsTrigger value="all" className="flex items-center gap-2">
+        <TabsList className="flex w-full overflow-x-auto rounded-full bg-muted/40 p-1 gap-2">
+          <TabsTrigger value="all" className="flex items-center gap-2 flex-shrink-0 min-w-[120px] rounded-full px-3 py-1.5 text-sm font-medium data-[state=active]:scale-100">
             Tất cả
             <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
               {readyCount}
             </span>
           </TabsTrigger>
-          <TabsTrigger value="star" className="flex items-center gap-2">
+          <TabsTrigger value="star" className="flex items-center gap-2 flex-shrink-0 min-w-[140px] rounded-full px-3 py-1.5 text-sm font-medium data-[state=active]:scale-100">
             Đánh dấu sao
             <span className="rounded-full bg-yellow-500/10 px-2 py-0.5 text-[11px] font-semibold text-yellow-600">
               {starredCount}
             </span>
           </TabsTrigger>
-          <TabsTrigger value="hard" className="flex items-center gap-2">
+          <TabsTrigger value="hard" className="flex items-center gap-2 flex-shrink-0 min-w-[120px] rounded-full px-3 py-1.5 text-sm font-medium data-[state=active]:scale-100">
             Thẻ khó
             <span className="rounded-full bg-red-500/10 px-2 py-0.5 text-[11px] font-semibold text-red-500">
               {hardCount}

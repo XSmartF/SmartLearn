@@ -5,26 +5,35 @@ import type { LibraryVisibility } from '@/shared/lib/models'
 interface VisibilityBadgeProps {
   visibility: LibraryVisibility
   className?: string
+  showLabel?: boolean
 }
 
 export const VisibilityBadge: React.FC<VisibilityBadgeProps> = ({
   visibility,
-  className = ''
+  className = '',
+  showLabel = true
 }) => {
-  if (visibility === 'private') {
-    return (
-      <div className={`flex items-center gap-1 text-xs ${className}`}>
-        <Lock className="h-3 w-3 text-orange-500" />
-        <span>Chỉ mình tôi</span>
-      </div>
-    )
-  }
+  const isPrivate = visibility === 'private'
+  const label = isPrivate ? 'Chỉ mình tôi' : 'Mọi người'
+  const baseClass = `inline-flex items-center gap-1 text-xs ${className}`.trim()
 
   return (
-    <div className={`flex items-center gap-1 text-xs ${className}`}>
-      <Globe className="h-3 w-3 text-green-500" />
-      <span>Mọi người</span>
-    </div>
+    <span
+      className={baseClass}
+      title={showLabel ? undefined : label}
+      aria-label={showLabel ? undefined : label}
+    >
+      {isPrivate ? (
+        <Lock className="h-3 w-3 text-orange-500" />
+      ) : (
+        <Globe className="h-3 w-3 text-green-500" />
+      )}
+      {showLabel ? (
+        <span>{label}</span>
+      ) : (
+        <span className="sr-only">{label}</span>
+      )}
+    </span>
   )
 }
 

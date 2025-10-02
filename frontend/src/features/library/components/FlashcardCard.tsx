@@ -141,7 +141,7 @@ export const FlashcardCard: React.FC<FlashcardCardProps> = ({
                 </div>
                 <span>{flashcard.cardCount} thẻ</span>
               </div>
-              <VisibilityBadge visibility={flashcard.visibility} />
+              <VisibilityBadge visibility={flashcard.visibility} showLabel={false} />
             </div>
           </CardContent>
         </Link>

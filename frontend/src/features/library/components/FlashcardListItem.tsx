@@ -32,7 +32,7 @@ export const FlashcardListItem: React.FC<FlashcardListItemProps> = ({
                   {flashcard.title}
                 </H3>
                 <p className="text-sm text-muted-foreground truncate max-w-md">
-                  {flashcard.cardCount} thẻ • <VisibilityBadge visibility={flashcard.visibility} />
+                  {flashcard.cardCount} thẻ • <VisibilityBadge visibility={flashcard.visibility} showLabel={false} />
                 </p>
                 <div className="mt-1">
                   <div className="flex items-center gap-2 flex-wrap">

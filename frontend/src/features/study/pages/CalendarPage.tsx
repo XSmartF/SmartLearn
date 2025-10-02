@@ -1,14 +1,11 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/shared/components/ui/button"
 import { CalendarDays, Plus } from "lucide-react"
-import { Stats, CalendarGrid, EventDialog, TaskStatusCards } from '../components'
+import { CalendarGrid, EventDialog, TaskStatusCards } from '../components'
 import { listenUserStudyEvents, createStudyEvent, updateStudyEvent, deleteStudyEvent, updateStudyEventStatus } from '@/shared/lib/firebaseCalendarService'
 import ConfirmDialog from "@/shared/components/ConfirmDialog"
 import type { StudyEvent, CreateStudyEventInput } from '../types/calendar'
-import {
-  calculateStats,
-  updateEventStatus
-} from '../utils/calendarUtils'
+import { updateEventStatus } from '../utils/calendarUtils'
 import { PageHeader } from '@/shared/components/PageHeader'
 import { PageSection } from '@/shared/components/PageSection'
 
@@ -78,7 +75,7 @@ export default function Calendar() {
     }
   }, [events]);
 
-  const stats = calculateStats(events)
+  // Removed monthly overview stats section
 
   const handleCreateEvent = async (eventData: CreateStudyEventInput) => {
     await createStudyEvent(eventData)
@@ -164,12 +161,7 @@ export default function Calendar() {
           }
         />
 
-        <PageSection
-          heading="Tổng quan trong tháng"
-          description="Số liệu nhanh giúp bạn biết mình đã học bao nhiêu và còn những gì đang chờ."
-        >
-          <Stats stats={stats} />
-        </PageSection>
+        {/** Monthly overview removed as requested */}
 
         <PageSection
           heading="Lịch sự kiện"

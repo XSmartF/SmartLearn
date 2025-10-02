@@ -24,7 +24,6 @@ import type { LibraryMeta, ShareRole, LibraryVisibility } from '@/shared/lib/mod
 // Extracted components
 import { FlashcardCard, FlashcardListItem } from '../components'
 import LibraryFilters from '../components/LibraryFilters'
-import LibraryOverviewStats from '../components/LibraryOverviewStats'
 import CreateLibraryDialog from '../components/CreateLibraryDialog'
 import { PageHeader } from '@/shared/components/PageHeader'
 
@@ -184,14 +183,6 @@ export default function MyLibrary() {
         icon={<BookOpen className="h-6 w-6 text-primary" />}
       />
 
-      {/* Stats */}
-      <LibraryOverviewStats
-        ownedCount={libraries.length}
-        sharedCount={shared.length}
-        favoriteCount={favorites.length}
-        totalCards={libraries.reduce((total, lib) => total + (lib.cardCount || 0), 0)}
-      />
-
       {/* Controls */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 p-6 bg-muted/20 rounded-md">
         <LibraryFilters
@@ -217,22 +208,22 @@ export default function MyLibrary() {
 
       {/* Content */}
       <Tabs defaultValue="all" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 h-12 p-1 bg-muted rounded-lg">
+        <TabsList className="flex w-full overflow-x-auto rounded-full bg-muted/60 p-1 gap-2">
           <TabsTrigger 
             value="all" 
-            className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=active]:z-10"
+            className="flex-1 min-w-[140px] flex-shrink-0 rounded-full text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=active]:scale-100"
           >
             Tất cả ({sortedFiltered.length})
           </TabsTrigger>
           <TabsTrigger 
             value="favorites" 
-            className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=active]:z-10"
+            className="flex-1 min-w-[140px] flex-shrink-0 rounded-full text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=active]:scale-100"
           >
             Yêu thích ({favorites.length})
           </TabsTrigger>
           <TabsTrigger 
             value="shared" 
-            className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=active]:z-10"
+            className="flex-1 min-w-[140px] flex-shrink-0 rounded-full text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=active]:scale-100"
           >
             Chia sẻ ({shared.length})
           </TabsTrigger>

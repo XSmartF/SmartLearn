@@ -66,11 +66,6 @@ export default function NotesPage() {
     return notes.filter(note => favorites.includes(note.id))
   }, [notes, favorites])
 
-  const updatedThisWeek = useMemo(() => {
-    const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
-    return notes.filter(note => new Date(note.updatedAt).getTime() > oneWeekAgo).length
-  }, [notes])
-
   const highlightSummary = useMemo(() => {
     const percent = notes.length ? Math.round((favorites.length / notes.length) * 100) : 0
     return `Bạn đang quản lý ${notes.length} ghi chép với ${favorites.length} ghi chép yêu thích (${percent}%).`
@@ -170,26 +165,6 @@ export default function NotesPage() {
       <PageSection
         heading="Quản lý ghi chép"
         description="Tìm kiếm, sắp xếp và quản lý tất cả ghi chép của bạn."
-        actions={
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1.5">
-              <BookOpen className="h-4 w-4" />
-              <span className="font-medium">{notes.length}</span>
-              <span>ghi chép</span>
-            </div>
-            <div className="h-4 w-px bg-border" />
-            <div className="flex items-center gap-1.5">
-              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-              <span className="font-medium">{favorites.length}</span>
-              <span>yêu thích</span>
-            </div>
-            <div className="h-4 w-px bg-border" />
-            <div className="flex items-center gap-1.5">
-              <span className="font-medium">{updatedThisWeek}</span>
-              <span>tuần này</span>
-            </div>
-          </div>
-        }
       >
         <div className="space-y-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-6">
@@ -214,12 +189,12 @@ export default function NotesPage() {
             </Select>
           </div>
 
-          <Tabs value={tab} onValueChange={(value) => setTab(value as 'all' | 'favorites')} className="space-y-6">
-            <TabsList className="w-full justify-start gap-2 rounded-xl border border-border/30 bg-card/60 p-1 shadow-[var(--neu-shadow-sm)]">
-              <TabsTrigger value="all" className="flex-1 rounded-lg text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <Tabs value={tab} onValueChange={(value) => setTab(value as 'all' | 'favorites')} className="space-y-4 sm:space-y-6">
+            <TabsList className="flex w-full overflow-x-auto no-scrollbar whitespace-nowrap rounded-full border border-border/30 bg-card/70 p-1 gap-1 sm:gap-2 scroll-px-2 snap-x snap-mandatory touch-pan-x overscroll-x-contain">
+              <TabsTrigger value="all" className="flex-none shrink-0 rounded-full text-sm font-medium px-3 sm:px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm snap-start">
                 Tất cả ({sortedFiltered.length})
               </TabsTrigger>
-              <TabsTrigger value="favorites" className="flex-1 rounded-lg text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <TabsTrigger value="favorites" className="flex-none shrink-0 rounded-full text-sm font-medium px-3 sm:px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm snap-start">
                 Yêu thích ({favoriteNotes.length})
               </TabsTrigger>
             </TabsList>
@@ -229,7 +204,7 @@ export default function NotesPage() {
               className="space-y-4"
             >
               {sortedFiltered.length > 0 ? (
-                <div className="grid items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <div className="grid items-stretch gap-3 sm:gap-4 md:gap-6 grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 w-full max-w-full overflow-x-hidden">
                   {sortedFiltered.map((note) => (
                     <NoteCard
                       key={note.id}
@@ -261,7 +236,7 @@ export default function NotesPage() {
               className="space-y-4"
             >
               {favoriteNotes.length > 0 ? (
-                <div className="grid items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid items-stretch gap-3 sm:gap-4 md:gap-6 grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 w-full max-w-full overflow-x-hidden">
                   {favoriteNotes.map((note) => (
                     <NoteCard
                       key={note.id}

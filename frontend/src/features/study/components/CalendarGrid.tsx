@@ -13,6 +13,17 @@ import type { StudyEvent } from '../types/calendar';
 import { generateCalendarDays, getEventIcon, getEventColor } from '../utils/calendarUtils';
 import { cn } from "@/shared/lib/utils";
 
+const eventDotColorMap: Record<string, string> = {
+  review: 'bg-chart-1/80',
+  study: 'bg-chart-2/80',
+  deadline: 'bg-destructive/80',
+  challenge: 'bg-chart-3/80',
+  favorite_review: 'bg-chart-4/80',
+  create: 'bg-chart-5/80'
+};
+
+const getEventDotColor = (type: string) => eventDotColorMap[type] ?? 'bg-primary/80';
+
 interface CalendarGridProps {
   currentDate: Date;
   selectedDate: Date | null;
@@ -122,25 +133,43 @@ export function CalendarGrid({
                           <div className="relative h-full w-full">
                             <span className="block text-foreground dark:text-foreground sm:text-xs">{date.getDate()}</span>
                             {hasEvents && (
-                              <div className="mt-1 space-y-1">
-                                {dayEvents.slice(0, 2).map((event) => (
-                                  <div
-                                    key={event.id}
-                                    className={cn(
-                                      "w-full overflow-hidden whitespace-nowrap text-ellipsis text-[10px] leading-tight px-1 py-0.5 rounded",
-                                      getEventColor(event.type)
-                                    )}
-                                    title={event.title}
-                                  >
-                                    {event.title}
-                                  </div>
-                                ))}
-                                {dayEvents.length > 2 && (
-                                  <div className="w-full text-[10px] text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
-                                    +{dayEvents.length - 2} nữa
-                                  </div>
-                                )}
-                              </div>
+                              <>
+                                <div className="mt-1 hidden space-y-1 sm:block">
+                                  {dayEvents.slice(0, 2).map((event) => (
+                                    <div
+                                      key={event.id}
+                                      className={cn(
+                                        "w-full overflow-hidden whitespace-nowrap text-ellipsis text-[10px] leading-tight px-1 py-0.5 rounded",
+                                        getEventColor(event.type)
+                                      )}
+                                      title={event.title}
+                                    >
+                                      {event.title}
+                                    </div>
+                                  ))}
+                                  {dayEvents.length > 2 && (
+                                    <div className="w-full text-[10px] text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
+                                      +{dayEvents.length - 2} nữa
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="mt-1 flex items-center justify-center gap-1 sm:hidden">
+                                  {dayEvents.slice(0, 3).map((event) => (
+                                    <span
+                                      key={event.id}
+                                      className={cn(
+                                        "h-1.5 w-3 rounded-full",
+                                        getEventDotColor(event.type)
+                                      )}
+                                    />
+                                  ))}
+                                  {dayEvents.length > 3 && (
+                                    <span className="text-[10px] text-muted-foreground">
+                                      +{dayEvents.length - 3}
+                                    </span>
+                                  )}
+                                </div>
+                              </>
                             )}
                           </div>
                         )}

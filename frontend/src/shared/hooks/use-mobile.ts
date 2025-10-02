@@ -2,14 +2,15 @@ import * as React from "react"
 
 // Breakpoints aligned with Tailwind CSS defaults
 // mobile: <768px (below md:)
-// desktop: >=768px (md: and above)
-// Use sheet for mobile, desktop sidebar for md+
+// desktop: >=1024px (lg: and above) - changed to use overlay for sm/md screens too
+// Use sheet for mobile/tablet, desktop sidebar for lg+
 const MOBILE_MAX = 768
+const DESKTOP_MIN = 1024
 
 export interface SidebarBreakpointState {
   isMobile: boolean;   // strictly <768px
-  isDesktop: boolean;  // >=768px
-  useSheet: boolean;   // mobile -> sheet overlay, desktop -> sidebar
+  isDesktop: boolean;  // >=1024px (lg+)
+  useSheet: boolean;   // mobile/tablet -> sheet overlay, desktop -> sidebar
   width: number;
 }
 
@@ -18,15 +19,16 @@ export function useSidebarBreakpoints(): SidebarBreakpointState {
     isMobile: false,
     isDesktop: true,
     useSheet: false,
-    width: typeof window!== 'undefined' ? window.innerWidth : MOBILE_MAX+1,
+    width: typeof window!== 'undefined' ? window.innerWidth : DESKTOP_MIN+1,
   }));
 
   React.useEffect(()=>{
     const compute = () => {
       const w = window.innerWidth;
       const isMobile = w < MOBILE_MAX;
-      const isDesktop = w >= MOBILE_MAX;
-      setState({ isMobile, isDesktop, useSheet: isMobile, width: w });
+      const isDesktop = w >= DESKTOP_MIN;
+      const useSheet = w < DESKTOP_MIN; // Use overlay for mobile and tablet (sm/md)
+      setState({ isMobile, isDesktop, useSheet, width: w });
     };
     compute();
     window.addEventListener('resize', compute);

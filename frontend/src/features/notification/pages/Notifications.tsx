@@ -7,7 +7,6 @@ import { PageSection } from '@/shared/components/PageSection'
 import { userRepository } from '@/shared/lib/repositories/UserRepository'
 import { libraryRepository } from '@/shared/lib/repositories/LibraryRepository'
 import {
-  NotificationStats,
   NotificationSearch,
   NotificationList,
   AccessRequests,
@@ -23,63 +22,63 @@ const NOTIFICATION_FEED_TABS: ReadonlyArray<{
   label: string;
   match: (notification: NotificationItem) => boolean;
 }> = [
-  {
-    key: 'all',
-    label: 'Tất cả',
-    match: () => true,
-  },
-  {
-    key: 'unread',
-    label: 'Chưa đọc',
-    match: (notification) => !notification.read,
-  },
-  {
-    key: 'flashcards',
-    label: 'Flashcard',
-    match: (notification) => notification.type === 'flashcard' || notification.type === 'review',
-  },
-  {
-    key: 'reminders',
-    label: 'Nhắc nhở',
-    match: (notification) => notification.type === 'reminder' || notification.type === 'streak',
-  },
-  {
-    key: 'achievements',
-    label: 'Thành tích',
-    match: (notification) => notification.type === 'achievement',
-  },
-]
+    {
+      key: 'all',
+      label: 'Tất cả',
+      match: () => true,
+    },
+    {
+      key: 'unread',
+      label: 'Chưa đọc',
+      match: (notification) => !notification.read,
+    },
+    {
+      key: 'flashcards',
+      label: 'Flashcard',
+      match: (notification) => notification.type === 'flashcard' || notification.type === 'review',
+    },
+    {
+      key: 'reminders',
+      label: 'Nhắc nhở',
+      match: (notification) => notification.type === 'reminder' || notification.type === 'streak',
+    },
+    {
+      key: 'achievements',
+      label: 'Thành tích',
+      match: (notification) => notification.type === 'achievement',
+    },
+  ]
 
 export default function Notifications() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedTab, setSelectedTab] = useState<NotificationTabKey>('all')
   const [accessRequests, setAccessRequests] = useState<{ id: string; libraryId: string; requesterId: string; ownerId: string; status: string; createdAt: string; libraryTitle?: string; requesterName?: string }[]>([])
   const [loadingRequests, setLoadingRequests] = useState(false)
-  const [acting, setActing] = useState<string|null>(null)
-  const [actingNotif, setActingNotif] = useState<string|null>(null)
+  const [acting, setActing] = useState<string | null>(null)
+  const [actingNotif, setActingNotif] = useState<string | null>(null)
   const [actedRequests, setActedRequests] = useState<Record<string, 'approved' | 'rejected'>>({})
 
-  useEffect(()=>{ 
+  useEffect(() => {
     setLoadingRequests(true);
-    let unsub: (()=>void)|null = null;
+    let unsub: (() => void) | null = null;
     try {
-  unsub = userRepository.listenPendingAccessRequestsForOwner(async (reqs)=>{
-        const enriched = await Promise.all(reqs.map(async r=>{
-          let libraryTitle = ''; let requesterName='';
-          try { const meta = await libraryRepository.getLibraryMeta(r.libraryId); libraryTitle = meta?.title || ''; } catch{/* ignore meta */}
-          try { const prof = await userRepository.getUserProfile(r.requesterId); requesterName = prof?.displayName || prof?.email || r.requesterId.slice(0,6); } catch{/* ignore profile */}
+      unsub = userRepository.listenPendingAccessRequestsForOwner(async (reqs) => {
+        const enriched = await Promise.all(reqs.map(async r => {
+          let libraryTitle = ''; let requesterName = '';
+          try { const meta = await libraryRepository.getLibraryMeta(r.libraryId); libraryTitle = meta?.title || ''; } catch {/* ignore meta */ }
+          try { const prof = await userRepository.getUserProfile(r.requesterId); requesterName = prof?.displayName || prof?.email || r.requesterId.slice(0, 6); } catch {/* ignore profile */ }
           return { ...r, libraryTitle, requesterName };
         }));
         setAccessRequests(enriched);
         setLoadingRequests(false);
       });
     } catch { setLoadingRequests(false); }
-    return ()=>{ if(unsub) unsub(); };
+    return () => { if (unsub) unsub(); };
   }, [])
 
   const [notifications, setNotifications] = useState<NotificationItem[]>([])
   const [notifLoading, setNotifLoading] = useState(true)
-  useEffect(()=>{ let unsub: (()=>void)|null=null; try { unsub = userRepository.listenUserNotifications(items=>{ setNotifications(items); setNotifLoading(false); }); } catch { setNotifLoading(false); } return ()=>{ if(unsub) unsub(); }; }, [])
+  useEffect(() => { let unsub: (() => void) | null = null; try { unsub = userRepository.listenUserNotifications(items => { setNotifications(items); setNotifLoading(false); }); } catch { setNotifLoading(false); } return () => { if (unsub) unsub(); }; }, [])
 
   const filteredNotifications = useMemo(() => {
     if (selectedTab === 'requests') return []
@@ -119,8 +118,8 @@ export default function Notifications() {
     [notifications],
   )
 
-  const markAsRead = async (id: string) => { try { await userRepository.markNotificationRead(id); } catch {/* ignore */} }
-  const markAllAsRead = async () => { try { await userRepository.markAllNotificationsRead(); } catch {/* ignore */} }
+  const markAsRead = async (id: string) => { try { await userRepository.markNotificationRead(id); } catch {/* ignore */ } }
+  const markAllAsRead = async () => { try { await userRepository.markAllNotificationsRead(); } catch {/* ignore */ } }
 
   return (
     <div className="space-y-8 sm:space-y-10">
@@ -142,23 +141,17 @@ export default function Notifications() {
         }
       />
 
-      <PageSection
-        heading="Tổng quan"
-        description="Các chỉ số nhanh giúp bạn nắm bắt trạng thái thông báo và yêu cầu đang chờ."
-        contentClassName="space-y-6"
-      >
-        <NotificationStats notifications={notifications} accessRequests={accessRequests} />
-        <NotificationSearch searchQuery={searchQuery} onSearchChange={setSearchQuery} />
-      </PageSection>
+      {/** Bỏ phần Tổng quan; chuyển thanh tìm kiếm xuống phần danh sách */}
 
       <PageSection
         heading="Danh sách thông báo"
         description="Lọc theo danh mục để xử lý nhanh các thông báo quan trọng."
         contentClassName="space-y-6"
       >
-  <Tabs value={selectedTab} onValueChange={(value) => setSelectedTab(value as NotificationTabKey)} className="space-y-4 sm:space-y-6">
-          <div className="overflow-x-auto">
-            <TabsList className="inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground min-w-max">
+        <NotificationSearch searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+        <Tabs value={selectedTab} onValueChange={(value) => setSelectedTab(value as NotificationTabKey)} className="space-y-4 sm:space-y-6">
+          <div>
+            <TabsList className="bg-muted p-1 rounded-full">
               {NOTIFICATION_FEED_TABS.map((tab) => {
                 const badgeValue = getBadgeForTab(tab.key)
                 return (
