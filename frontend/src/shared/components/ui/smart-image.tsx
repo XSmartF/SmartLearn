@@ -7,25 +7,28 @@ export interface SmartImageProps extends React.ImgHTMLAttributes<HTMLImageElemen
   rounded?: boolean | string; // true uses rounded-lg, string allows custom radius classes
   aspect?: string; // e.g. 'square', 'video', '16/9' etc (can be translated to classes externally)
   showLoader?: boolean;
+  imageClassName?: string;
 }
 
 // Lightweight image component with error + loading fallback (no external deps)
 export const SmartImage = React.forwardRef<HTMLImageElement, SmartImageProps>(
-  ({ className, fallback, rounded = false, showLoader = true, onLoad, onError, ...props }, ref) => {
+  ({ className, imageClassName, fallback, rounded = false, showLoader = true, onLoad, onError, ...props }, ref) => {
     const [loaded, setLoaded] = React.useState(false);
     const [errored, setErrored] = React.useState(false);
 
     const radiusClass = typeof rounded === 'string' ? rounded : (rounded ? 'rounded-lg' : '');
+    const wrapperClass = cn('relative inline-block overflow-hidden', radiusClass, className);
+    const resolvedImageClass = imageClassName ?? className?.replace(/rounded[^ ]+/g, "");
 
     return (
-      <span className={cn('relative inline-block overflow-hidden', radiusClass, className)}>
+      <span className={wrapperClass}>
     {!errored && (
           <img
             ref={ref}
       {...props}
       onLoad={(e: React.SyntheticEvent<HTMLImageElement, Event>) => { setLoaded(true); onLoad?.(e); }}
       onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => { setErrored(true); onError?.(e); }}
-      className={cn('block w-full h-full object-cover', className?.replace(/rounded[^ ]+/g,''))}
+      className={cn('block w-full h-full object-cover', resolvedImageClass)}
           />
         )}
         {(!loaded && !errored && showLoader) && (

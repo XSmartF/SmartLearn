@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { cn } from "@/shared/lib/utils";
 import { Button, type ButtonProps } from "@/shared/components/ui/button";
+import { SmartImage } from "@/shared/components/ui/smart-image";
 
 interface PageHeroProps {
   heading: ReactNode;
@@ -50,27 +51,33 @@ export function PageHero({
         {(mediaLeftSrc || mediaRightSrc) && (
           <div className="relative flex items-center justify-center lg:justify-end">
             {singleMediaSrc ? (
-              <img
+              <SmartImage
                 src={singleMediaSrc}
                 alt="Page hero visual"
-                className="max-h-[340px] w-full max-w-[520px] rounded-2xl object-contain drop-shadow-[0_24px_40px_rgba(17,24,39,0.12)]"
+                className="max-h-[340px] w-full max-w-[520px]"
+                rounded="rounded-2xl"
+                imageClassName="object-contain drop-shadow-[0_24px_40px_rgba(17,24,39,0.12)]"
                 loading="lazy"
               />
             ) : (
               <div className="relative flex h-64 w-full max-w-[480px] items-center justify-between">
                 {mediaLeftSrc && (
-                  <img
+                  <SmartImage
                     src={mediaLeftSrc}
                     alt="Illustration left"
-                    className="h-40 w-40 rounded-2xl object-contain drop-shadow-[0_18px_28px_rgba(15,23,42,0.14)] sm:h-48 sm:w-48"
+                    className="h-40 w-40 sm:h-48 sm:w-48"
+                    rounded="rounded-2xl"
+                    imageClassName="object-contain drop-shadow-[0_18px_28px_rgba(15,23,42,0.14)]"
                     loading="lazy"
                   />
                 )}
                 {mediaRightSrc && (
-                  <img
+                  <SmartImage
                     src={mediaRightSrc}
                     alt="Illustration right"
-                    className="h-44 w-44 rounded-2xl object-contain drop-shadow-[0_18px_28px_rgba(15,23,42,0.14)] sm:h-56 sm:w-56"
+                    className="h-44 w-44 sm:h-56 sm:w-56"
+                    rounded="rounded-2xl"
+                    imageClassName="object-contain drop-shadow-[0_18px_28px_rgba(15,23,42,0.14)]"
                     loading="lazy"
                   />
                 )}

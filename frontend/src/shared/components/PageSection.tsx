@@ -27,7 +27,7 @@ export function PageSection({
   return (
   <Card {...cardProps} className={cn("border-border/40", className)}>
       {hasHeader && (
-        <CardHeader className={cn("flex flex-col gap-3 sm:gap-4 border-b border-border/30 bg-card/50 py-3 sm:py-5 sm:flex-row sm:items-center sm:justify-between", headerClassName)}>
+        <CardHeader className={cn("flex flex-col gap-4 border-b border-border/30 bg-card/50 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6", headerClassName)}>
           <div className="space-y-1.5">
             {heading && (
               <CardTitle className="text-lg sm:text-xl font-semibold leading-tight">
@@ -41,7 +41,7 @@ export function PageSection({
             )}
           </div>
           {actions && (
-            <div className="flex flex-wrap gap-2 sm:flex-row sm:items-center sm:gap-4">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4">
               {actions}
             </div>
           )}

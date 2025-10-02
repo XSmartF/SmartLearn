@@ -122,22 +122,23 @@ export default function Notifications() {
   const markAllAsRead = async () => { try { await userRepository.markAllNotificationsRead(); } catch {/* ignore */ } }
 
   return (
-    <div className="space-y-8 sm:space-y-10">
+    <div className="space-y-8 sm:space-y-12">
       <PageHeader
         title="Trung tâm thông báo"
+        eyebrow="Thông báo & yêu cầu"
         description="Theo dõi hoạt động mới nhất và quản lý các yêu cầu quyền truy cập từ bạn bè và đồng đội."
         icon={<Bell className="h-6 w-6 text-primary" />}
         actions={
-          <div className="flex flex-col gap-2 sm:flex-row sm:gap-2">
-            <Button variant="outline" onClick={markAllAsRead}>
-              <Check className="h-4 w-4 mr-2" />
+          <>
+            <Button variant="outline" size="lg" onClick={markAllAsRead}>
+              <Check className="mr-2 h-4 w-4" />
               Đánh dấu tất cả đã đọc
             </Button>
-            <Button variant="outline">
-              <Filter className="h-4 w-4 mr-2" />
+            <Button variant="outline" size="lg">
+              <Filter className="mr-2 h-4 w-4" />
               Cài đặt thông báo
             </Button>
-          </div>
+          </>
         }
       />
 

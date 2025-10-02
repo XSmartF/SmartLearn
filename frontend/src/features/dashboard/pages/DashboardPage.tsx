@@ -12,6 +12,8 @@ import { getUpcomingEvents } from '../../study/utils/calendarUtils';
 import { useAuth } from '@/shared/hooks/useAuthRedux';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { ChartContainer, type ChartConfig, ChartTooltipContent, ChartLegendContent } from '@/shared/components/ui/chart';
+import { SmartImage } from '@/shared/components/ui/smart-image';
+import { H3, MutedSmall } from '@/shared/components/ui/typography';
 import {
   Area,
   AreaChart,
@@ -252,16 +254,22 @@ export default function DashboardPage() {
       {/* Compact Hero - smaller */}
       <div className="relative rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-background p-4 border min-h-[100px] flex-shrink-0">
         <div className="relative z-10 max-w-2xl">
-          <h1 className="text-xl sm:text-2xl font-bold mb-1">
+          <H3 className="text-xl sm:text-2xl font-bold mb-1">
             {heroHeading}
-          </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground line-clamp-1">
+          </H3>
+          <MutedSmall className="text-xs sm:text-sm text-muted-foreground line-clamp-1">
             {heroHighlight}
-          </p>
+          </MutedSmall>
         </div>
         {/* Decorative image - smaller */}
         <div className="absolute right-2 sm:right-4 -bottom-4 sm:-bottom-6 w-32 h-32 sm:w-48 sm:h-48 opacity-30 pointer-events-none z-0">
-          <img src="/picture1.png" alt="" className="w-full h-full object-contain drop-shadow-xl" />
+          <SmartImage
+            src="/picture1.png"
+            alt=""
+            className="w-full h-full"
+            imageClassName="object-contain drop-shadow-xl"
+            loading="lazy"
+          />
         </div>
       </div>
 

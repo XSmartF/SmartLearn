@@ -14,7 +14,7 @@ export default function DashboardLayout() {
   return (
     <SidebarProvider>
       <AppSidebar />
-  <SidebarInset className="flex h-screen flex-1 flex-col overflow-hidden">
+      <SidebarInset className="flex h-screen flex-1 flex-col overflow-hidden">
         <header className="glass-header z-40 flex h-16 shrink-0 items-center gap-2 px-4 sm:px-6">
           <div className="flex flex-1 items-center gap-3 px-1 sm:px-0">
             <SidebarTrigger className="neu-button h-10 w-10" />
@@ -29,8 +29,8 @@ export default function DashboardLayout() {
           </div>
         </header>
         <div className="flex-1 overflow-y-auto">
-          <div className="flex flex-col gap-8 px-6 sm:px-8 py-8 sm:py-10">
-            <div className="max-w-7xl mx-auto w-full">
+          <div className="flex flex-col gap-8 px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+            <div className="w-full">
               <Outlet />
             </div>
           </div>

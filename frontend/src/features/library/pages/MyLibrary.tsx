@@ -175,7 +175,7 @@ export default function MyLibrary() {
   }, [deleteTitle]);
 
   return (
-    <div className="space-y-6 sm:space-y-8">
+    <div className="space-y-8 sm:space-y-12">
       <PageHeader
         title="Thư viện của tôi"
         eyebrow="Thư viện cá nhân"
@@ -184,7 +184,7 @@ export default function MyLibrary() {
       />
 
       {/* Controls */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 p-6 bg-muted/20 rounded-md">
+      <div className="flex flex-col gap-6 rounded-md bg-muted/20 p-6 lg:flex-row lg:items-center lg:justify-between">
         <LibraryFilters
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}

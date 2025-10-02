@@ -3,11 +3,12 @@ import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Badge } from '@/shared/components/ui/badge'
 import { H2, H3 } from '@/shared/components/ui/typography'
-import { BookOpen, Keyboard, Check, X, Volume2, Lightbulb, Frown, Timer } from 'lucide-react'
+import { BookOpen, Keyboard, Check, X, Volume2, Lightbulb, Frown, Timer, AlertTriangle, Sparkles } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import type { Question, Result, LearnEngine as LearnEngineType } from '@/features/study/utils/learnEngine'
-import type { Card as LearnCard } from '@/features/study/utils/learnEngine'
+import type { Question, Result, LearnEngine as LearnEngineType, Card as LearnCard, DifficultyMeta } from '@/features/study/utils/learnEngine'
+import type { ReviewDifficultyChoice } from '@/shared/lib/reviewScheduler'
 import { normalize } from '@/features/study/utils/learnEngine'
+import { cn } from '@/shared/lib/utils'
 
 interface QuestionCardProps {
   currentQuestion: Question
@@ -26,6 +27,10 @@ interface QuestionCardProps {
   handleNext: () => void
   disableNext?: boolean
   answerSide: 'front' | 'back'
+  difficultyMeta: DifficultyMeta | null
+  difficultyChoices: Array<{ value: ReviewDifficultyChoice; label: string; description: string }>
+  onDifficultyChoice: (choice: ReviewDifficultyChoice) => void
+  submittingChoice: ReviewDifficultyChoice | null
 }
 
 export function QuestionCard({
@@ -44,7 +49,11 @@ export function QuestionCard({
   handleAnswer,
   handleNext,
   disableNext = false,
-  answerSide
+  answerSide,
+  difficultyMeta,
+  difficultyChoices,
+  onDifficultyChoice,
+  submittingChoice
 }: QuestionCardProps) {
   const [showFullAnswer, setShowFullAnswer] = useState(false)
   const [fullAnswerText, setFullAnswerText] = useState('')
@@ -62,6 +71,27 @@ export function QuestionCard({
     setMustRetryAfterDontKnow(false)
     setJustRetriedAfterDontKnow(false)
   }, [currentQuestion])
+
+  const activeDifficultyChoice = submittingChoice ?? difficultyMeta?.lastChoice ?? null
+  const isRatingRequired = difficultyMeta?.shouldPrompt ?? false
+  const difficultyPalette: Record<ReviewDifficultyChoice, { idle: string; active: string }> = {
+    veryHard: {
+      idle: 'border-destructive/50 text-destructive hover:border-destructive/70 hover:bg-destructive/10',
+      active: 'border-destructive bg-destructive/15 text-destructive shadow-sm'
+    },
+    hard: {
+      idle: 'border-warning/60 text-warning hover:border-warning/70 hover:bg-warning/10',
+      active: 'border-warning bg-warning/10 text-warning shadow-sm'
+    },
+    again: {
+      idle: 'border-info/60 text-info hover:border-info/70 hover:bg-info/10',
+      active: 'border-info bg-info/10 text-info shadow-sm'
+    },
+    normal: {
+      idle: 'border-success/60 text-success hover:border-success/70 hover:bg-success/10',
+      active: 'border-success bg-success/10 text-success shadow-sm'
+    }
+  }
   return (
     <Card className="w-full max-w-6xl mx-auto shadow-lg border-0 bg-card backdrop-blur-sm">
       <CardHeader className="pb-4">
@@ -414,6 +444,59 @@ export function QuestionCard({
             )}
           </div>
         )}
+
+        <div className="mt-10 border-t border-border/40 pt-6">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <H3 className="text-lg font-semibold">Đánh giá độ khó của thẻ</H3>
+            {activeDifficultyChoice && (
+              <Badge variant="outline" className="w-fit bg-primary/10 text-primary border-primary/40">
+                Đã chọn: {(() => {
+                  const found = difficultyChoices.find(option => option.value === activeDifficultyChoice)
+                  return found ? found.label : activeDifficultyChoice
+                })()}
+              </Badge>
+            )}
+          </div>
+          {isRatingRequired && !activeDifficultyChoice && (
+            <p className="mt-3 flex items-center gap-2 text-sm text-warning">
+              <AlertTriangle className="h-4 w-4 text-warning" />
+              Thẻ này cần được đánh giá để SmartLearn sắp lịch ôn tập chính xác.
+            </p>
+          )}
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {difficultyChoices.map(option => {
+              const isActive = activeDifficultyChoice === option.value
+              const isSubmitting = submittingChoice === option.value
+              const isDisabled = Boolean(submittingChoice && submittingChoice !== option.value)
+              const palette = difficultyPalette[option.value]
+              return (
+                <Button
+                  key={option.value}
+                  type="button"
+                  variant="outline"
+                  disabled={isDisabled}
+                  onClick={() => onDifficultyChoice(option.value)}
+                  className={cn(
+                    'h-auto justify-start py-3 px-4 text-left transition-all duration-200',
+                    isActive ? palette.active : palette.idle,
+                    isSubmitting && 'opacity-70 cursor-wait'
+                  )}
+                >
+                  <div className="flex flex-col items-start gap-1">
+                    <span className="text-sm font-semibold">{isSubmitting ? 'Đang lưu...' : option.label}</span>
+                    <span className="text-xs text-muted-foreground break-words">{option.description}</span>
+                  </div>
+                </Button>
+              )
+            })}
+          </div>
+          {isRatingRequired && !activeDifficultyChoice && (
+            <p className="mt-3 text-xs text-warning flex items-center gap-1">
+              <Sparkles className="h-3 w-3" />
+              Hãy chọn một lựa chọn đánh giá để tiếp tục học hiệu quả hơn.
+            </p>
+          )}
+        </div>
       </CardContent>
     </Card>
   )

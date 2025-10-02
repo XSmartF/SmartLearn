@@ -146,7 +146,7 @@ export default function NotesPage() {
   ) : '';
 
   return (
-    <div className="space-y-8 sm:space-y-10">
+    <div className="space-y-8 sm:space-y-12">
       <PageHeader
         title="Quản lý kiến thức của bạn"
         eyebrow="Ghi chép thông minh"

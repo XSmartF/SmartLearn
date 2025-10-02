@@ -101,6 +101,7 @@
   /* Glassmorphism */
   --glass-bg: oklch(0.99 0 0 / 0.6);
   --glass-border: oklch(1 0 0 / 0.2);
+
 }
 
 .dark {

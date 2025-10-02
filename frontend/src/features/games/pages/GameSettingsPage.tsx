@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
-import { H1 } from '@/shared/components/ui/typography';
+import { H1, H3, P } from '@/shared/components/ui/typography';
 import { ArrowLeft, Settings, Play, Clock, Target, Zap, Brain, BookOpen, CheckCircle, Shuffle, Mic } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -185,7 +185,7 @@ export default function GameSettingsPage() {
     return (
       <div className="container mx-auto p-6 max-w-2xl">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Trò chơi không tồn tại</h1>
+          <H3 className="text-2xl font-bold mb-4">Trò chơi không tồn tại</H3>
           <Button onClick={() => navigate('/games')}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Quay lại
@@ -256,8 +256,8 @@ export default function GameSettingsPage() {
               {gameConfig.icon}
             </div>
             <div>
-              <h2 className="text-xl font-bold">{gameConfig.name}</h2>
-              <p className="text-muted-foreground">{gameConfig.description}</p>
+              <H3 className="text-xl font-bold">{gameConfig.name}</H3>
+              <P className="text-muted-foreground">{gameConfig.description}</P>
             </div>
           </div>
         </CardContent>

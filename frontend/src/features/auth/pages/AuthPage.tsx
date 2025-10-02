@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/shared/hooks/useAuthRedux';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { SmartImage } from '@/shared/components/ui/smart-image';
+import { H1, Lead, P } from '@/shared/components/ui/typography';
 import AuthTab from '../components/AuthTab';
 import { ROUTES } from '@/shared/constants/routes';
 
@@ -60,16 +62,22 @@ export default function AuthPage() {
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative z-10 text-white max-w-md mx-auto text-center">
           <div className="mb-8">
-            <img src="/smartlearn.svg" alt="SmartLearn" className="w-16 h-16 mx-auto mb-4 animate-pulse" />
-            <h1 className="text-4xl font-bold mb-4 animate-fade-in">SmartLearn</h1>
-            <p className="text-xl opacity-90 animate-fade-in-delay">
+            <SmartImage
+              src="/smartlearn.svg"
+              alt="SmartLearn"
+              className="w-16 h-16 mx-auto mb-4 animate-pulse"
+              imageClassName="object-contain"
+              loading="lazy"
+            />
+            <H1 className="text-4xl font-bold mb-4 animate-fade-in">SmartLearn</H1>
+            <Lead className="opacity-90 animate-fade-in-delay">
               Nền tảng học tập thông minh của bạn
-            </p>
+            </Lead>
           </div>
           <div className="relative">
-            <p className="text-lg opacity-90 mb-4 animate-fade-in-delay">
+            <P className="text-lg opacity-90 mb-4 animate-fade-in-delay">
               Học tập thông minh, tương lai tươi sáng
-            </p>
+            </P>
             <div className="typing-container">
               <span className="typing-text">
                 Khám phá kiến thức mới mỗi ngày...

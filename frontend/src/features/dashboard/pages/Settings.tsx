@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Save, Loader2, Settings2 } from 'lucide-react';
+import { Save, Settings2 } from 'lucide-react';
+import { Loader } from '@/shared/components/ui/loader';
 import { toast } from 'sonner';
 import { useTheme } from 'next-themes';
 
@@ -115,9 +116,10 @@ export default function SettingsPage() {
   }, [setTheme, updateSettingsState]);
 
   return (
-    <div className="space-y-8 sm:space-y-10">
+    <div className="space-y-8 sm:space-y-12">
       <PageHeader
         title="Cài đặt"
+        eyebrow="Tùy chỉnh tài khoản"
         description="Quản lý thông tin cá nhân và tùy chọn học tập của bạn."
         icon={<Settings2 className="h-6 w-6 text-primary" />}
       />
@@ -126,8 +128,8 @@ export default function SettingsPage() {
         heading="Thông tin cá nhân"
         description="Cập nhật thông tin hiển thị của bạn."
         actions={
-          <Button onClick={() => handleSaveSection('profile')} disabled={saving !== null}>
-            {saving === 'profile' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+          <Button size="lg" onClick={() => handleSaveSection('profile')} disabled={saving !== null}>
+            {saving === 'profile' ? <span className="mr-2 scale-50"><Loader size="sm" /></span> : <Save className="mr-2 h-4 w-4" />}
             Lưu
           </Button>
         }
@@ -165,8 +167,8 @@ export default function SettingsPage() {
         heading="Học tập & Nhắc nhở"
         description="Cài đặt mục tiêu học tập và nhắc nhở hàng ngày."
         actions={
-          <Button onClick={() => handleSaveSection('study')} disabled={saving !== null}>
-            {saving === 'study' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+          <Button size="lg" onClick={() => handleSaveSection('study')} disabled={saving !== null}>
+            {saving === 'study' ? <span className="mr-2 scale-50"><Loader size="sm" /></span> : <Save className="mr-2 h-4 w-4" />}
             Lưu
           </Button>
         }
@@ -253,7 +255,10 @@ export default function SettingsPage() {
       </PageSection>
 
       {loading ? (
-        <div className="text-sm text-muted-foreground">Đang tải cài đặt...</div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader size="sm" />
+          <span>Đang tải cài đặt...</span>
+        </div>
       ) : null}
     </div>
   );

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { libraryRepository } from '@/shared/lib/repositories/LibraryRepository'
 import { cardRepository } from '@/shared/lib/repositories/CardRepository'
@@ -9,8 +9,6 @@ import { idbGetItem, idbSetItem } from '@/shared/lib/indexedDB'
 import { useAuth } from '@/shared/hooks/useAuthRedux'
 import { getLibraryDetailPath, ROUTES } from '@/shared/constants/routes'
 import { Alert, AlertTitle } from '@/shared/components/ui/alert'
-import { Button } from '@/shared/components/ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog'
 import type { ReviewDifficultyChoice } from '@/shared/lib/reviewScheduler'
 import { scheduleAutoReview } from '@/shared/lib/reviewScheduler'
 import { consumeReviewSession } from '@/shared/constants/review'
@@ -24,13 +22,7 @@ import {
   StudyError,
   StudyFinished
 } from '../components'
-
-interface DifficultyPrompt {
-  cardId: string
-  front: string
-  back: string
-  meta: DifficultyMeta
-}
+import { Loader } from '@/shared/components/ui/loader'
 
 const DIFFICULTY_CHOICES: Array<{ value: ReviewDifficultyChoice; label: string; description: string }> = [
   { value: 'veryHard', label: 'Rất khó', description: 'Gặp nhiều lỗi liên tiếp - cần ôn ngay.' },
@@ -39,11 +31,49 @@ const DIFFICULTY_CHOICES: Array<{ value: ReviewDifficultyChoice; label: string; 
   { value: 'normal', label: 'Đã nhớ', description: 'Đưa thẻ về lịch ôn tiêu chuẩn.' }
 ]
 
+type StudyPreferences = {
+  allowMC: boolean
+  allowTyped: boolean
+  autoAdvance: boolean
+  showCardProgress: boolean
+  autoRead: boolean
+  readLanguage: string
+  showKeyboardShortcuts: boolean
+  answerSide: 'front' | 'back'
+}
+
+const STUDY_PREFERENCES_KEY = 'smartlearn-study-preferences'
+
+const DEFAULT_STUDY_PREFERENCES: StudyPreferences = {
+  allowMC: true,
+  allowTyped: true,
+  autoAdvance: true,
+  showCardProgress: false,
+  autoRead: false,
+  readLanguage: 'en-US',
+  showKeyboardShortcuts: true,
+  answerSide: 'back'
+}
+
+const loadStoredPreferences = (): StudyPreferences => {
+  if (typeof window === 'undefined') return { ...DEFAULT_STUDY_PREFERENCES }
+  try {
+    const raw = window.localStorage.getItem(STUDY_PREFERENCES_KEY)
+    if (!raw) return { ...DEFAULT_STUDY_PREFERENCES }
+    const parsed = JSON.parse(raw) as Partial<StudyPreferences>
+    return { ...DEFAULT_STUDY_PREFERENCES, ...parsed }
+  } catch (error) {
+    console.error('Không thể đọc tùy chọn học tập từ localStorage', error)
+    return { ...DEFAULT_STUDY_PREFERENCES }
+  }
+}
+
 export default function StudyPage(){
   const { id } = useParams(); const navigate = useNavigate(); const libraryId = id || '';
   const [searchParams] = useSearchParams();
   const isReviewSession = searchParams.get('mode') === 'review';
   useAuth();
+  const initialPreferences = useMemo(() => loadStoredPreferences(), []);
   // Core state
   const [engine,setEngine]=useState<LearnEngineType|null>(null);
   const [currentQuestion,setCurrentQuestion]=useState<Question|null>(null);
@@ -53,23 +83,29 @@ export default function StudyPage(){
   const [isFinished,setIsFinished]=useState(false);
   const [selectedOptionIndex,setSelectedOptionIndex]=useState<number|null>(null);
   const [correctOptionIndex,setCorrectOptionIndex]=useState<number|null>(null);
-  const [difficultyPrompt,setDifficultyPrompt]=useState<DifficultyPrompt|null>(null);
   const [submittingChoice,setSubmittingChoice]=useState<ReviewDifficultyChoice|null>(null);
   // Preferences & detail controls
-  const [allowMC,setAllowMC]=useState(true); const [allowTyped,setAllowTyped]=useState(true); const [autoAdvance,setAutoAdvance]=useState(true);
-  const [showCardProgress,setShowCardProgress]=useState(false); const [showCardAnswers,setShowCardAnswers]=useState(false);
-  const [autoRead,setAutoRead]=useState(false); const [readLanguage,setReadLanguage]=useState('en-US');
-  const [showKeyboardShortcuts,setShowKeyboardShortcuts]=useState(true);
+  const [allowMC,setAllowMC]=useState(initialPreferences.allowMC);
+  const [allowTyped,setAllowTyped]=useState(initialPreferences.allowTyped);
+  const [autoAdvance,setAutoAdvance]=useState(initialPreferences.autoAdvance);
+  const [showCardProgress,setShowCardProgress]=useState(initialPreferences.showCardProgress);
+  const [showCardAnswers,setShowCardAnswers]=useState(false);
+  const [autoRead,setAutoRead]=useState(initialPreferences.autoRead);
+  const [readLanguage,setReadLanguage]=useState(initialPreferences.readLanguage);
+  const [showKeyboardShortcuts,setShowKeyboardShortcuts]=useState(initialPreferences.showKeyboardShortcuts);
   // Which side is the answer when prompting (default back)
-  const [answerSide, setAnswerSide] = useState<'front' | 'back'>('back');
+  const [answerSide, setAnswerSide] = useState<'front' | 'back'>(initialPreferences.answerSide);
+  const lastAppliedSideRef = useRef<'front' | 'back'>('back');
   // Data
   const [library,setLibrary]=useState<LibraryMeta|null>(null);
   const [cards,setCards]=useState<LearnCard[]>([]);
   const [reviewContext,setReviewContext]=useState<{ cardIds: string[]; missingCount: number } | null>(null);
   const [loadingData,setLoadingData]=useState(true);
   const [loadError,setLoadError]=useState<string|null>(null);
-  const promptActive=Boolean(difficultyPrompt);
-  const effectiveAutoAdvance=autoAdvance && !promptActive;
+  const currentCardId=currentQuestion?.cardId;
+  const currentDifficultyMeta: DifficultyMeta | null = currentCardId && engine ? engine.getDifficultyMeta(currentCardId) : null;
+  const mustRateBeforeNext = currentDifficultyMeta?.shouldPrompt ?? false;
+  const effectiveAutoAdvance=autoAdvance && !mustRateBeforeNext && submittingChoice === null;
 
   // Function to speak the question using Web Speech API
   const speakQuestion = (text: string, lang: string) => {
@@ -146,17 +182,56 @@ export default function StudyPage(){
   // Mode preference sync
   useEffect(()=>{ if(!engine) return; if(!allowMC && !allowTyped){ setAllowMC(true); engine.setModePreferences({ mc:true, typed:false }); return; } engine.setModePreferences({ mc:allowMC, typed:allowTyped }); if(currentQuestion){ const needChange=(currentQuestion.mode==='MULTIPLE_CHOICE' && !allowMC) || (currentQuestion.mode==='TYPED_RECALL' && !allowTyped); if(needChange){ try { const regen=engine.generateQuestionForCard(currentQuestion.cardId); setCurrentQuestion(regen); setShowResult(false); setUserAnswer(''); setLastResult(null); setSelectedOptionIndex(null); setCorrectOptionIndex(null); } catch(e){ console.error(e); const fb=engine.nextQuestion(); setCurrentQuestion(fb); } } } }, [allowMC,allowTyped,engine,currentQuestion]);
 
-  // Sync answer side preference to engine and regenerate current question to reflect side
-  useEffect(() => { if (!engine) return; engine.setAnswerSide(answerSide); if (currentQuestion) { try { const regen = engine.generateQuestionForCard(currentQuestion.cardId); setCurrentQuestion(regen); setShowResult(false); setUserAnswer(''); setLastResult(null); setSelectedOptionIndex(null); setCorrectOptionIndex(null); } catch(e) { console.error(e); } } }, [answerSide, engine, currentQuestion]);
+  // Sync answer side preference to engine once per change and regenerate current question to reflect side
+  useEffect(() => {
+    if (!engine) return;
+    if (lastAppliedSideRef.current === answerSide) return;
+    engine.setAnswerSide(answerSide);
+    lastAppliedSideRef.current = answerSide;
+    if (currentQuestion) {
+      try {
+        const regen = engine.generateQuestionForCard(currentQuestion.cardId);
+        setCurrentQuestion(regen);
+        setShowResult(false);
+        setUserAnswer('');
+        setLastResult(null);
+        setSelectedOptionIndex(null);
+        setCorrectOptionIndex(null);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, [answerSide, engine, currentQuestion]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const preferences: StudyPreferences = {
+      allowMC,
+      allowTyped,
+      autoAdvance,
+      showCardProgress,
+      autoRead,
+      readLanguage,
+      showKeyboardShortcuts,
+      answerSide
+    };
+    try {
+      window.localStorage.setItem(STUDY_PREFERENCES_KEY, JSON.stringify(preferences));
+    } catch (error) {
+      console.error('Không thể lưu tùy chọn học tập vào localStorage', error);
+    }
+  }, [allowMC, allowTyped, autoAdvance, showCardProgress, autoRead, readLanguage, showKeyboardShortcuts, answerSide]);
 
   // Answer handling
   const debounceTimerRef = useRef<number | undefined>(undefined);
   const DEBOUNCE_MS=4000;
-  const handleAnswer=useCallback((answer:string|number)=>{ if(!engine||!currentQuestion) return; let ans=answer; if(currentQuestion.mode==='MULTIPLE_CHOICE' && typeof answer==='string'){ ans=answer; } const result=engine.submitAnswer(currentQuestion.cardId, ans); try { const state=engine.serialize(); idbSetItem(`study-session-${libraryId}`, state); if(debounceTimerRef.current) window.clearTimeout(debounceTimerRef.current); debounceTimerRef.current=window.setTimeout(()=>{ saveProgress(libraryId,state).catch((e: unknown) => console.error(e)); }, DEBOUNCE_MS); } catch(e){ console.error(e); } setLastResult(result); setShowResult(true); setSelectedOptionIndex(typeof answer==='string' && currentQuestion.mode==='MULTIPLE_CHOICE' ? currentQuestion.options.findIndex((o: string)=>o===answer) : null); setCorrectOptionIndex(typeof answer==='string' && currentQuestion.mode==='MULTIPLE_CHOICE' ? (()=>{ const card=cards.find((c: LearnCard)=>c.id.toString()===currentQuestion.cardId); const correctAnswer= answerSide==='back' ? card?.back : card?.front; return currentQuestion.options.findIndex((o: string)=>o===correctAnswer); })() : null); const meta=engine.getDifficultyMeta(currentQuestion.cardId); if(meta?.shouldPrompt){ const cardDetail=cards.find((c: LearnCard)=>c.id.toString()===currentQuestion.cardId); setDifficultyPrompt({ cardId: currentQuestion.cardId, front: cardDetail?.front ?? currentQuestion.prompt, back: cardDetail?.back ?? '', meta }); } else if(difficultyPrompt?.cardId===currentQuestion.cardId){ setDifficultyPrompt(null); } }, [engine, currentQuestion, cards, libraryId, difficultyPrompt, answerSide]);
+  const handleAnswer=useCallback((answer:string|number)=>{ if(!engine||!currentQuestion) return; let ans=answer; if(currentQuestion.mode==='MULTIPLE_CHOICE' && typeof answer==='string'){ ans=answer; } const result=engine.submitAnswer(currentQuestion.cardId, ans); try { const state=engine.serialize(); idbSetItem(`study-session-${libraryId}`, state); if(debounceTimerRef.current) window.clearTimeout(debounceTimerRef.current); debounceTimerRef.current=window.setTimeout(()=>{ saveProgress(libraryId,state).catch((e: unknown) => console.error(e)); }, DEBOUNCE_MS); } catch(e){ console.error(e); } setLastResult(result); setShowResult(true); setSelectedOptionIndex(typeof answer==='string' && currentQuestion.mode==='MULTIPLE_CHOICE' ? currentQuestion.options.findIndex((o: string)=>o===answer) : null); setCorrectOptionIndex(typeof answer==='string' && currentQuestion.mode==='MULTIPLE_CHOICE' ? (()=>{ const card=cards.find((c: LearnCard)=>c.id.toString()===currentQuestion.cardId); const correctAnswer= answerSide==='back' ? card?.back : card?.front; return currentQuestion.options.findIndex((o: string)=>o===correctAnswer); })() : null); }, [engine, currentQuestion, cards, libraryId, answerSide]);
 
-  const handleDifficultyChoice=useCallback((choice: ReviewDifficultyChoice)=>{ if(!engine || !difficultyPrompt) return; setSubmittingChoice(choice); try { engine.recordDifficultyChoice(difficultyPrompt.cardId, choice); scheduleAutoReview({ cardId: difficultyPrompt.cardId, libraryId, cardFront: difficultyPrompt.front, cardBack: difficultyPrompt.back || undefined, libraryTitle: library?.title, choice }); const state=engine.serialize(); idbSetItem(`study-session-${libraryId}`, state); if(debounceTimerRef.current) window.clearTimeout(debounceTimerRef.current); debounceTimerRef.current=window.setTimeout(()=>{ saveProgress(libraryId,state).catch((e: unknown) => console.error(e)); }, DEBOUNCE_MS); const updatedMeta=engine.getDifficultyMeta(difficultyPrompt.cardId); if(updatedMeta?.shouldPrompt){ setDifficultyPrompt(prev=> prev ? { ...prev, meta: updatedMeta } : prev); } else { setDifficultyPrompt(null); } } finally { setSubmittingChoice(null); } }, [engine,difficultyPrompt,libraryId,library]);
+  const handleDifficultyChoice=useCallback((cardId: string, choice: ReviewDifficultyChoice)=>{ if(!engine) return; setSubmittingChoice(choice); try { const cardDetail=cards.find((c: LearnCard)=>c.id.toString()===cardId) || null; engine.recordDifficultyChoice(cardId, choice); scheduleAutoReview({ cardId, libraryId, cardFront: cardDetail?.front ?? '', cardBack: cardDetail?.back || undefined, libraryTitle: library?.title, choice }); const state=engine.serialize(); idbSetItem(`study-session-${libraryId}`, state); if(debounceTimerRef.current) window.clearTimeout(debounceTimerRef.current); debounceTimerRef.current=window.setTimeout(()=>{ saveProgress(libraryId,state).catch((e: unknown) => console.error(e)); }, DEBOUNCE_MS); } finally { setSubmittingChoice(null); } }, [engine,cards,libraryId,library]);
 
-  const handleNext=useCallback(()=>{ if(!engine || difficultyPrompt) return; setShowResult(false); setUserAnswer(''); setLastResult(null); setSelectedOptionIndex(null); setCorrectOptionIndex(null); setDifficultyPrompt(null); const nq=engine.nextQuestion(); setCurrentQuestion(nq); if(!nq || engine.isFinished()) setIsFinished(true); }, [engine,difficultyPrompt]);
+  const handleNext=useCallback(()=>{ if(!engine) return; if(submittingChoice) return; if(currentQuestion){ const meta=engine.getDifficultyMeta(currentQuestion.cardId); if(meta?.shouldPrompt){ return; } } setShowResult(false); setUserAnswer(''); setLastResult(null); setSelectedOptionIndex(null); setCorrectOptionIndex(null); const nq=engine.nextQuestion(); setCurrentQuestion(nq); if(!nq || engine.isFinished()) setIsFinished(true); }, [engine,currentQuestion,submittingChoice]);
+
+  const handleSelectDifficulty=useCallback((choice: ReviewDifficultyChoice)=>{ if(!currentQuestion || submittingChoice) return; handleDifficultyChoice(currentQuestion.cardId, choice); }, [currentQuestion, handleDifficultyChoice, submittingChoice]);
 
   useEffect(()=>{ if(showResult && effectiveAutoAdvance){ const t=setTimeout(()=> handleNext(), 2000); return ()=> clearTimeout(t); } }, [showResult,effectiveAutoAdvance,handleNext]);
 
@@ -261,14 +336,15 @@ export default function StudyPage(){
   if(!library) return null;
 
   const progress=engine?.getProgressDetailed();
-  const lastChoiceLabel=difficultyPrompt?.meta.lastChoice
-    ? (DIFFICULTY_CHOICES.find(option=>option.value===difficultyPrompt.meta.lastChoice)?.label || difficultyPrompt.meta.lastChoice)
-    : undefined;
 
   // Finished state
   if(isFinished){ return <StudyFinished handleFinish={handleFinish} handleResetSession={handleResetSession} />; }
 
-  if(!currentQuestion) return (<div className='py-12 text-center'>Đang khởi tạo...</div>);
+  if(!currentQuestion) return (
+    <div className='py-12 flex items-center justify-center'>
+      <Loader label="Đang khởi tạo" />
+    </div>
+  );
 
   return (
     <>
@@ -373,8 +449,12 @@ export default function StudyPage(){
                   speakQuestion={speakQuestion}
                   handleAnswer={handleAnswer}
                   handleNext={handleNext}
-                  disableNext={promptActive}
-                  answerSide={answerSide}
+                    disableNext={mustRateBeforeNext}
+                    answerSide={answerSide}
+                    difficultyMeta={currentDifficultyMeta}
+                    difficultyChoices={DIFFICULTY_CHOICES}
+                    onDifficultyChoice={handleSelectDifficulty}
+                    submittingChoice={submittingChoice}
                 />
               )}
             </div>
@@ -399,52 +479,6 @@ export default function StudyPage(){
           </div>
         </div>
       </div>
-
-      <Dialog open={promptActive} onOpenChange={() => {}}>
-        <DialogContent className="max-w-lg" onEscapeKeyDown={(event) => event.preventDefault()} onInteractOutside={(event) => event.preventDefault()}>
-          <DialogHeader>
-            <DialogTitle>Đánh giá lại mức độ ghi nhớ</DialogTitle>
-            <DialogDescription>
-              Thẻ này đã sai {difficultyPrompt?.meta.wrongStreak ?? 0} lần liên tiếp (tổng {difficultyPrompt?.meta.wrongCount ?? 0} lần). Hãy chọn mức độ để SmartLearn lên lịch ôn phù hợp.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="rounded-lg border border-dashed border-info/50 bg-info/5 p-4">
-              <div className="text-xs font-medium uppercase text-muted-foreground">Thuật ngữ</div>
-              <div className="mt-1 text-lg font-semibold text-foreground">{difficultyPrompt?.front}</div>
-              {difficultyPrompt?.back && (
-                <div className="mt-3 text-sm text-muted-foreground">
-                  <span className="font-medium text-foreground">Đáp án:</span> {difficultyPrompt.back}
-                </div>
-              )}
-              <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
-                <span className="rounded-full border border-border px-3 py-1">Mastery hiện tại: {difficultyPrompt?.meta.mastery ?? 0}/5</span>
-                {lastChoiceLabel && (
-                  <span className="rounded-full border border-border px-3 py-1">Lần đánh giá trước: {lastChoiceLabel}</span>
-                )}
-              </div>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {DIFFICULTY_CHOICES.map(option => (
-                <Button
-                  key={option.value}
-                  variant={option.value === 'veryHard' ? 'destructive' : option.value === 'normal' ? 'default' : 'outline'}
-                  onClick={() => handleDifficultyChoice(option.value)}
-                  disabled={submittingChoice !== null}
-                  className="h-auto justify-start space-y-1 py-3 text-left whitespace-normal break-words"
-                >
-                  <div className="text-sm font-semibold">
-                    {option.label}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {option.description}
-                  </div>
-                </Button>
-              ))}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </>
   )
 }

@@ -163,18 +163,19 @@ export default function ReviewPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 sm:space-y-12">
       <PageHeader
         title="Ôn tập thông minh"
         description="Tập trung luyện lại các thẻ bạn đã đánh dấu quan trọng hoặc đánh giá là khó trong quá trình học."
         eyebrow="Chế độ ôn tập"
         icon={<Sparkles className="h-5 w-5 text-primary" />}
         actions={
-          <div className="flex flex-wrap items-center gap-2">
-            <Button onClick={() => handleReview(reviewItems)} disabled={!anyReady}>
+          <>
+            <Button size="lg" onClick={() => handleReview(reviewItems)} disabled={!anyReady}>
               Ôn tập tất cả ({readyCount})
             </Button>
             <Button
+              size="lg"
               variant="outline"
               onClick={() => handleReview(hardItems)}
               disabled={!hardCount}
@@ -182,13 +183,14 @@ export default function ReviewPage() {
               Ôn tập thẻ khó ({hardCount})
             </Button>
             <Button
+              size="lg"
               variant="ghost"
               onClick={() => handleReview(starredItems)}
               disabled={!starredCount}
             >
               Ôn tập thẻ đánh dấu ({starredCount})
             </Button>
-          </div>
+          </>
         }
       />
 

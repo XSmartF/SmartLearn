@@ -203,28 +203,30 @@ export default function MemoryGame({ difficulty = 'easy' }: MemoryGameProps) {
         <CardContent className="p-6">
           <div className={`grid ${getGridCols()} gap-3 max-w-2xl mx-auto`}>
             {gameState.cards.map((card: GameCard) => (
-              <button
+              <Button
                 key={card.id}
+                variant="ghost"
+                size="icon"
                 onClick={() => handleCardClick(card.id)}
                 disabled={card.isMatched || gameState.flippedCards.includes(card.id)}
                 className={`
-                  aspect-square rounded-lg border-2 transition-all duration-300 transform
+                  aspect-square h-auto w-full rounded-xl border-2 transition-all duration-300
                   ${card.isFlipped || card.isMatched
                     ? 'bg-white border-blue-300 shadow-md scale-105'
                     : 'bg-blue-100 border-blue-200 hover:border-blue-300 hover:bg-blue-50'
                   }
                   ${card.isMatched ? 'ring-2 ring-green-400' : ''}
-                  disabled:cursor-not-allowed
+                  disabled:cursor-not-allowed disabled:opacity-70
                 `}
               >
-                <div className="flex items-center justify-center h-full">
+                <div className="flex h-full w-full items-center justify-center">
                   {card.isFlipped || card.isMatched ? (
                     <span className="text-3xl">{card.value}</span>
                   ) : (
-                    <div className="w-8 h-8 bg-blue-200 rounded-full"></div>
+                    <div className="h-8 w-8 rounded-full bg-blue-200"></div>
                   )}
                 </div>
-              </button>
+              </Button>
             ))}
           </div>
         </CardContent>

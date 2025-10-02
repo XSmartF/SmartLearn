@@ -1000,7 +1000,7 @@ export class LearnEngine {
       s.lastResult = "Incorrect";
       // Add to review queue for immediate review in session
       this.queueReviewCard(s.id, true);
-      if (s.wrongStreak >= 2) {
+  if (s.wrongStreak >= 4) {
         if (!s.pendingDifficultyChoice) {
           s.pendingDifficultyChoice = true;
           s.lastPromptAt = this.sessionIndex;

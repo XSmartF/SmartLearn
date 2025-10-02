@@ -2,15 +2,16 @@ import React from "react"
 import { Button } from "@/shared/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card"
 import { Input } from "@/shared/components/ui/input"
+import { H1, H2, Muted } from "@/shared/components/ui/typography"
 
 // Example component showcasing static UI
 export const MotionShowcase: React.FC = () => {
   return (
     <div className="container mx-auto p-6 space-y-8">
       <div>
-        <h1 className="text-4xl font-bold text-center mb-8 gradient-text">
+        <H1 className="text-4xl font-bold text-center mb-8 gradient-text">
           UI Showcase
-        </h1>
+        </H1>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -66,10 +67,10 @@ export const MotionShowcase: React.FC = () => {
 
       <div className="text-center">
         <div className="inline-block p-6 rounded-2xl glass-motion">
-          <h2 className="text-2xl font-semibold mb-4">Interactive Element</h2>
-          <p className="text-muted-foreground">
+          <H2 className="text-2xl font-semibold mb-4">Interactive Element</H2>
+          <Muted>
             Subtle hover and tap animations
-          </p>
+          </Muted>
         </div>
       </div>
     </div>

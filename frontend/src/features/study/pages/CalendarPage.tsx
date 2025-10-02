@@ -148,13 +148,14 @@ export default function Calendar() {
 
   return (
     <>
-      <div className="space-y-8 sm:space-y-10">
+      <div className="space-y-8 sm:space-y-12">
         <PageHeader
           title="Lịch học tập"
+          eyebrow="Quản lý lịch học"
           description="Theo dõi tiến độ từng ngày và chủ động sắp xếp các phiên học tập phù hợp với mục tiêu của bạn."
           icon={<CalendarDays className="h-6 w-6 text-primary" />}
           actions={
-            <Button onClick={handleAddEvent}>
+            <Button onClick={handleAddEvent} size="lg">
               <Plus className="mr-2 h-4 w-4" />
               Thêm sự kiện
             </Button>

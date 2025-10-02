@@ -115,9 +115,10 @@ export default function GamesPage() {
   };
 
   return (
-    <div className="space-y-8 sm:space-y-10">
+    <div className="space-y-8 sm:space-y-12">
       <PageHeader
         title="Trung tâm trò chơi"
+        eyebrow="Trò chơi học tập"
         description="Kết hợp học và chơi với các mini game giúp bạn ôn luyện kiến thức một cách nhẹ nhàng và hiệu quả."
         icon={<Gamepad2 className="h-6 w-6 text-primary" />}
       />
