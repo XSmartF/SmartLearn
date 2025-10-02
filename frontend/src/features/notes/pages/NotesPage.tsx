@@ -10,7 +10,6 @@ import { Textarea } from "@/shared/components/ui/textarea";
 import { Input } from '@/shared/components/ui/input'
 import { Button } from '@/shared/components/ui/button'
 import { PageSection } from '@/shared/components/PageSection'
-import { StatCard } from '@/shared/components/StatCard'
 import { PageHeader } from '@/shared/components/PageHeader'
 import type { NoteMeta } from '../types'
 import { NoteCard } from '../components/NoteCard'
@@ -71,13 +70,6 @@ export default function NotesPage() {
     const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
     return notes.filter(note => new Date(note.updatedAt).getTime() > oneWeekAgo).length
   }, [notes])
-
-  const stats = useMemo(() => ([
-    { label: 'Tổng ghi chép', value: notes.length, helper: 'Bao gồm tất cả ghi chép cá nhân' },
-    { label: 'Đánh dấu yêu thích', value: favorites.length, helper: 'Ghi chép bạn muốn truy cập nhanh' },
-    { label: 'Cập nhật tuần này', value: updatedThisWeek, helper: 'Số ghi chép được chỉnh sửa 7 ngày qua' },
-    { label: 'Tỷ lệ yêu thích', value: notes.length ? `${Math.round((favorites.length / notes.length) * 100)}%` : '0%', helper: 'Phần trăm ghi chép được yêu thích' },
-  ]), [favorites.length, notes.length, updatedThisWeek])
 
   const highlightSummary = useMemo(() => {
     const percent = notes.length ? Math.round((favorites.length / notes.length) * 100) : 0
@@ -171,132 +163,128 @@ export default function NotesPage() {
               <PenSquare className="mr-2 h-4 w-4" />
               Tạo ghi chép mới
             </Button>
-            <Button onClick={() => setTab('favorites')} variant="outline" size="lg">
-              <Star className="mr-2 h-4 w-4" />
-              Ghi chép yêu thích
-            </Button>
           </>
         }
       />
 
       <PageSection
-        heading="Tổng quan ghi chép"
-        description="Theo dõi nhanh trạng thái ghi chép của bạn."
-        contentClassName="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
-      >
-        {stats.map((stat) => (
-          <StatCard key={stat.label} label={stat.label} value={stat.value} helper={stat.helper} />
-        ))}
-      </PageSection>
-
-      <PageSection
         heading="Quản lý ghi chép"
-        description="Tìm kiếm và sắp xếp ghi chép theo nhu cầu học tập của bạn."
+        description="Tìm kiếm, sắp xếp và quản lý tất cả ghi chép của bạn."
         actions={
-          <Button onClick={handleCreateNote} className="w-full sm:w-auto">
-            <PenSquare className="mr-2 h-4 w-4" />
-            Tạo ghi chép mới
-          </Button>
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <BookOpen className="h-4 w-4" />
+              <span className="font-medium">{notes.length}</span>
+              <span>ghi chép</span>
+            </div>
+            <div className="h-4 w-px bg-border" />
+            <div className="flex items-center gap-1.5">
+              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+              <span className="font-medium">{favorites.length}</span>
+              <span>yêu thích</span>
+            </div>
+            <div className="h-4 w-px bg-border" />
+            <div className="flex items-center gap-1.5">
+              <span className="font-medium">{updatedThisWeek}</span>
+              <span>tuần này</span>
+            </div>
+          </div>
         }
       >
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-6">
-          <div className="relative flex-1 max-w-xl">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Tìm kiếm ghi chép..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
+        <div className="space-y-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-6">
+            <div className="relative flex-1 max-w-xl">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Tìm kiếm ghi chép..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-full sm:w-48">
+                <SelectValue placeholder="Sắp xếp theo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Mới nhất</SelectItem>
+                <SelectItem value="oldest">Cũ nhất</SelectItem>
+                <SelectItem value="title">Theo tên</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-full sm:w-48">
-              <SelectValue placeholder="Sắp xếp theo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="newest">Mới nhất</SelectItem>
-              <SelectItem value="oldest">Cũ nhất</SelectItem>
-              <SelectItem value="title">Theo tên</SelectItem>
-            </SelectContent>
-          </Select>
+
+          <Tabs value={tab} onValueChange={(value) => setTab(value as 'all' | 'favorites')} className="space-y-6">
+            <TabsList className="w-full justify-start gap-2 rounded-xl border border-border/30 bg-card/60 p-1 shadow-[var(--neu-shadow-sm)]">
+              <TabsTrigger value="all" className="flex-1 rounded-lg text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                Tất cả ({sortedFiltered.length})
+              </TabsTrigger>
+              <TabsTrigger value="favorites" className="flex-1 rounded-lg text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                Yêu thích ({favoriteNotes.length})
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent
+              value="all"
+              className="space-y-4"
+            >
+              {sortedFiltered.length > 0 ? (
+                <div className="grid items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {sortedFiltered.map((note) => (
+                    <NoteCard
+                      key={note.id}
+                      note={note}
+                      isFav={favorites.includes(note.id)}
+                      onToggleFavorite={toggleFavorite}
+                      onEdit={handleEditNote}
+                      onDelete={handleDeleteNote}
+                      currentUserId={currentUserId}
+                      favUpdating={favUpdating}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border/40 bg-background/50 py-12 text-center">
+                  <BookOpen className="h-14 w-14 text-muted-foreground" />
+                  <p className="text-lg font-semibold">Chưa có ghi chép nào</p>
+                  <p className="text-sm text-muted-foreground">Tạo ghi chép đầu tiên để bắt đầu xây dựng thư viện kiến thức.</p>
+                  <Button onClick={handleCreateNote} variant="outline">
+                    <PenSquare className="mr-2 h-4 w-4" />
+                    Tạo ghi chép
+                  </Button>
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent
+              value="favorites"
+              className="space-y-4"
+            >
+              {favoriteNotes.length > 0 ? (
+                <div className="grid items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {favoriteNotes.map((note) => (
+                    <NoteCard
+                      key={note.id}
+                      note={note}
+                      isFav
+                      onToggleFavorite={toggleFavorite}
+                      onEdit={handleEditNote}
+                      onDelete={handleDeleteNote}
+                      currentUserId={currentUserId}
+                      favUpdating={favUpdating}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border/40 bg-background/50 py-10 text-center">
+                  <Star className="h-12 w-12 text-muted-foreground" />
+                  <p className="text-lg font-semibold">Chưa có ghi chép yêu thích</p>
+                  <p className="text-sm text-muted-foreground">Đánh dấu các ghi chép quan trọng để truy cập nhanh hơn.</p>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
-      </PageSection>
-
-      <PageSection
-        heading="Không gian ghi chép"
-        description="Duyệt tất cả ghi chép hoặc tập trung vào những ghi chép đã đánh dấu yêu thích."
-        contentClassName="space-y-6"
-      >
-        <Tabs value={tab} onValueChange={(value) => setTab(value as 'all' | 'favorites')} className="space-y-6">
-          <TabsList className="w-full justify-start gap-2 rounded-xl border border-border/30 bg-card/60 p-1 shadow-[var(--neu-shadow-sm)]">
-            <TabsTrigger value="all" className="flex-1 rounded-lg text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              Tất cả ({sortedFiltered.length})
-            </TabsTrigger>
-            <TabsTrigger value="favorites" className="flex-1 rounded-lg text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              Yêu thích ({favoriteNotes.length})
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent
-            value="all"
-            className="space-y-4 rounded-xl border border-border/30 bg-card/60 p-6 shadow-[var(--neu-shadow-sm)] backdrop-blur-sm"
-          >
-            {sortedFiltered.length > 0 ? (
-              <div className="grid items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {sortedFiltered.map((note) => (
-                  <NoteCard
-                    key={note.id}
-                    note={note}
-                    isFav={favorites.includes(note.id)}
-                    onToggleFavorite={toggleFavorite}
-                    onEdit={handleEditNote}
-                    onDelete={handleDeleteNote}
-                    currentUserId={currentUserId}
-                    favUpdating={favUpdating}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border/40 bg-background/50 py-12 text-center">
-                <BookOpen className="h-14 w-14 text-muted-foreground" />
-                <p className="text-lg font-semibold">Chưa có ghi chép nào</p>
-                <p className="text-sm text-muted-foreground">Tạo ghi chép đầu tiên để bắt đầu xây dựng thư viện kiến thức.</p>
-                <Button onClick={handleCreateNote} variant="outline">
-                  <PenSquare className="mr-2 h-4 w-4" />
-                  Tạo ghi chép
-                </Button>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent
-            value="favorites"
-            className="space-y-4 rounded-xl border border-border/30 bg-card/60 p-6 shadow-[var(--neu-shadow-sm)] backdrop-blur-sm"
-          >
-            {favoriteNotes.length > 0 ? (
-              <div className="grid items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {favoriteNotes.map((note) => (
-                  <NoteCard
-                    key={note.id}
-                    note={note}
-                    isFav
-                    onToggleFavorite={toggleFavorite}
-                    onEdit={handleEditNote}
-                    onDelete={handleDeleteNote}
-                    currentUserId={currentUserId}
-                    favUpdating={favUpdating}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border/40 bg-background/50 py-10 text-center">
-                <Star className="h-12 w-12 text-muted-foreground" />
-                <p className="text-lg font-semibold">Chưa có ghi chép yêu thích</p>
-                <p className="text-sm text-muted-foreground">Đánh dấu các ghi chép quan trọng để truy cập nhanh hơn.</p>
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
       </PageSection>
 
       {loading && (

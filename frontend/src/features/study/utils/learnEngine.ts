@@ -1,4 +1,5 @@
 import Fuse from 'fuse.js';
+import type { ReviewDifficultyChoice } from '@/shared/lib/reviewScheduler';
 
 /**
  * Learn Mode (rule-based) – TypeScript single-file implementation
@@ -54,6 +55,11 @@ export interface CardState {
   addedToGroupAt?: number; // session index when added to current group
   easeFactor: number;      // SM-2 ease factor, default 2.5
   lastInterval: number;    // last interval used
+  wrongStreak: number;     // consecutive wrong answers
+  pendingDifficultyChoice: boolean;
+  lastDifficultyChoice?: ReviewDifficultyChoice;
+  lastPromptAt?: number;
+  lastIncorrectAt?: number;
 }
 
 export interface QuestionMC {
@@ -72,6 +78,14 @@ export interface QuestionTyped {
 }
 
 export type Question = QuestionMC | QuestionTyped;
+
+export interface DifficultyMeta {
+  shouldPrompt: boolean;
+  wrongCount: number;
+  wrongStreak: number;
+  mastery: number;
+  lastChoice?: ReviewDifficultyChoice;
+}
 
 // ===== Progress Types =====
 export interface ProgressSummary {
@@ -99,6 +113,12 @@ export interface ProgressDetailed {
     level4: { count: number; percent: number }; // Expert
     level5: { count: number; percent: number }; // Mastered
   };
+}
+
+export interface SessionStats {
+  asked: number;
+  correct: number;
+  incorrect: number;
 }
 
 export interface CardProgressRow {
@@ -321,6 +341,8 @@ export class LearnEngine {
         addedToGroupAt: 0, // initial cards added at session 0
         easeFactor: 2.5,
         lastInterval: 1,
+        wrongStreak: 0,
+        pendingDifficultyChoice: false,
       });
     }
     // Initialize current group with first 7 cards
@@ -496,6 +518,15 @@ export class LearnEngine {
     };
   }
 
+  /** Lightweight snapshot for session-specific stats */
+  public getSessionStats(): SessionStats {
+    return {
+      asked: this.asked,
+      correct: this.correct,
+      incorrect: this.incorrect,
+    };
+  }
+
   /** Detailed progress with mastery level breakdown */
   public getProgressDetailed(): ProgressDetailed {
     const total = this.state.size;
@@ -555,9 +586,89 @@ export class LearnEngine {
 
   /** Mark a card as hard to review again in session */
   public markCardAsHard(cardId: string): void {
-    if (!this.reviewQueue.includes(cardId)) {
-      this.reviewQueue.push(cardId);
+    this.queueReviewCard(cardId, true);
+  }
+
+  private queueReviewCard(cardId: string, front = false) {
+    if (this.reviewQueue.includes(cardId)) return;
+    if (front) this.reviewQueue.unshift(cardId);
+    else this.reviewQueue.push(cardId);
+  }
+
+  private removeFromReviewQueue(cardId: string) {
+    if (!this.reviewQueue.length) return;
+    this.reviewQueue = this.reviewQueue.filter(id => id !== cardId);
+  }
+
+  public getDifficultyMeta(cardId: string): DifficultyMeta | null {
+    const state = this.state.get(cardId);
+    if (!state) return null;
+    return {
+      shouldPrompt: state.pendingDifficultyChoice ?? false,
+      wrongCount: state.wrongCount,
+      wrongStreak: state.wrongStreak ?? 0,
+      mastery: state.mastery,
+      lastChoice: state.lastDifficultyChoice,
+    };
+  }
+
+  public getPendingDifficultyCards(): string[] {
+    return [...this.state.values()].filter(s => s.pendingDifficultyChoice).map(s => s.id);
+  }
+
+  public recordDifficultyChoice(cardId: string, choice: ReviewDifficultyChoice): DifficultyMeta | null {
+    const state = this.state.get(cardId);
+    if (!state) return null;
+
+    state.pendingDifficultyChoice = false;
+    state.lastDifficultyChoice = choice;
+    state.lastPromptAt = this.sessionIndex;
+    state.wrongStreak = 0;
+
+    switch (choice) {
+      case 'veryHard': {
+        state.mastery = Math.max(0, state.mastery - 1);
+        state.easeFactor = Math.max(1.3, state.easeFactor - 0.4);
+        state.nextDue = this.sessionIndex + 1;
+        this.queueReviewCard(cardId, true);
+        break;
+      }
+      case 'hard': {
+        state.mastery = Math.max(0, state.mastery - 1);
+        state.easeFactor = Math.max(1.3, state.easeFactor - 0.2);
+        state.nextDue = this.sessionIndex + rngInt(2, 4);
+        this.queueReviewCard(cardId, true);
+        break;
+      }
+      case 'again': {
+        state.easeFactor = Math.max(1.3, state.easeFactor - 0.1);
+        state.nextDue = Math.max(this.sessionIndex + rngInt(6, 10), state.nextDue);
+        this.queueReviewCard(cardId);
+        break;
+      }
+      case 'normal':
+      default: {
+        state.streakCorrect = Math.max(state.streakCorrect, 1);
+        state.mastery = Math.min(this.params.M, state.mastery + 1);
+        state.easeFactor = Math.min(3.5, state.easeFactor + 0.1);
+        state.nextDue = Math.max(this.sessionIndex + rngInt(12, 18), state.nextDue);
+        this.removeFromReviewQueue(cardId);
+        break;
+      }
     }
+
+    return this.getDifficultyMeta(cardId);
+  }
+
+  public markCardRemembered(cardId: string): void {
+    const state = this.state.get(cardId);
+    if (!state) return;
+    state.pendingDifficultyChoice = false;
+    state.wrongStreak = 0;
+    state.streakCorrect = Math.max(state.streakCorrect, 1);
+    state.mastery = Math.min(this.params.M, state.mastery + 1);
+    state.lastDifficultyChoice = 'normal';
+    this.removeFromReviewQueue(cardId);
   }
 
   /** Serialize learning state to persist across sessions */
@@ -593,7 +704,14 @@ export class LearnEngine {
     const existingIds = new Set(this.cards.map(c => c.id));
     for (const s of snapshot.states) {
       if (existingIds.has(s.id)) {
-        this.state.set(s.id, { ...s });
+        const restored: CardState = {
+          ...s,
+          wrongStreak: s.wrongStreak ?? 0,
+          pendingDifficultyChoice: s.pendingDifficultyChoice ?? false,
+          easeFactor: s.easeFactor ?? 2.5,
+          lastInterval: s.lastInterval ?? 1,
+        };
+        this.state.set(s.id, restored);
       }
     }
     // Thêm state mặc định cho các thẻ mới được thêm sau lần lưu trước
@@ -610,6 +728,8 @@ export class LearnEngine {
           addedToGroupAt: this.sessionIndex, // new cards added at current session
           easeFactor: 2.5,
           lastInterval: 1,
+          wrongStreak: 0,
+          pendingDifficultyChoice: false,
         });
       }
     }
@@ -824,6 +944,10 @@ export class LearnEngine {
     s.seenCount += 1;
     if (result === "Correct" || result === "CorrectMinor") {
       s.streakCorrect += 1;
+      s.wrongStreak = 0;
+      if (s.pendingDifficultyChoice && s.streakCorrect >= 2) {
+        s.pendingDifficultyChoice = false;
+      }
       // Adaptive mastery increase: bonus for high streak
       const streakBonus = Math.floor(s.streakCorrect / 3); // extra 1 mastery every 3 correct in a row
       s.mastery = Math.min(this.params.M, s.mastery + this.params.promoteBonus + streakBonus);
@@ -838,15 +962,24 @@ export class LearnEngine {
       const penaltyMultiplier = s.streakCorrect > 2 ? 0.8 : this.params.earlyPenalty;
       s.streakCorrect = 0;
       s.wrongCount += 1;
+      s.wrongStreak = (s.wrongStreak ?? 0) + 1;
+      s.lastIncorrectAt = this.sessionIndex;
       s.mastery = Math.max(0, Math.floor(s.mastery * penaltyMultiplier));
       // reinsert soon (1-2 items later)
       s.nextDue = this.sessionIndex + rngInt(1, 2);
       s.lastResult = "Incorrect";
       // Add to review queue for immediate review in session
-      this.reviewQueue.push(s.id);
+      this.queueReviewCard(s.id, true);
+      if (s.wrongStreak >= 2) {
+        if (!s.pendingDifficultyChoice) {
+          s.pendingDifficultyChoice = true;
+          s.lastPromptAt = this.sessionIndex;
+        }
+      }
     } else { // Skip or other
       s.nextDue = this.sessionIndex + 1;
       s.lastResult = "Incorrect"; // treat as not learned
+      s.wrongStreak = 0;
     }
     // Adaptive group size adjustment
     if (this.asked - this.lastAccuracyCheck >= this.accuracyCheckInterval) {

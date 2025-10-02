@@ -212,14 +212,23 @@ export default function MyLibrary() {
       {/* Content */}
       <Tabs defaultValue="all" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3 h-12 p-1 bg-muted rounded-lg">
-          <TabsTrigger value="all" className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsTrigger 
+            value="all" 
+            className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=active]:z-10"
+          >
             Tất cả ({sortedFiltered.length})
           </TabsTrigger>
-          <TabsTrigger value="favorites" className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsTrigger 
+            value="favorites" 
+            className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=active]:z-10"
+          >
             Yêu thích ({favorites.length})
           </TabsTrigger>
-          <TabsTrigger value="shared" className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm">
-            Được chia sẻ ({shared.length})
+          <TabsTrigger 
+            value="shared" 
+            className="text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=active]:z-10"
+          >
+            Chia sẻ ({shared.length})
           </TabsTrigger>
         </TabsList>
 

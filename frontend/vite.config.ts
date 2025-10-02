@@ -28,17 +28,48 @@ export default defineConfig({
           }
           
           if (id.includes('node_modules')) {
-            if (id.includes('react')) return 'react';
-            // Remove Firebase chunking to prevent initialization issues
-            // if (id.includes('firebase/auth')) return 'firebase-auth';
-            // if (id.includes('firebase/firestore')) return 'firebase-firestore';
-            // if (id.includes('firebase/app')) return 'firebase-core';
+            // React ecosystem
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'react';
+            }
+            
+            // UI libraries - split Radix UI into smaller chunks
+            if (id.includes('@radix-ui/react-dialog') || 
+                id.includes('@radix-ui/react-popover') || 
+                id.includes('@radix-ui/react-dropdown-menu')) {
+              return 'radix-overlays';
+            }
+            if (id.includes('@radix-ui')) return 'radix-ui';
+            if (id.includes('lucide-react')) return 'icons';
+            
+            // Chart libraries
+            if (id.includes('recharts') || id.includes('d3-')) return 'charts';
+            
+            // Firebase - keep together to avoid initialization issues
+            if (id.includes('firebase') || id.includes('@firebase')) return 'firebase';
+            
+            // Redux
+            if (id.includes('redux') || id.includes('@reduxjs')) return 'redux';
+            
+            // Editor/Rich text
+            if (id.includes('slate') || id.includes('lexical') || id.includes('prosemirror')) {
+              return 'editor';
+            }
+            
+            // Other large libraries
+            if (id.includes('framer-motion')) return 'animations';
+            if (id.includes('date-fns') || id.includes('dayjs') || id.includes('moment')) return 'date-utils';
+            
+            // Vendor chunk for remaining node_modules
+            return 'vendor';
           }
+          
+          // Custom large modules
           if (id.includes('/lib/learnEngine')) return 'learn-engine';
         }
       }
     },
-    chunkSizeWarningLimit: 900
+    chunkSizeWarningLimit: 2000
   },
   server: {
     headers: {

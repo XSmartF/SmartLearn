@@ -1,5 +1,6 @@
 import React from 'react'
 import { cn } from '@/shared/lib/utils'
+import './loader.css'
 
 interface LoaderProps {
   size?: 'sm' | 'md' | 'lg'
@@ -7,44 +8,38 @@ interface LoaderProps {
   label?: string
 }
 
-// Core animated spinner (gradient ring + pulsing center + orbiting dots)
+// Capybara animated loader
 export const Loader: React.FC<LoaderProps> = ({ size = 'md', className, label = 'Đang tải' }) => {
-  const dimension = {
-    sm: 'size-8',
-    md: 'size-14',
-    lg: 'size-20',
+  const scaleClass = {
+    sm: 'scale-50',
+    md: 'scale-75',
+    lg: 'scale-100',
   }[size]
 
   return (
     <div className={cn('flex flex-col items-center gap-4', className)} role="status" aria-live="polite" aria-label={label}>
-      <div className={cn('relative', dimension)}>
-        {/* Rotating gradient ring */}
-        <div
-          className={cn(
-            'absolute inset-0 rounded-full border-[3px] border-transparent',
-            'before:content-["""] before:absolute before:inset-0 before:rounded-full',
-            'before:bg-conic-gradient(from_0deg,#6366f1,#8b5cf6,#ec4899,#6366f1)',
-            'before:animate-spin before:[animation-duration:2.4s]',
-            'before:mask border-current'
-          )}
-          style={{ WebkitMask: 'radial-gradient(circle,transparent 55%,#000 56%)' }}
-        />
-        {/* Inner subtle glow circle */}
-        <div className="absolute inset-[18%] rounded-full bg-gradient-to-br from-primary/70 via-primary/30 to-transparent blur-[1px]" />
-        {/* Center dot */}
-        <div className="absolute inset-[35%] rounded-full bg-primary shadow-[0_0_8px_2px_theme(colors.primary/40)] animate-pulse" />
-        {/* Orbiting dots */}
-        {[0,1,2].map(i => (
-          <div
-            key={i}
-            className={cn(
-              'absolute top-1/2 left-1/2 size-2 -mt-1 -ml-1 rounded-full bg-primary/70 shadow-[0_0_4px_1px_theme(colors.primary/40)]',
-              'animate-[spin_3s_linear_infinite]',
-              'origin-[0_-130%]'
-            )}
-            style={{ animationDelay: `${i * 0.3}s` }}
-          />
-        ))}
+      <div className={cn('capybaraloader', scaleClass)}>
+        <div className="capybara">
+          <div className="capyhead">
+            <div className="capyear">
+              <div className="capyear2"></div>
+            </div>
+            <div className="capyear"></div>
+            <div className="capymouth">
+              <div className="capylips"></div>
+              <div className="capylips"></div>
+            </div>
+            <div className="capyeye"></div>
+            <div className="capyeye"></div>
+          </div>
+          <div className="capyleg"></div>
+          <div className="capyleg2"></div>
+          <div className="capyleg2"></div>
+          <div className="capy"></div>
+        </div>
+        <div className="loader">
+          <div className="loaderline"></div>
+        </div>
       </div>
       <div className="flex flex-col items-center gap-1 text-xs font-medium text-muted-foreground">
         <span className="tracking-wide uppercase">

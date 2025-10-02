@@ -23,6 +23,7 @@ import { Textarea } from "@/shared/components/ui/textarea";
 // Repository instances + combined helper
 import { libraryRepository } from '@/shared/lib/repositories/LibraryRepository'
 import { cardRepository } from '@/shared/lib/repositories/CardRepository'
+import { cardFlagRepository } from '@/shared/lib/repositories/CardFlagRepository'
 import { shareRepository } from '@/shared/lib/repositories/ShareRepository'
 import { userRepository } from '@/shared/lib/repositories/UserRepository'
 // Inlined previous fetchLibraryWithCards helper (removed facade dependency)
@@ -57,6 +58,7 @@ export default function LibraryDetail() {
   const isFavorite = id ? favoriteIds.includes(id) : false;
   const [library, setLibrary] = useState<LibraryMeta | null>(null)
   const [cards, setCards] = useState<EngineCard[]>([])
+  const [cardFlags, setCardFlags] = useState<Record<string, { starred?: boolean; difficulty?: 'easy' | 'medium' | 'hard' }>>({})
   const [loading, setLoading] = useState(true)
   const [openAddCard, setOpenAddCard] = useState(false)
   const [front, setFront] = useState('')
@@ -129,12 +131,44 @@ export default function LibraryDetail() {
     });
   }, [id]);
 
+  useEffect(() => {
+    if (!id) return;
+    let unsubscribe: (() => void) | undefined;
+    try {
+      unsubscribe = cardFlagRepository.listenLibraryFlags(id, (flags) => {
+        setCardFlags(flags);
+      });
+    } catch (error) {
+      console.error('Không thể theo dõi trạng thái đánh dấu thẻ:', error);
+    }
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [id]);
+
   // Áp dụng search đơn giản (không domain/difficulty/mastery)
   const filteredCards = useMemo(() => {
     if (!search) return cards;
     const q = search.toLowerCase();
     return cards.filter(c => c.front.toLowerCase().includes(q) || c.back.toLowerCase().includes(q));
   }, [cards, search]);
+
+  const flashcardItems = useMemo(() => {
+    return cards.map((c) => {
+      const flag = cardFlags[c.id];
+      const difficulty = ((flag?.difficulty ?? c.difficulty) || 'medium') as 'easy' | 'medium' | 'hard';
+      const status: 'mastered' | 'learning' | 'difficult' =
+        difficulty === 'hard' ? 'difficult' : difficulty === 'easy' ? 'mastered' : 'learning';
+      return {
+        id: c.id,
+        front: c.front,
+        back: c.back,
+        status,
+        difficulty,
+        isBookmarked: flag?.starred ?? false,
+      };
+    });
+  }, [cards, cardFlags]);
   const totalPages = Math.max(1, Math.ceil(filteredCards.length / pageSize));
   const paginatedCards = useMemo(() => filteredCards.slice((page - 1) * pageSize, (page - 1) * pageSize + pageSize), [filteredCards, page, pageSize]);
   useEffect(() => { setPage(1); setSelectedIds(prev => prev.filter(id => filteredCards.some(c => c.id === id))); }, [search, filteredCards]);
@@ -530,9 +564,51 @@ export default function LibraryDetail() {
         {canStudy ? (
           cards.length > 0 ? (
             <FlashCard
-              cards={cards.map((c) => ({ id: c.id, front: c.front, back: c.back, status: 'learning', difficulty: 'medium' }))}
+              cards={flashcardItems}
+                  onCardUpdate={async (cardId: string, difficulty: 'easy' | 'medium' | 'hard') => {
+                    if (!id) return;
+                    const previous = cardFlags[cardId]?.difficulty ?? (cards.find((c) => c.id === cardId)?.difficulty as 'easy' | 'medium' | 'hard' | undefined) ?? 'medium';
+                    setCardFlags((prev) => {
+                      const current = prev[cardId] ?? {};
+                      return { ...prev, [cardId]: { ...current, difficulty } };
+                    });
+                    try {
+                      await Promise.all([
+                        cardRepository.updateCard(cardId, { difficulty }),
+                        cardFlagRepository.setDifficulty(cardId, id, difficulty),
+                      ]);
+                      toast.success('Đã cập nhật độ khó của thẻ');
+                    } catch (err) {
+                      console.error('Failed to update card difficulty:', err);
+                      setCardFlags((prev) => {
+                        const current = prev[cardId] ?? {};
+                        return { ...prev, [cardId]: { ...current, difficulty: previous } };
+                      });
+                      toast.error('Không thể cập nhật độ khó');
+                    }
+                  }}
+                  onBookmarkToggle={async (cardId: string) => {
+                    if (!id) return;
+                    const prevStarred = cardFlags[cardId]?.starred === true;
+                    const nextStarred = !prevStarred;
+                    setCardFlags((prev) => {
+                      const current = prev[cardId] ?? {};
+                      return { ...prev, [cardId]: { ...current, starred: nextStarred } };
+                    });
+                    try {
+                      await cardFlagRepository.toggleStar(cardId, id, nextStarred);
+                      toast.success(nextStarred ? 'Đã đánh dấu thẻ' : 'Đã bỏ đánh dấu thẻ');
+                    } catch (err) {
+                      console.error('Failed to toggle bookmark:', err);
+                      setCardFlags((prev) => {
+                        const current = prev[cardId] ?? {};
+                        return { ...prev, [cardId]: { ...current, starred: prevStarred } };
+                      });
+                      toast.error('Không thể cập nhật đánh dấu');
+                    }
+                  }}
               onComplete={() => {
-                /* optional: toast */
+                toast.success('Hoàn thành học tập!');
               }}
               readLanguage={readLanguage}
             />

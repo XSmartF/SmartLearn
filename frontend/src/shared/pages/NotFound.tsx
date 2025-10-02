@@ -1,41 +1,103 @@
 import { Link } from 'react-router-dom'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
-import { Home, Search } from 'lucide-react'
+import { Home } from 'lucide-react'
+import './NotFound.css'
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-sm sm:max-w-md text-center">
-        <CardHeader>
-          <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 bg-muted rounded-full flex items-center justify-center mb-4">
-            <Search className="w-8 h-8 sm:w-10 sm:h-10 text-muted-foreground" />
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+      <div className="main_wrapper">
+        <div className="main">
+          <div className="antenna">
+            <div className="antenna_shadow"></div>
+            <div className="a1"></div>
+            <div className="a1d"></div>
+            <div className="a2"></div>
+            <div className="a2d"></div>
+            <div className="a_base"></div>
           </div>
-          <CardTitle className="text-xl sm:text-2xl">404 - Không tìm thấy trang</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="text-muted-foreground">
-            <p className="mb-2 text-sm sm:text-base">
-              Xin lỗi, trang bạn đang tìm kiếm không tồn tại.
-            </p>
-            <p className="text-xs sm:text-sm">
-              Có thể đường dẫn đã bị thay đổi hoặc bạn đã nhập sai địa chỉ.
-            </p>
+          <div className="tv">
+            <div className="cruve">
+              <svg
+                className="curve_svg"
+                version="1.1"
+                xmlns="http://www.w3.org/2000/svg"
+                xmlnsXlink="http://www.w3.org/1999/xlink"
+                viewBox="0 0 189.929 189.929"
+                xmlSpace="preserve"
+              >
+                <path
+                  d="M70.343,70.343c-30.554,30.553-44.806,72.7-39.102,115.635l-29.738,3.951C-5.442,137.659,11.917,86.34,49.129,49.13
+            C86.34,11.918,137.664-5.445,189.928,1.502l-3.95,29.738C143.041,25.54,100.895,39.789,70.343,70.343z"
+                ></path>
+              </svg>
+            </div>
+            <div className="display_div">
+              <div className="screen_out">
+                <div className="screen_out1">
+                  <div className="screen">
+                    <span className="notfound_text"> NOT FOUND</span>
+                  </div>
+                  <div className="screenM">
+                    <span className="notfound_text"> NOT FOUND</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="lines">
+              <div className="line1"></div>
+              <div className="line2"></div>
+              <div className="line3"></div>
+            </div>
+            <div className="buttons_div">
+              <div className="b1"><div></div></div>
+              <div className="b2"></div>
+              <div className="speakers">
+                <div className="g1">
+                  <div className="g11"></div>
+                  <div className="g12"></div>
+                  <div className="g13"></div>
+                </div>
+                <div className="g"></div>
+                <div className="g"></div>
+              </div>
+            </div>
           </div>
-          
-          <div className="flex flex-col gap-2">
-            <Button asChild className="w-full">
-              <Link to="/dashboard">
-                <Home className="w-4 h-4 mr-2" />
-                Về trang chủ
-              </Link>
-            </Button>
-            <Button variant="outline" onClick={() => window.history.back()} className="w-full">
-              Quay lại trang trước
-            </Button>
+          <div className="bottom">
+            <div className="base1"></div>
+            <div className="base2"></div>
+            <div className="base3"></div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+        <div className="text_404">
+          <div className="text_4041">4</div>
+          <div className="text_4042">0</div>
+          <div className="text_4043">4</div>
+        </div>
+      </div>
+
+      <div className="mt-8 text-center space-y-4">
+        <div className="text-muted-foreground">
+          <p className="mb-2 text-sm sm:text-base font-medium">
+            Trang bạn đang tìm kiếm không tồn tại
+          </p>
+          <p className="text-xs sm:text-sm">
+            Có thể đường dẫn đã bị thay đổi hoặc bạn đã nhập sai địa chỉ.
+          </p>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row gap-2 justify-center">
+          <Button asChild>
+            <Link to="/dashboard">
+              <Home className="w-4 h-4 mr-2" />
+              Về trang chủ
+            </Link>
+          </Button>
+          <Button variant="outline" onClick={() => window.history.back()}>
+            Quay lại trang trước
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }

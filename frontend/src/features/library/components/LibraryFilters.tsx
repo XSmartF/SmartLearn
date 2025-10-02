@@ -60,17 +60,19 @@ export default function LibraryFilters({
             variant={viewMode === 'grid' ? 'default' : 'ghost'}
             size="sm"
             onClick={() => onViewModeChange('grid')}
-            className="rounded-r-none"
+            className="rounded-r-none gap-2"
           >
             <Grid3X3 className="h-4 w-4" />
+            <span className="hidden sm:inline">Lưới</span>
           </Button>
           <Button
             variant={viewMode === 'list' ? 'default' : 'ghost'}
             size="sm"
             onClick={() => onViewModeChange('list')}
-            className="rounded-l-none"
+            className="rounded-l-none gap-2"
           >
             <List className="h-4 w-4" />
+            <span className="hidden sm:inline">Danh sách</span>
           </Button>
         </div>
       </div>

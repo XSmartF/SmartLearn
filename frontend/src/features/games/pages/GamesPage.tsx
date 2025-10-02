@@ -105,7 +105,6 @@ const games: Game[] = [
 
 export default function GamesPage() {
   const navigate = useNavigate();
-  const defaultSettingsRoute = games[0]?.settingsRoute ?? ROUTES.GAMES;
 
   const handlePlayGame = (game: Game) => {
     navigate(game.route);
@@ -121,17 +120,11 @@ export default function GamesPage() {
         title="Trung tâm trò chơi"
         description="Kết hợp học và chơi với các mini game giúp bạn ôn luyện kiến thức một cách nhẹ nhàng và hiệu quả."
         icon={<Gamepad2 className="h-6 w-6 text-primary" />}
-        actions={
-          <Button variant="outline" onClick={() => navigate(defaultSettingsRoute)}>
-            <Settings className="mr-2 h-4 w-4" />
-            Quản lý cấu hình chung
-          </Button>
-        }
       />
 
       <PageSection
         heading="Danh sách trò chơi"
-        description="Chọn trò chơi phù hợp với mục tiêu luyện tập của bạn."
+        description="Chọn trò chơi phù hợp với mục tiêu luyện tập của bạn. Mỗi trò chơi có thể tùy chỉnh riêng."
       >
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {games.map((game) => {

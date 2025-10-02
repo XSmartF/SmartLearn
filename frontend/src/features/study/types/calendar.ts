@@ -9,8 +9,13 @@ export interface StudyEvent {
   flashcardSet: string;
   cardCount: number;
   status: 'upcoming' | 'completed' | 'overdue';
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+  cardId?: string;
+  libraryId?: string;
+  autoScheduled?: boolean;
+  lastChoice?: 'veryHard' | 'hard' | 'again' | 'normal';
+  completedAt?: string | Date;
 }
 
 export interface StudyStats {
@@ -27,4 +32,6 @@ export interface CreateStudyEventInput {
   type: StudyEvent['type'];
   flashcardSet: string;
   cardCount: number;
+  cardId?: string;
+  libraryId?: string;
 }

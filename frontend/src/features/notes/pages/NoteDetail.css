@@ -1,0 +1,22 @@
+/* Custom styles for BlockNote editor */
+.bn-container {
+  background-color: transparent !important;
+}
+
+.bn-editor {
+  background-color: transparent !important;
+}
+
+/* Ensure proper background in dark mode */
+.dark .bn-container,
+.dark .bn-editor {
+  background-color: transparent !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Light mode */
+.light .bn-container,
+.light .bn-editor {
+  background-color: transparent !important;
+  color: hsl(var(--foreground)) !important;
+}

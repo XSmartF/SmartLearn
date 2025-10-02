@@ -4,42 +4,55 @@ import { BookOpen, CheckCircle, Clock, Target } from 'lucide-react'
 import type { LearnEngine as LearnEngineType } from '@/features/study/utils/learnEngine'
 
 interface StatsCardProps {
+  engine: LearnEngineType
   progress: ReturnType<LearnEngineType['getProgressDetailed']>
 }
 
-export function StatsCard({ progress }: StatsCardProps) {
+export function StatsCard({ engine, progress }: StatsCardProps) {
   if (!progress) return null
 
-  const learningCount = progress.masteryLevels.level1.count +
-                       progress.masteryLevels.level2.count +
-                       progress.masteryLevels.level3.count +
-                       progress.masteryLevels.level4.count
+  const sessionStats = engine.getSessionStats()
+  const activeLearningCount =
+    progress.masteryLevels.level1.count +
+    progress.masteryLevels.level2.count +
+    progress.masteryLevels.level3.count +
+    progress.masteryLevels.level4.count
+  const accuracyPercent = sessionStats.asked ? Math.round((sessionStats.correct / sessionStats.asked) * 100) : null
+  const masteredCount = progress.masteryLevels.level5.count
+  const formatAverageTime = (ms: number | null) => {
+    if (!ms) return '—'
+    if (ms < 1000) return `${Math.round(ms)} ms`
+    const seconds = ms / 1000
+    return `${seconds.toFixed(seconds >= 10 ? 0 : 1)} s`
+  }
+
+  const averageTimeLabel = formatAverageTime(progress.avgMsRecent ?? null)
 
   const stats = [
     {
       icon: BookOpen,
-      value: progress.total,
-      label: 'Tổng thuật ngữ',
+      value: sessionStats.asked,
+      label: 'Câu đã luyện',
       color: 'text-primary',
       bgColor: 'bg-primary/10'
     },
     {
       icon: CheckCircle,
-      value: progress.masteryLevels.level5.count,
-      label: 'Đã thành thạo',
+      value: sessionStats.correct,
+      label: 'Trả lời đúng',
       color: 'text-success',
       bgColor: 'bg-success/10'
     },
     {
       icon: Clock,
-      value: learningCount,
-      label: 'Đang học',
+      value: averageTimeLabel,
+      label: 'Thời gian TB',
       color: 'text-warning',
       bgColor: 'bg-warning/10'
     },
     {
       icon: Target,
-      value: `${Math.round(progress.accuracyOverall * 100)}%`,
+      value: accuracyPercent !== null ? `${accuracyPercent}%` : '—',
       label: 'Độ chính xác',
       color: 'text-info',
       bgColor: 'bg-info/10'
@@ -72,22 +85,36 @@ export function StatsCard({ progress }: StatsCardProps) {
           ))}
         </div>
 
-        {/* Progress breakdown */}
+        {/* Personal card breakdown */}
         <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <div className="grid grid-cols-5 gap-2 text-center">
-            {[1, 2, 3, 4, 5].map(level => (
-              <div key={level} className="space-y-1">
-                <Badge
-                  variant={progress.masteryLevels[`level${level}` as keyof typeof progress.masteryLevels].count > 0 ? "default" : "outline"}
-                  className="w-full justify-center text-xs"
-                >
-                  {progress.masteryLevels[`level${level}` as keyof typeof progress.masteryLevels].count}
-                </Badge>
-                <div className="text-xs text-muted-foreground">
-                  M{level}
-                </div>
-              </div>
-            ))}
+          <div className="mb-3 text-xs sm:text-sm text-muted-foreground text-center">
+            Số liệu bên dưới phản ánh tiến trình của riêng bạn trong thư viện này.
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+            <div className="space-y-1">
+              <Badge variant={activeLearningCount > 0 ? 'default' : 'outline'} className="w-full justify-center text-xs">
+                {activeLearningCount}
+              </Badge>
+              <div className="text-xs text-muted-foreground">Thẻ đang học</div>
+            </div>
+            <div className="space-y-1">
+              <Badge variant={masteredCount > 0 ? 'default' : 'outline'} className="w-full justify-center text-xs">
+                {masteredCount}
+              </Badge>
+              <div className="text-xs text-muted-foreground">Thẻ đã thành thạo</div>
+            </div>
+            <div className="space-y-1">
+              <Badge variant={progress.masteryLevels.level0.count > 0 ? 'default' : 'outline'} className="w-full justify-center text-xs">
+                {progress.masteryLevels.level0.count}
+              </Badge>
+              <div className="text-xs text-muted-foreground">Chưa học</div>
+            </div>
+            <div className="space-y-1">
+              <Badge variant={sessionStats.incorrect > 0 ? 'destructive' : 'outline'} className="w-full justify-center text-xs">
+                {sessionStats.incorrect}
+              </Badge>
+              <div className="text-xs text-muted-foreground">Trả lời sai</div>
+            </div>
           </div>
         </div>
       </CardContent>

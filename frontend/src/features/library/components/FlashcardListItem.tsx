@@ -23,8 +23,8 @@ export const FlashcardListItem: React.FC<FlashcardListItemProps> = ({
 }) => {
   return (
     <Link to={getLibraryDetailPath(flashcard.id)}>
-      <Card className="hover:shadow-md transition-shadow cursor-pointer group">
-        <CardContent className="p-4">
+      <Card className="hover:shadow-md transition-shadow cursor-pointer group mb-3">
+        <CardContent className="p-5 sm:p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4 flex-1">
               <div className="flex-1">

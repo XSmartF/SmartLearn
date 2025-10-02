@@ -8,7 +8,8 @@ import { libraryRepository } from '@/shared/lib/repositories/LibraryRepository';
 import { Trophy, Medal, Award, Star, Sprout } from "lucide-react";
 import { Loader } from '@/shared/components/ui/loader';
 import { PageSection } from '@/shared/components/PageSection';
-import type { UserLibraryProgressSummary } from '@/shared/lib/repositories/ProgressRepository';
+import type { UserLibraryProgressSummary, UserLibraryProgressDoc } from '@/shared/lib/repositories/ProgressRepository';
+import type { SerializedState } from '@/features/study/utils/learnEngine';
 
 interface LeaderboardEntry {
   userId: string;
@@ -24,6 +25,57 @@ interface LeaderboardSectionProps {
   currentUserId: string;
 }
 
+type DerivedProgress = {
+  mastered: number;
+  learning: number;
+  due: number;
+  total: number;
+  percentMastered: number;
+};
+
+const safeTimestamp = (value: string | undefined | null) => {
+  if (!value) return 0;
+  const ts = Date.parse(value);
+  return Number.isNaN(ts) ? 0 : ts;
+};
+
+const deriveStatsFromEngineState = (engineState: SerializedState | Record<string, unknown> | null | undefined): DerivedProgress | null => {
+  if (!engineState || typeof engineState !== 'object') return null;
+  const params = (engineState as { params?: { M?: number } }).params;
+  const states = (engineState as { states?: unknown }).states;
+  if (!Array.isArray(states)) return null;
+  const sessionIndexRaw = (engineState as { sessionIndex?: unknown }).sessionIndex;
+  const sessionIndex = typeof sessionIndexRaw === 'number' ? sessionIndexRaw : 0;
+
+  const masteryThreshold = typeof params?.M === 'number' ? params.M : 5;
+
+  let mastered = 0;
+  let learning = 0;
+  let due = 0;
+
+  for (const entry of states as Array<{ mastery?: unknown; seenCount?: unknown; nextDue?: unknown }>) {
+    const mastery = typeof entry?.mastery === 'number' ? entry.mastery : 0;
+    const seenCount = typeof entry?.seenCount === 'number' ? entry.seenCount : 0;
+    const nextDue = typeof entry?.nextDue === 'number' ? entry.nextDue : Number.POSITIVE_INFINITY;
+
+    if (mastery >= masteryThreshold) mastered += 1;
+    else if (seenCount > 0) learning += 1;
+
+    if (nextDue <= sessionIndex) due += 1;
+  }
+
+  const total = states.length;
+  const percentMastered = total > 0 ? (mastered / total) * 100 : 0;
+
+  return {
+    mastered,
+    learning,
+    due,
+    total,
+    percentMastered,
+  };
+};
+
 export function LeaderboardSection({ libraryId, currentUserId }: LeaderboardSectionProps) {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,32 +86,49 @@ export function LeaderboardSection({ libraryId, currentUserId }: LeaderboardSect
       try {
         setLoading(true);
         
-        // Get library info to know the owner
-        const library = await libraryRepository.getLibraryMeta(libraryId);
+        const [library, shares] = await Promise.all([
+          libraryRepository.getLibraryMeta(libraryId),
+          shareRepository.listShares(libraryId)
+        ]);
+
         if (!library) {
           console.warn('Library not found');
           setEntries([]);
           return;
         }
 
-        // Get all shares for this library
-        const shares = await shareRepository.listShares(libraryId);
-        
-        // Get all progress summaries for this library
-        const allProgress = await progressRepository.getAllUserProgressSummariesForLibrary(libraryId);
+        const allowedUserIds = new Set<string>();
+        if (library.ownerId) allowedUserIds.add(library.ownerId);
+        if (currentUserId) allowedUserIds.add(currentUserId);
+        shares.forEach(share => {
+          if (share.targetUserId) allowedUserIds.add(share.targetUserId);
+        });
 
-        // Filter progress to only include owner and shared users
-        const allowedUserIds = new Set([
-          library.ownerId, // owner
-          ...shares.map(share => share.targetUserId) // shared users
+        const [progressSummaries, progressDocs] = await Promise.all([
+          progressRepository.getAllUserProgressSummariesForLibrary(libraryId),
+          progressRepository.getAllUserProgressForLibrary(libraryId)
         ]);
-        
-        const filteredProgress = allProgress.filter(progress => 
-          allowedUserIds.has(progress.userId)
-        );
 
-        // Get user profiles for allowed users
-        const userIds = [...new Set(filteredProgress.map(p => p.userId))];
+        const summaryByUser = new Map<string, UserLibraryProgressSummary>();
+        progressSummaries.forEach(summary => {
+          if (!allowedUserIds.has(summary.userId)) return;
+          const existing = summaryByUser.get(summary.userId);
+          if (!existing || new Date(summary.updatedAt) > new Date(existing.updatedAt)) {
+            summaryByUser.set(summary.userId, summary);
+          }
+        });
+
+        const progressDocByUser = new Map<string, UserLibraryProgressDoc>();
+        progressDocs.forEach(doc => {
+          if (!allowedUserIds.has(doc.userId)) return;
+          if (doc.id.endsWith('__summary')) return;
+          const existing = progressDocByUser.get(doc.userId);
+          if (!existing || new Date(doc.updatedAt) > new Date(existing.updatedAt)) {
+            progressDocByUser.set(doc.userId, doc);
+          }
+        });
+
+        const userIds = Array.from(allowedUserIds);
         const userProfiles = await Promise.all(
           userIds.map(async id => {
             try {
@@ -73,33 +142,60 @@ export function LeaderboardSection({ libraryId, currentUserId }: LeaderboardSect
 
         const profileMap = new Map(userProfiles.map(p => [p.id, p]));
 
-        // Group progress by userId and take the latest one for each user
-        const progressByUser = new Map<string, UserLibraryProgressSummary>();
-        filteredProgress.forEach(progress => {
-          const existing = progressByUser.get(progress.userId);
-          if (!existing || new Date(progress.updatedAt) > new Date(existing.updatedAt)) {
-            progressByUser.set(progress.userId, progress);
-          }
-        });
+        const clampPercent = (value: number) => {
+          if (Number.isNaN(value)) return 0;
+          return Math.min(100, Math.max(0, value));
+        };
 
-        // Create entries with stats from summary (one per user)
-        const leaderboardEntries: LeaderboardEntry[] = Array.from(progressByUser.values()).map(progress => {
-          console.log('Progress summary for user:', progress.userId, progress);
-          
-          const mastered = progress.mastered;
-          const total = progress.total;
-          
-          console.log('Summary stats:', { mastered, total, percentage: progress.percentMastered });
-          
-          const profile = profileMap.get(progress.userId)!;
+        const leaderboardEntries: LeaderboardEntry[] = userIds.map(userId => {
+          const summary = summaryByUser.get(userId);
+          const progressDoc = progressDocByUser.get(userId);
+
+          let stats: DerivedProgress = {
+            mastered: summary?.mastered ?? 0,
+            learning: summary?.learning ?? 0,
+            due: summary?.due ?? 0,
+            total: summary?.total ?? 0,
+            percentMastered: summary?.percentMastered ?? 0,
+          };
+          let updatedAt = summary?.updatedAt ?? '';
+          let usedSummary = !!summary;
+
+          const engineStats = deriveStatsFromEngineState(progressDoc?.engineState as SerializedState | Record<string, unknown> | null | undefined);
+          if (engineStats && progressDoc) {
+            const summaryTs = safeTimestamp(summary?.updatedAt);
+            const docTs = safeTimestamp(progressDoc.updatedAt);
+            const preferEngine = !summary || docTs > summaryTs || stats.total === 0 || (stats.percentMastered <= 0 && engineStats.percentMastered > 0);
+
+            if (preferEngine) {
+              stats = engineStats;
+              updatedAt = progressDoc.updatedAt ?? updatedAt;
+              usedSummary = false;
+            }
+          }
+
+          const normalizedPercent = clampPercent(stats.percentMastered);
+
+          const progress: UserLibraryProgressSummary = usedSummary && summary
+            ? { ...summary, percentMastered: normalizedPercent }
+            : {
+                userId,
+                libraryId,
+                total: stats.total,
+                mastered: stats.mastered,
+                learning: stats.learning,
+                due: stats.due,
+                percentMastered: normalizedPercent,
+                updatedAt
+              };
 
           return {
-            userId: progress.userId,
-            userProfile: profile,
+            userId,
+            userProfile: profileMap.get(userId) ?? { id: userId, displayName: undefined, email: undefined, avatarUrl: undefined },
             progress,
-            mastered,
-            total,
-            rank: 0 // will be set after sorting
+            mastered: stats.mastered,
+            total: stats.total,
+            rank: 0
           };
         });
 
@@ -132,7 +228,7 @@ export function LeaderboardSection({ libraryId, currentUserId }: LeaderboardSect
     loadLeaderboard();
 
     return () => { cancelled = true; };
-  }, [libraryId]);
+  }, [libraryId, currentUserId]);
 
   const getAchievementIcon = (rank: number, percentage: number) => {
     if (rank === 1) return <Trophy className="h-5 w-5 text-yellow-500" />;

@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/shared/components/ui/card"
 import { Button } from "@/shared/components/ui/button"
 import { Badge } from "@/shared/components/ui/badge"
 import { 
-  RotateCcw, 
   ChevronLeft, 
   ChevronRight, 
   Volume2,
@@ -22,6 +21,7 @@ interface FlashCardData {
   difficulty: 'easy' | 'medium' | 'hard'
   reviewCount?: number
   lastReview?: string
+  isBookmarked?: boolean
 }
 
 interface FlashCardProps {
@@ -29,9 +29,11 @@ interface FlashCardProps {
   onCardUpdate?: (cardId: string, status: 'easy' | 'medium' | 'hard') => void
   onComplete?: () => void
   readLanguage?: string
+  onBookmarkToggle?: (cardId: string) => void
+  onRemembered?: (cardId: string) => void
 }
 
-export default function FlashCard({ cards, onCardUpdate, onComplete, readLanguage = 'en-US' }: FlashCardProps) {
+export default function FlashCard({ cards, onCardUpdate, onComplete, readLanguage = 'en-US', onBookmarkToggle, onRemembered }: FlashCardProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isFlipped, setIsFlipped] = useState(false)
 
@@ -82,6 +84,15 @@ export default function FlashCard({ cards, onCardUpdate, onComplete, readLanguag
     handleNext()
   }
 
+  const handleBookmarkToggle = () => {
+    onBookmarkToggle?.(currentCard.id)
+  }
+
+  const handleRemembered = () => {
+    onRemembered?.(currentCard.id)
+    handleNext()
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'mastered': return 'bg-success'
@@ -121,8 +132,13 @@ export default function FlashCard({ cards, onCardUpdate, onComplete, readLanguag
           <Button variant="ghost" size="icon" onClick={() => speakQuestion(isFlipped ? currentCard.back : currentCard.front)}>
             <Volume2 className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon">
-            <Star className="h-4 w-4" />
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleBookmarkToggle}
+            className={currentCard.isBookmarked ? 'text-yellow-500' : ''}
+          >
+            <Star className={`h-4 w-4 ${currentCard.isBookmarked ? 'fill-yellow-500' : ''}`} />
           </Button>
         </div>
       </div>
@@ -171,11 +187,14 @@ export default function FlashCard({ cards, onCardUpdate, onComplete, readLanguag
           Trước
         </Button>
 
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={handleFlip}>
-            <RotateCcw className="h-4 w-4" />
-          </Button>
-        </div>
+        <Button 
+          variant="outline" 
+          onClick={handleFlip}
+          className="flex items-center gap-2"
+        >
+          <RotateCw className="h-4 w-4" />
+          Lật thẻ
+        </Button>
 
         <Button 
           variant="outline" 
@@ -217,6 +236,17 @@ export default function FlashCard({ cards, onCardUpdate, onComplete, readLanguag
               Khó
             </Button>
           </div>
+          {onRemembered && (
+            <div className="flex justify-center">
+              <Button 
+                onClick={handleRemembered}
+                className="flex items-center gap-2"
+              >
+                <Check className="h-4 w-4" />
+                Đã nhớ
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>

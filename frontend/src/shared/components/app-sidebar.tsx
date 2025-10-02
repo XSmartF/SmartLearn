@@ -27,7 +27,8 @@ import {
   Map,
   Globe,
   Camera,
-  Gamepad2
+  Gamepad2,
+  RefreshCcw
 } from "lucide-react"
 
 import { NavFavorites } from "@/shared/components/nav-favorites"
@@ -86,6 +87,11 @@ const baseData = {
       title: "Lịch trình",
       url: ROUTES.CALENDAR,
       icon: Calendar,
+    },
+    {
+      title: "Ôn tập",
+      url: ROUTES.REVIEW,
+      icon: RefreshCcw,
     },
     {
       title: "Cài đặt",
@@ -235,6 +241,7 @@ export const AppSidebar = React.memo(function AppSidebar({ ...props }: React.Com
     else if (url === ROUTES.MY_LIBRARY) import('@/features/library/pages/MyLibrary').catch(()=>{});  
     else if (url === ROUTES.NOTES) import('@/features/notes/pages/NotesPage').catch(()=>{});  
     else if (url === ROUTES.NOTIFICATIONS) import('@/features/notification/pages/Notifications').catch(()=>{});  
+  else if (url === ROUTES.REVIEW) import('@/features/study/pages/ReviewPage').catch(()=>{});  
     else if (url === ROUTES.GAMES) import('@/features/games/pages/GamesPage').catch(()=>{});  
     else if (url === ROUTES.MEMORY_GAME) import('@/features/games/components/MemoryGame').catch(()=>{});  
     else if (url === ROUTES.QUIZ_GAME) import('@/features/games/components/QuizGame').catch(()=>{});  

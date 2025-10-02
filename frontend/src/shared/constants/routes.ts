@@ -33,6 +33,7 @@ export const ROUTES = {
 
   // Study routes
   STUDY: '/study/:id',
+  REVIEW: '/review',
   CALENDAR: '/calendar',
 
   // Games routes

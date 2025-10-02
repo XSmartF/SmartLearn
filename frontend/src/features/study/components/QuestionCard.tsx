@@ -24,6 +24,7 @@ interface QuestionCardProps {
   speakQuestion: (text: string, lang: string) => void
   handleAnswer: (answer: string | number) => void
   handleNext: () => void
+  disableNext?: boolean
 }
 
 export function QuestionCard({
@@ -40,7 +41,8 @@ export function QuestionCard({
   readLanguage,
   speakQuestion,
   handleAnswer,
-  handleNext
+  handleNext,
+  disableNext = false
 }: QuestionCardProps) {
   const [showFullAnswer, setShowFullAnswer] = useState(false)
   const [fullAnswerText, setFullAnswerText] = useState('')
@@ -77,7 +79,7 @@ export function QuestionCard({
                 {currentQuestion.mode === "MULTIPLE_CHOICE" ? 'Trắc nghiệm' : 'Nhập đáp án'}
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Câu hỏi {engine.serialize().asked + 1} / {engine.getCardProgress().length}
+                Câu hỏi {engine.serialize().asked + 1}
               </p>
             </div>
           </div>
@@ -396,6 +398,7 @@ export function QuestionCard({
                 onClick={handleNext}
                 className="h-12 sm:h-14 px-8 text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-200"
                 size="lg"
+                disabled={disableNext}
               >
                 Tiếp tục
               </Button>

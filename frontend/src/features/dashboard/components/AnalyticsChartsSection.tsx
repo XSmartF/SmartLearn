@@ -52,16 +52,16 @@ export const AnalyticsChartsSection = memo(({ productivity, completion }: Analyt
   }, [completion]);
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Hiệu suất học tập</CardTitle>
-          <CardDescription>So sánh thời gian tập trung và các phiên ôn tập hàng tuần</CardDescription>
+    <div className="flex flex-col gap-3 h-full">
+      <Card className="flex flex-col flex-1 min-h-0">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm">Hiệu suất học tập</CardTitle>
+          <CardDescription className="text-[10px]">Thời gian tập trung và phiên ôn tập</CardDescription>
         </CardHeader>
-        <CardContent className="h-[260px]">
-          <ChartContainer config={productivityChartConfig} className="h-full">
+        <CardContent className="flex-1 min-h-0">
+          <ChartContainer config={productivityChartConfig} className="h-full w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={productivity} margin={{ left: 0, right: 0, top: 12, bottom: 0 }}>
+              <AreaChart data={productivity} margin={{ left: 0, right: 0, top: 4, bottom: 0 }}>
                 <defs>
                   <linearGradient id="focusGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4} />
@@ -73,25 +73,25 @@ export const AnalyticsChartsSection = memo(({ productivity, completion }: Analyt
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-muted" />
-                <XAxis dataKey="week" tickLine={false} axisLine={false} className="text-xs" />
-                <YAxis tickLine={false} axisLine={false} className="text-xs" />
+                <XAxis dataKey="week" tickLine={false} axisLine={false} className="text-[9px]" />
+                <YAxis tickLine={false} axisLine={false} className="text-[9px]" />
                 <Tooltip content={<ChartTooltipContent />} />
-                <Legend verticalAlign="top" align="right" content={<ChartLegendContent />} />
-                <Area type="monotone" dataKey="focusMinutes" stroke="hsl(var(--primary))" fill="url(#focusGradient)" strokeWidth={2} />
-                <Area type="monotone" dataKey="reviewSessions" stroke="hsl(var(--accent))" fill="url(#reviewGradient)" strokeWidth={2} />
+                <Legend verticalAlign="top" align="right" content={<ChartLegendContent />} wrapperStyle={{ fontSize: '10px' }} />
+                <Area type="monotone" dataKey="focusMinutes" stroke="hsl(var(--primary))" fill="url(#focusGradient)" strokeWidth={1.5} />
+                <Area type="monotone" dataKey="reviewSessions" stroke="hsl(var(--accent))" fill="url(#reviewGradient)" strokeWidth={1.5} />
               </AreaChart>
             </ResponsiveContainer>
           </ChartContainer>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Tỷ lệ hoàn thành theo chủ đề</CardTitle>
-          <CardDescription>Hiệu suất học tập trung bình {averageCompletion}%</CardDescription>
+      <Card className="flex flex-col flex-1 min-h-0">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm">Hoàn thành chủ đề</CardTitle>
+          <CardDescription className="text-[10px]">Trung bình {averageCompletion}%</CardDescription>
         </CardHeader>
-        <CardContent className="h-[260px]">
-          <ChartContainer config={completionChartConfig} className="h-full">
+        <CardContent className="flex-1 min-h-0">
+          <ChartContainer config={completionChartConfig} className="h-full w-full">
             <ResponsiveContainer width="100%" height="100%">
               <RadialBarChart
                 data={radialData}
@@ -102,7 +102,7 @@ export const AnalyticsChartsSection = memo(({ productivity, completion }: Analyt
               >
                 <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
                 <Tooltip content={<ChartTooltipContent indicator="line" />} />
-                <Legend verticalAlign="bottom" content={<ChartLegendContent />} />
+                <Legend verticalAlign="bottom" content={<ChartLegendContent />} wrapperStyle={{ fontSize: '10px' }} />
                 <RadialBar background cornerRadius={8} dataKey="completion" />
               </RadialBarChart>
             </ResponsiveContainer>

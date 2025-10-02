@@ -1,14 +1,20 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { libraryRepository } from '@/shared/lib/repositories/LibraryRepository'
 import { cardRepository } from '@/shared/lib/repositories/CardRepository'
 import { loadProgress, saveProgress } from '@/shared/lib/firebaseProgressService'
-import type { Question, Result, Card as LearnCard, SerializedState, LearnEngine as LearnEngineType } from '@/features/study/utils/learnEngine'
+import type { Question, Result, Card as LearnCard, SerializedState, LearnEngine as LearnEngineType, DifficultyMeta } from '@/features/study/utils/learnEngine'
 import type { LibraryMeta } from '@/shared/lib/models'
 import { idbGetItem, idbSetItem } from '@/shared/lib/indexedDB'
 import { useAuth } from '@/shared/hooks/useAuthRedux'
 import { getLibraryDetailPath, ROUTES } from '@/shared/constants/routes'
 import { Alert, AlertTitle } from '@/shared/components/ui/alert'
+import { Button } from '@/shared/components/ui/button'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog'
+import type { ReviewDifficultyChoice } from '@/shared/lib/reviewScheduler'
+import { scheduleAutoReview } from '@/shared/lib/reviewScheduler'
+import { consumeReviewSession } from '@/shared/constants/review'
+import { toast } from 'sonner'
 import {
   StudyHeader,
   QuestionCard,
@@ -19,8 +25,24 @@ import {
   StudyFinished
 } from '../components'
 
+interface DifficultyPrompt {
+  cardId: string
+  front: string
+  back: string
+  meta: DifficultyMeta
+}
+
+const DIFFICULTY_CHOICES: Array<{ value: ReviewDifficultyChoice; label: string; description: string }> = [
+  { value: 'veryHard', label: 'Rất khó', description: 'Gặp nhiều lỗi liên tiếp - cần ôn ngay.' },
+  { value: 'hard', label: 'Khó', description: 'Vẫn còn bối rối, cần hỏi lại sớm.' },
+  { value: 'again', label: 'Ôn lại', description: 'Để ôn trong ngày hôm nay.' },
+  { value: 'normal', label: 'Đã nhớ', description: 'Đưa thẻ về lịch ôn tiêu chuẩn.' }
+]
+
 export default function StudyPage(){
   const { id } = useParams(); const navigate = useNavigate(); const libraryId = id || '';
+  const [searchParams] = useSearchParams();
+  const isReviewSession = searchParams.get('mode') === 'review';
   useAuth();
   // Core state
   const [engine,setEngine]=useState<LearnEngineType|null>(null);
@@ -31,6 +53,8 @@ export default function StudyPage(){
   const [isFinished,setIsFinished]=useState(false);
   const [selectedOptionIndex,setSelectedOptionIndex]=useState<number|null>(null);
   const [correctOptionIndex,setCorrectOptionIndex]=useState<number|null>(null);
+  const [difficultyPrompt,setDifficultyPrompt]=useState<DifficultyPrompt|null>(null);
+  const [submittingChoice,setSubmittingChoice]=useState<ReviewDifficultyChoice|null>(null);
   // Preferences & detail controls
   const [allowMC,setAllowMC]=useState(true); const [allowTyped,setAllowTyped]=useState(true); const [autoAdvance,setAutoAdvance]=useState(true);
   const [showCardProgress,setShowCardProgress]=useState(false); const [showCardAnswers,setShowCardAnswers]=useState(false);
@@ -39,8 +63,11 @@ export default function StudyPage(){
   // Data
   const [library,setLibrary]=useState<LibraryMeta|null>(null);
   const [cards,setCards]=useState<LearnCard[]>([]);
+  const [reviewContext,setReviewContext]=useState<{ cardIds: string[]; missingCount: number } | null>(null);
   const [loadingData,setLoadingData]=useState(true);
   const [loadError,setLoadError]=useState<string|null>(null);
+  const promptActive=Boolean(difficultyPrompt);
+  const effectiveAutoAdvance=autoAdvance && !promptActive;
 
   // Function to speak the question using Web Speech API
   const speakQuestion = (text: string, lang: string) => {
@@ -55,7 +82,56 @@ export default function StudyPage(){
   };
 
   // Load data
-  useEffect(()=>{ let cancelled=false; if(!libraryId) return; (async()=>{ setLoadingData(true); setLoadError(null);       try { const meta=await libraryRepository.getLibraryMeta(libraryId); if(!meta){ if(!cancelled) navigate(ROUTES.MY_LIBRARY); return; } const c=await cardRepository.listCards(libraryId); if(cancelled) return; setLibrary(meta); setCards(c.map(cd=> ({...cd, domain: meta.subject || cd.domain }))); } catch(e: unknown){ if(!cancelled) setLoadError(e instanceof Error ? e.message : 'Không tải được dữ liệu'); } finally { if(!cancelled) setLoadingData(false);} })(); return ()=>{ cancelled=true }; }, [libraryId,navigate]);
+  useEffect(()=>{
+    let cancelled=false;
+    if(!libraryId) return;
+    (async()=>{
+      setLoadingData(true);
+      setLoadError(null);
+      setReviewContext(null);
+      try {
+        const meta=await libraryRepository.getLibraryMeta(libraryId);
+        if(!meta){ if(!cancelled) navigate(ROUTES.MY_LIBRARY); return; }
+        const fetched=await cardRepository.listCards(libraryId);
+        if(cancelled) return;
+        const normalized=fetched.map(cd=> ({...cd, domain: meta.subject || cd.domain }));
+        let nextCards=normalized;
+        let reviewInfo:{ cardIds:string[]; missingCount:number } | null=null;
+
+        if(isReviewSession){
+          const session=consumeReviewSession(libraryId);
+          if(!session){
+            if(!cancelled) toast.info('Phiên ôn tập đã hết hạn hoặc không hợp lệ. Hiển thị toàn bộ thư viện.');
+          } else if(!session.cardIds.length){
+            if(!cancelled) toast.info('Không có thẻ nào trong phiên ôn tập. Hiển thị toàn bộ thư viện.');
+          } else {
+            const requestedIds=new Set(session.cardIds.map(id=> String(id)));
+            const filtered=normalized.filter(card=> requestedIds.has(String(card.id)));
+            const missingCount=session.cardIds.length-filtered.length;
+            if(!filtered.length){
+              if(!cancelled) toast.info('Các thẻ đã chọn không còn khả dụng. Hiển thị toàn bộ thư viện.');
+            } else {
+              nextCards=filtered;
+              reviewInfo={ cardIds: session.cardIds, missingCount: Math.max(0, missingCount) };
+              if(!cancelled && missingCount>0){
+                toast.warning(`${missingCount} thẻ đã bị xoá hoặc bạn không còn quyền truy cập.`);
+              }
+            }
+          }
+        }
+
+        if(cancelled) return;
+        setLibrary(meta);
+        setCards(nextCards);
+        setReviewContext(reviewInfo);
+      } catch(e: unknown){
+        if(!cancelled) setLoadError(e instanceof Error ? e.message : 'Không tải được dữ liệu');
+      } finally {
+        if(!cancelled) setLoadingData(false);
+      }
+    })();
+    return ()=>{ cancelled=true };
+  }, [libraryId,navigate,isReviewSession]);
 
   // Init engine & restore
   useEffect(()=>{ let cancelled=false; async function init(){ if(loadingData||!library||!cards.length) return; try { const { LearnEngine } = await import('@/features/study/utils/learnEngine'); if(cancelled) return; const eng=new LearnEngine({ cards }); let restored=false; try { const remote=await loadProgress(libraryId); if(remote){ eng.restore(remote); restored=true; } } catch(e){ console.error(e); } if(!restored){ try { const local=await idbGetItem<SerializedState | null>(`study-session-${libraryId}`); if(local && 'params' in local && 'states' in local){ eng.restore(local); restored=true; } } catch(e){ console.error(e); } } if(cancelled) return; setEngine(eng); const q=eng.nextQuestion(); setCurrentQuestion(q); if(!q||eng.isFinished()) setIsFinished(true); } catch(e){ console.error('Khởi tạo LearnEngine thất bại:', e);} } init(); return ()=>{ cancelled=true }; }, [cards,library,libraryId,loadingData]);
@@ -69,11 +145,13 @@ export default function StudyPage(){
   // Answer handling
   const debounceTimerRef = useRef<number | undefined>(undefined);
   const DEBOUNCE_MS=4000;
-  const handleAnswer=useCallback((answer:string|number)=>{ if(!engine||!currentQuestion) return; let ans=answer; if(currentQuestion.mode==='MULTIPLE_CHOICE' && typeof answer==='string'){ ans=answer; } const result=engine.submitAnswer(currentQuestion.cardId, ans); try { const state=engine.serialize(); idbSetItem(`study-session-${libraryId}`, state); if(debounceTimerRef.current) window.clearTimeout(debounceTimerRef.current); debounceTimerRef.current=window.setTimeout(()=>{ saveProgress(libraryId,state).catch((e: unknown) => console.error(e)); }, DEBOUNCE_MS); } catch(e){ console.error(e); } setLastResult(result); setShowResult(true); setSelectedOptionIndex(typeof answer==='string' && currentQuestion.mode==='MULTIPLE_CHOICE' ? currentQuestion.options.findIndex((o: string)=>o===answer) : null); setCorrectOptionIndex(typeof answer==='string' && currentQuestion.mode==='MULTIPLE_CHOICE' ? currentQuestion.options.findIndex((o: string)=>o===cards.find((c: LearnCard)=>c.id.toString()===currentQuestion.cardId)?.back) : null); }, [engine, currentQuestion, cards, libraryId]);
+  const handleAnswer=useCallback((answer:string|number)=>{ if(!engine||!currentQuestion) return; let ans=answer; if(currentQuestion.mode==='MULTIPLE_CHOICE' && typeof answer==='string'){ ans=answer; } const result=engine.submitAnswer(currentQuestion.cardId, ans); try { const state=engine.serialize(); idbSetItem(`study-session-${libraryId}`, state); if(debounceTimerRef.current) window.clearTimeout(debounceTimerRef.current); debounceTimerRef.current=window.setTimeout(()=>{ saveProgress(libraryId,state).catch((e: unknown) => console.error(e)); }, DEBOUNCE_MS); } catch(e){ console.error(e); } setLastResult(result); setShowResult(true); setSelectedOptionIndex(typeof answer==='string' && currentQuestion.mode==='MULTIPLE_CHOICE' ? currentQuestion.options.findIndex((o: string)=>o===answer) : null); setCorrectOptionIndex(typeof answer==='string' && currentQuestion.mode==='MULTIPLE_CHOICE' ? currentQuestion.options.findIndex((o: string)=>o===cards.find((c: LearnCard)=>c.id.toString()===currentQuestion.cardId)?.back) : null); const meta=engine.getDifficultyMeta(currentQuestion.cardId); if(meta?.shouldPrompt){ const cardDetail=cards.find((c: LearnCard)=>c.id.toString()===currentQuestion.cardId); setDifficultyPrompt({ cardId: currentQuestion.cardId, front: cardDetail?.front ?? currentQuestion.prompt, back: cardDetail?.back ?? '', meta }); } else if(difficultyPrompt?.cardId===currentQuestion.cardId){ setDifficultyPrompt(null); } }, [engine, currentQuestion, cards, libraryId, difficultyPrompt]);
 
-  const handleNext=useCallback(()=>{ if(!engine) return; setShowResult(false); setUserAnswer(''); setLastResult(null); setSelectedOptionIndex(null); setCorrectOptionIndex(null); const nq=engine.nextQuestion(); setCurrentQuestion(nq); if(!nq || engine.isFinished()) setIsFinished(true); }, [engine]);
+  const handleDifficultyChoice=useCallback((choice: ReviewDifficultyChoice)=>{ if(!engine || !difficultyPrompt) return; setSubmittingChoice(choice); try { engine.recordDifficultyChoice(difficultyPrompt.cardId, choice); scheduleAutoReview({ cardId: difficultyPrompt.cardId, libraryId, cardFront: difficultyPrompt.front, cardBack: difficultyPrompt.back || undefined, libraryTitle: library?.title, choice }); const state=engine.serialize(); idbSetItem(`study-session-${libraryId}`, state); if(debounceTimerRef.current) window.clearTimeout(debounceTimerRef.current); debounceTimerRef.current=window.setTimeout(()=>{ saveProgress(libraryId,state).catch((e: unknown) => console.error(e)); }, DEBOUNCE_MS); const updatedMeta=engine.getDifficultyMeta(difficultyPrompt.cardId); if(updatedMeta?.shouldPrompt){ setDifficultyPrompt(prev=> prev ? { ...prev, meta: updatedMeta } : prev); } else { setDifficultyPrompt(null); } } finally { setSubmittingChoice(null); } }, [engine,difficultyPrompt,libraryId,library]);
 
-  useEffect(()=>{ if(showResult && autoAdvance){ const t=setTimeout(()=> handleNext(), 2000); return ()=> clearTimeout(t); } }, [showResult,autoAdvance,handleNext]);
+  const handleNext=useCallback(()=>{ if(!engine || difficultyPrompt) return; setShowResult(false); setUserAnswer(''); setLastResult(null); setSelectedOptionIndex(null); setCorrectOptionIndex(null); setDifficultyPrompt(null); const nq=engine.nextQuestion(); setCurrentQuestion(nq); if(!nq || engine.isFinished()) setIsFinished(true); }, [engine,difficultyPrompt]);
+
+  useEffect(()=>{ if(showResult && effectiveAutoAdvance){ const t=setTimeout(()=> handleNext(), 2000); return ()=> clearTimeout(t); } }, [showResult,effectiveAutoAdvance,handleNext]);
 
   // Speak the question when it changes
   useEffect(() => {
@@ -176,6 +254,9 @@ export default function StudyPage(){
   if(!library) return null;
 
   const progress=engine?.getProgressDetailed();
+  const lastChoiceLabel=difficultyPrompt?.meta.lastChoice
+    ? (DIFFICULTY_CHOICES.find(option=>option.value===difficultyPrompt.meta.lastChoice)?.label || difficultyPrompt.meta.lastChoice)
+    : undefined;
 
   // Finished state
   if(isFinished){ return <StudyFinished handleFinish={handleFinish} handleResetSession={handleResetSession} />; }
@@ -183,112 +264,177 @@ export default function StudyPage(){
   if(!currentQuestion) return (<div className='py-12 text-center'>Đang khởi tạo...</div>);
 
   return (
-    <div className='min-h-screen bg-background'>
-      <div className='container mx-auto px-4 py-6 space-y-6 lg:space-y-8'>
-        <StudyHeader
-          library={library}
-          libraryId={libraryId}
-          currentQuestion={currentQuestion}
-          allowMC={allowMC}
-          allowTyped={allowTyped}
-          autoAdvance={autoAdvance}
-          showCardProgress={showCardProgress}
-          autoRead={autoRead}
-          readLanguage={readLanguage}
-          showKeyboardShortcuts={showKeyboardShortcuts}
-          setAllowMC={setAllowMC}
-          setAllowTyped={setAllowTyped}
-          setAutoAdvance={setAutoAdvance}
-          setShowCardProgress={setShowCardProgress}
-          setAutoRead={setAutoRead}
-          setReadLanguage={setReadLanguage}
-          setShowKeyboardShortcuts={setShowKeyboardShortcuts}
-          handleResetSession={handleResetSession}
-        />
+    <>
+      <div className='min-h-screen bg-background'>
+        <div className='container mx-auto px-4 py-6 space-y-6 lg:space-y-8'>
+          <StudyHeader
+            library={library}
+            libraryId={libraryId}
+            currentQuestion={currentQuestion}
+            allowMC={allowMC}
+            allowTyped={allowTyped}
+            autoAdvance={autoAdvance}
+            showCardProgress={showCardProgress}
+            autoRead={autoRead}
+            readLanguage={readLanguage}
+            showKeyboardShortcuts={showKeyboardShortcuts}
+            setAllowMC={setAllowMC}
+            setAllowTyped={setAllowTyped}
+            setAutoAdvance={setAutoAdvance}
+            setShowCardProgress={setShowCardProgress}
+            setAutoRead={setAutoRead}
+            setReadLanguage={setReadLanguage}
+            setShowKeyboardShortcuts={setShowKeyboardShortcuts}
+            handleResetSession={handleResetSession}
+          />
 
-        <div className='space-y-6 lg:space-y-8'>
-          {/* Keyboard Shortcuts Help */}
-          {showKeyboardShortcuts && (
-            <div className='w-full'>
-              <Alert className="border-info bg-info/10">
-                <AlertTitle className="text-info flex items-center gap-2">
-                  ⌨️ Phím tắt bàn phím
-                </AlertTitle>
-                <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
-                  <div className="flex items-center gap-2">
-                    <kbd className="px-2 py-1 bg-info/20 text-info rounded text-xs font-mono">1-4</kbd>
-                    <span className="text-info">Chọn đáp án trắc nghiệm</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <kbd className="px-2 py-1 bg-info/20 text-info rounded text-xs font-mono">Enter</kbd>
-                    <span className="text-info">Gửi câu trả lời</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <kbd className="px-2 py-1 bg-info/20 text-info rounded text-xs font-mono">Space/→</kbd>
-                    <span className="text-info">Câu hỏi tiếp theo</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <kbd className="px-2 py-1 bg-info/20 text-info rounded text-xs font-mono">Esc</kbd>
-                    <span className="text-info">Xóa câu trả lời</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <kbd className="px-2 py-1 bg-info/20 text-info rounded text-xs font-mono">R</kbd>
-                    <span className="text-info">Reset phiên học</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <kbd className="px-2 py-1 bg-info/20 text-info rounded text-xs font-mono">S</kbd>
-                    <span className="text-info">Bật/tắt đọc tự động</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <kbd className="px-2 py-1 bg-info/20 text-info rounded text-xs font-mono">D/Q</kbd>
-                    <span className="text-info">Đọc câu hỏi</span>
-                  </div>
+          {reviewContext && (
+            <Alert className='border-primary bg-primary/10'>
+              <AlertTitle className='text-primary flex items-center gap-2'>
+                🔁 Phiên ôn tập
+              </AlertTitle>
+              <div className='mt-2 text-sm text-primary/80'>
+                Đang ôn {reviewContext.cardIds.length} thẻ đã chọn từ trang ôn tập.
+              </div>
+              {reviewContext.missingCount > 0 && (
+                <div className='mt-1 text-xs text-primary/70'>
+                  {reviewContext.missingCount} thẻ không tìm thấy và đã bị bỏ qua.
                 </div>
-              </Alert>
-            </div>
+              )}
+            </Alert>
           )}
 
-          {/* Main Question Card */}
-          <div className='w-full'>
-            {engine && (
-              <QuestionCard
-                currentQuestion={currentQuestion}
-                engine={engine}
-                cards={cards}
-                userAnswer={userAnswer}
-                setUserAnswer={setUserAnswer}
-                showResult={showResult}
-                lastResult={lastResult}
-                selectedOptionIndex={selectedOptionIndex}
-                correctOptionIndex={correctOptionIndex}
-                autoAdvance={autoAdvance}
-                readLanguage={readLanguage}
-                speakQuestion={speakQuestion}
-                handleAnswer={handleAnswer}
-                handleNext={handleNext}
-              />
+          <div className='space-y-6 lg:space-y-8'>
+            {/* Keyboard Shortcuts Help */}
+            {showKeyboardShortcuts && (
+              <div className='w-full'>
+                <Alert className="border-info bg-info/10">
+                  <AlertTitle className="text-info flex items-center gap-2">
+                    ⌨️ Phím tắt bàn phím
+                  </AlertTitle>
+                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      <kbd className="px-2 py-1 bg-info/20 text-info rounded text-xs font-mono">1-4</kbd>
+                      <span className="text-info">Chọn đáp án trắc nghiệm</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <kbd className="px-2 py-1 bg-info/20 text-info rounded text-xs font-mono">Enter</kbd>
+                      <span className="text-info">Gửi câu trả lời</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <kbd className="px-2 py-1 bg-info/20 text-info rounded text-xs font-mono">Space/→</kbd>
+                      <span className="text-info">Câu hỏi tiếp theo</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <kbd className="px-2 py-1 bg-info/20 text-info rounded text-xs font-mono">Esc</kbd>
+                      <span className="text-info">Xóa câu trả lời</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <kbd className="px-2 py-1 bg-info/20 text-info rounded text-xs font-mono">R</kbd>
+                      <span className="text-info">Reset phiên học</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <kbd className="px-2 py-1 bg-info/20 text-info rounded text-xs font-mono">S</kbd>
+                      <span className="text-info">Bật/tắt đọc tự động</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <kbd className="px-2 py-1 bg-info/20 text-info rounded text-xs font-mono">D/Q</kbd>
+                      <span className="text-info">Đọc câu hỏi</span>
+                    </div>
+                  </div>
+                </Alert>
+              </div>
+            )}
+
+            {/* Main Question Card */}
+            <div className='w-full'>
+              {engine && (
+                <QuestionCard
+                  currentQuestion={currentQuestion}
+                  engine={engine}
+                  cards={cards}
+                  userAnswer={userAnswer}
+                  setUserAnswer={setUserAnswer}
+                  showResult={showResult}
+                  lastResult={lastResult}
+                  selectedOptionIndex={selectedOptionIndex}
+                  correctOptionIndex={correctOptionIndex}
+                  autoAdvance={effectiveAutoAdvance}
+                  readLanguage={readLanguage}
+                  speakQuestion={speakQuestion}
+                  handleAnswer={handleAnswer}
+                  handleNext={handleNext}
+                  disableNext={promptActive}
+                />
+              )}
+            </div>
+
+            {/* Card Progress (if enabled) */}
+            {showCardProgress && engine && (
+              <div className='w-full'>
+                <CardProgressCard
+                  engine={engine}
+                  showCardAnswers={showCardAnswers}
+                  setShowCardAnswers={setShowCardAnswers}
+                />
+              </div>
+            )}
+
+            {/* Study Progress */}
+            {progress && engine && (
+              <div className='w-full'>
+                <StatsCard engine={engine} progress={progress} />
+              </div>
             )}
           </div>
-
-          {/* Card Progress (if enabled) */}
-          {showCardProgress && engine && (
-            <div className='w-full'>
-              <CardProgressCard
-                engine={engine}
-                showCardAnswers={showCardAnswers}
-                setShowCardAnswers={setShowCardAnswers}
-              />
-            </div>
-          )}
-
-          {/* Study Progress */}
-          {progress && (
-            <div className='w-full'>
-              <StatsCard progress={progress} />
-            </div>
-          )}
         </div>
       </div>
-    </div>
+
+      <Dialog open={promptActive} onOpenChange={() => {}}>
+        <DialogContent className="max-w-lg" onEscapeKeyDown={(event) => event.preventDefault()} onInteractOutside={(event) => event.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle>Đánh giá lại mức độ ghi nhớ</DialogTitle>
+            <DialogDescription>
+              Thẻ này đã sai {difficultyPrompt?.meta.wrongStreak ?? 0} lần liên tiếp (tổng {difficultyPrompt?.meta.wrongCount ?? 0} lần). Hãy chọn mức độ để SmartLearn lên lịch ôn phù hợp.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="rounded-lg border border-dashed border-info/50 bg-info/5 p-4">
+              <div className="text-xs font-medium uppercase text-muted-foreground">Thuật ngữ</div>
+              <div className="mt-1 text-lg font-semibold text-foreground">{difficultyPrompt?.front}</div>
+              {difficultyPrompt?.back && (
+                <div className="mt-3 text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">Đáp án:</span> {difficultyPrompt.back}
+                </div>
+              )}
+              <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
+                <span className="rounded-full border border-border px-3 py-1">Mastery hiện tại: {difficultyPrompt?.meta.mastery ?? 0}/5</span>
+                {lastChoiceLabel && (
+                  <span className="rounded-full border border-border px-3 py-1">Lần đánh giá trước: {lastChoiceLabel}</span>
+                )}
+              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {DIFFICULTY_CHOICES.map(option => (
+                <Button
+                  key={option.value}
+                  variant={option.value === 'veryHard' ? 'destructive' : option.value === 'normal' ? 'default' : 'outline'}
+                  onClick={() => handleDifficultyChoice(option.value)}
+                  disabled={submittingChoice !== null}
+                  className="h-auto justify-start space-y-1 py-3 text-left whitespace-normal break-words"
+                >
+                  <div className="text-sm font-semibold">
+                    {option.label}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {option.description}
+                  </div>
+                </Button>
+              ))}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

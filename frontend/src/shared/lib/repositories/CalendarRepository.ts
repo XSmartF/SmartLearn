@@ -43,6 +43,10 @@ function convertToDate(dateField: unknown): Date {
   return new Date();
 }
 
+function convertToIsoString(dateField: unknown): string {
+  return convertToDate(dateField).toISOString();
+}
+
 export class CalendarRepository {
   static async createEvent(input: CreateStudyEventInput): Promise<StudyEvent> {
     const user = getFirebaseAuth().currentUser;
@@ -98,12 +102,29 @@ export class CalendarRepository {
     );
 
     const querySnapshot = await getDocs(q);
-    const events = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      startTime: convertToDate(doc.data().startTime),
-      endTime: convertToDate(doc.data().endTime)
-    })) as StudyEvent[];
+    const events = querySnapshot.docs.map(doc => {
+      const data = doc.data() as Record<string, unknown>;
+      const event: StudyEvent = {
+        id: doc.id,
+        userId: String(data.userId ?? ''),
+        title: String(data.title ?? ''),
+        description: String(data.description ?? ''),
+        startTime: convertToDate(data.startTime),
+        endTime: convertToDate(data.endTime),
+        type: (data.type as StudyEvent['type']) ?? 'study',
+        flashcardSet: String(data.flashcardSet ?? ''),
+        cardCount: typeof data.cardCount === 'number' ? data.cardCount : 0,
+        status: (data.status as StudyEvent['status']) ?? 'upcoming',
+        createdAt: convertToIsoString(data.createdAt),
+        updatedAt: convertToIsoString(data.updatedAt),
+        cardId: typeof data.cardId === 'string' ? data.cardId : undefined,
+        libraryId: typeof data.libraryId === 'string' ? data.libraryId : undefined,
+        autoScheduled: typeof data.autoScheduled === 'boolean' ? data.autoScheduled : undefined,
+        lastChoice: data.lastChoice as StudyEvent['lastChoice'],
+        completedAt: data.completedAt ? convertToIsoString(data.completedAt) : undefined
+      };
+      return event;
+    });
 
     // Sort by startTime in memory
     return events.sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
@@ -120,12 +141,29 @@ export class CalendarRepository {
     );
 
     return onSnapshot(q, (querySnapshot) => {
-      const events = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        startTime: convertToDate(doc.data().startTime),
-        endTime: convertToDate(doc.data().endTime)
-      })) as StudyEvent[];
+      const events = querySnapshot.docs.map(doc => {
+        const data = doc.data() as Record<string, unknown>;
+        const event: StudyEvent = {
+          id: doc.id,
+          userId: String(data.userId ?? ''),
+          title: String(data.title ?? ''),
+          description: String(data.description ?? ''),
+          startTime: convertToDate(data.startTime),
+          endTime: convertToDate(data.endTime),
+          type: (data.type as StudyEvent['type']) ?? 'study',
+          flashcardSet: String(data.flashcardSet ?? ''),
+          cardCount: typeof data.cardCount === 'number' ? data.cardCount : 0,
+          status: (data.status as StudyEvent['status']) ?? 'upcoming',
+          createdAt: convertToIsoString(data.createdAt),
+          updatedAt: convertToIsoString(data.updatedAt),
+          cardId: typeof data.cardId === 'string' ? data.cardId : undefined,
+          libraryId: typeof data.libraryId === 'string' ? data.libraryId : undefined,
+          autoScheduled: typeof data.autoScheduled === 'boolean' ? data.autoScheduled : undefined,
+          lastChoice: data.lastChoice as StudyEvent['lastChoice'],
+          completedAt: data.completedAt ? convertToIsoString(data.completedAt) : undefined
+        };
+        return event;
+      });
 
       // Sort by startTime in memory
       const sortedEvents = events.sort((a, b) => a.startTime.getTime() - b.startTime.getTime());

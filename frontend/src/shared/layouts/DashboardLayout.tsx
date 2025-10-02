@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom'
 import { AppSidebar } from "@/shared/components/app-sidebar"
 import { NavActions } from "@/shared/components/nav-actions"
 import DynamicBreadcrumb from '@/shared/components/DynamicBreadcrumb'
+import { SpeedDial } from '@/shared/components/SpeedDial'
 import { Separator } from "@/shared/components/ui/separator"
 import {
   SidebarInset,
@@ -34,6 +35,7 @@ export default function DashboardLayout() {
             </div>
           </div>
         </div>
+        <SpeedDial />
       </SidebarInset>
     </SidebarProvider>
   )

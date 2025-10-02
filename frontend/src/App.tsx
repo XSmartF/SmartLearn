@@ -113,6 +113,15 @@ const router = createBrowserRouter([
             handle: { breadcrumb: 'Học tập' }
           },
           {
+            path: ROUTES.REVIEW,
+            lazy: async () => {
+              const mod = await import('./features/study/pages/ReviewPage')
+              return { Component: mod.default }
+            },
+            errorElement: <ErrorBoundary />,
+            handle: { breadcrumb: 'Ôn tập' }
+          },
+          {
             path: ROUTES.TEST_SETUP,
             lazy: async () => {
               const mod = await import('./features/test/pages/TestSetup')

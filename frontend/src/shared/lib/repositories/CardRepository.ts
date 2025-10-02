@@ -54,6 +54,16 @@ export class CardRepository {
     })();
     return () => { cancelled = true; if(unsub) unsub(); };
   }
+  async getCard(cardId: string): Promise<EngineCard | null> {
+    try {
+      const snap = await getDoc(doc(db, CARDS, cardId));
+      if (!snap.exists()) return null;
+      const d = snap.data();
+      return { id: snap.id, front: d.front, back: d.back, domain: d.domain ?? undefined, difficulty: d.difficulty ?? undefined };
+    } catch {
+      return null;
+    }
+  }
   async updateCard(cardId: string, data: { front?: string; back?: string; domain?: string | null; difficulty?: 'easy' | 'medium' | 'hard' | null }) {
     await updateDoc(doc(db, CARDS, cardId), { ...data, updatedAt: serverTimestamp() });
     invalidateCache('cards:');

@@ -3,17 +3,23 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { toast } from 'sonner'
-import { ArrowLeft, Save, Star, Calendar, Eye, FileText } from "lucide-react"
+import { ArrowLeft, Save, Star, Calendar, Eye, FileText, List } from "lucide-react"
 import { BlockNoteView } from "@blocknote/shadcn";
 import { useCreateBlockNote } from "@blocknote/react";
 import "@blocknote/shadcn/style.css";
+import "./NoteDetail.css";
 import { useNote, useNoteFavorites } from '@/shared/hooks/useNotes'
 import { noteRepository } from '@/shared/lib/repositories/NoteRepository'
 import { Loader } from '@/shared/components/ui/loader'
 import { usePersistentTheme } from '@/shared/hooks/usePersistentTheme'
-import { PageSection } from '@/shared/components/PageSection'
-import { StatCard } from '@/shared/components/StatCard'
 import { Badge } from '@/shared/components/ui/badge'
+import { 
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/shared/components/ui/popover'
+import { ScrollArea } from '@/shared/components/ui/scroll-area'
+import { cn } from '@/shared/lib/utils'
 
 export default function NoteDetail() {
     const { id } = useParams<{ id: string }>();
@@ -23,6 +29,7 @@ export default function NoteDetail() {
     const [title, setTitle] = useState('');
     const [saving, setSaving] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
+    const [showOutline, setShowOutline] = useState(true);
     const { resolvedTheme } = usePersistentTheme();
 
     const editor = useCreateBlockNote({
@@ -39,6 +46,32 @@ export default function NoteDetail() {
         }
     }, [note, editor, favorites]);
 
+    // Tính toán outline từ headings
+    interface OutlineItem {
+        id: string;
+        level: number;
+        text: string;
+    }
+
+    const outline = useMemo<OutlineItem[]>(() => {
+        const blocks = editor.document;
+        return blocks
+            .filter(b => b.type === 'heading')
+            .map(block => {
+                const content = block.content;
+                const text = Array.isArray(content) 
+                    ? content.map((c) => (typeof c === 'object' && c !== null && 'text' in c ? String(c.text) : '')).join(' ')
+                    : '';
+                const level = (block.props && 'level' in block.props) ? Number(block.props.level) : 1;
+                return {
+                    id: block.id,
+                    level,
+                    text: text || 'Untitled'
+                };
+            })
+            .filter(item => item.text.trim().length > 0);
+    }, [editor.document]);
+
     // Tính toán tóm tắt nội dung
     const contentSummary = useMemo(() => {
         const blocks = editor.document;
@@ -52,6 +85,13 @@ export default function NoteDetail() {
         const estimatedReadTime = Math.max(1, Math.ceil(wordCount / 200)); // ~200 từ/phút
         return { totalBlocks, textBlocks: textBlocks.length, wordCount, estimatedReadTime };
     }, [editor.document]);
+
+    const scrollToBlock = (blockId: string) => {
+        const blockElement = document.querySelector(`[data-id="${blockId}"]`);
+        if (blockElement) {
+            blockElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    };
 
     const handleSave = async () => {
         if (!note) return;
@@ -106,97 +146,173 @@ export default function NoteDetail() {
     }
 
     return (
-        <div className="space-y-8">
-            {/* Header */}
-            <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-3">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => navigate('/notes')}
-                    >
-                        <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                    <div className="flex-1">
+        <div className="flex flex-col h-full">
+            {/* Header with inline title input */}
+            <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
+                <div className="container max-w-7xl mx-auto px-4 py-3">
+                    <div className="flex items-center gap-3">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => navigate('/notes')}
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                        </Button>
                         <Input
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
-                            className="text-2xl font-bold border-none shadow-none p-0 h-auto focus-visible:ring-0 bg-transparent sm:text-3xl"
+                            className="flex-1 text-xl font-semibold border-0 shadow-none px-2 h-10 focus-visible:ring-1 focus-visible:ring-ring bg-transparent"
                             placeholder="Tiêu đề ghi chép..."
                         />
+                        <div className="flex items-center gap-2">
+                            {/* Toggle Outline Button */}
+                            <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-9"
+                                onClick={() => setShowOutline(!showOutline)}
+                            >
+                                <List className="h-4 w-4 mr-2" />
+                                {showOutline ? 'Ẩn' : 'Hiện'} Outline
+                            </Button>
+                            
+                            {/* Summary Popover */}
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="h-9">
+                                        <FileText className="h-4 w-4 mr-2" />
+                                        Thông tin
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-72" align="end">
+                                    <div className="space-y-3">
+                                        <h4 className="font-semibold text-sm">Tóm tắt ghi chép</h4>
+                                        <div className="space-y-2 text-sm">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-muted-foreground flex items-center gap-2">
+                                                    <FileText className="h-3.5 w-3.5" />
+                                                    Số khối
+                                                </span>
+                                                <span className="font-medium">{contentSummary.totalBlocks} khối</span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-muted-foreground flex items-center gap-2">
+                                                    <Eye className="h-3.5 w-3.5" />
+                                                    Số từ
+                                                </span>
+                                                <span className="font-medium">{contentSummary.wordCount} từ</span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-muted-foreground flex items-center gap-2">
+                                                    <FileText className="h-3.5 w-3.5" />
+                                                    Thời gian đọc
+                                                </span>
+                                                <span className="font-medium">~{contentSummary.estimatedReadTime} phút</span>
+                                            </div>
+                                            <div className="flex justify-between items-center pt-2 border-t">
+                                                <span className="text-muted-foreground flex items-center gap-2">
+                                                    <Calendar className="h-3.5 w-3.5" />
+                                                    Cập nhật
+                                                </span>
+                                                <span className="font-medium text-xs">
+                                                    {new Date(note.updatedAt).toLocaleDateString('vi-VN')}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
+                            
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={toggleFavorite}
+                                className="h-9 w-9"
+                            >
+                                <Star className={`h-4 w-4 ${isFavorite ? 'fill-yellow-400 text-yellow-400' : ''}`} />
+                            </Button>
+                            <Button
+                                onClick={handleSave}
+                                disabled={saving}
+                                size="sm"
+                                className="h-9"
+                            >
+                                <Save className="mr-2 h-4 w-4" />
+                                {saving ? 'Đang lưu...' : 'Lưu'}
+                            </Button>
+                        </div>
                     </div>
-                </div>
-                <div className="flex flex-wrap items-center gap-3">
-                    {note.tags && note.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                            {note.tags.map((tag, idx) => (
-                                <Badge key={idx} variant="secondary">{tag}</Badge>
+                    
+                    {/* Tags and visibility in a compact row */}
+                    {(note.tags && note.tags.length > 0) || note.visibility && (
+                        <div className="flex flex-wrap items-center gap-2 mt-3 ml-12">
+                            {note.tags && note.tags.length > 0 && note.tags.map((tag, idx) => (
+                                <Badge key={idx} variant="secondary" className="text-xs">
+                                    {tag}
+                                </Badge>
                             ))}
+                            <Badge variant={note.visibility === 'private' ? 'default' : 'outline'} className="text-xs">
+                                {note.visibility === 'private' ? 'Riêng tư' : 'Công khai'}
+                            </Badge>
                         </div>
                     )}
-                    <Badge variant={note.visibility === 'private' ? 'default' : 'outline'}>
-                        {note.visibility === 'private' ? 'Riêng tư' : 'Công khai'}
-                    </Badge>
-                    <div className="ml-auto flex items-center gap-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={toggleFavorite}
-                        >
-                            <Star className={`h-4 w-4 ${isFavorite ? 'fill-yellow-400 text-yellow-400' : ''}`} />
-                        </Button>
-                        <Button
-                            onClick={handleSave}
-                            disabled={saving}
-                            size="sm"
-                        >
-                            <Save className="mr-2 h-4 w-4" />
-                            {saving ? 'Đang lưu...' : 'Lưu'}
-                        </Button>
-                    </div>
                 </div>
             </div>
 
-            {/* Summary Stats */}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <StatCard
-                    icon={<FileText className="h-5 w-5 text-blue-500" />}
-                    label="Số khối nội dung"
-                    value={contentSummary.totalBlocks}
-                    helper={`Bao gồm ${contentSummary.textBlocks} khối văn bản`}
-                />
-                <StatCard
-                    icon={<Eye className="h-5 w-5 text-green-500" />}
-                    label="Số từ"
-                    value={contentSummary.wordCount}
-                    helper="Tổng số từ trong ghi chép"
-                />
-                <StatCard
-                    icon={<Calendar className="h-5 w-5 text-purple-500" />}
-                    label="Thời gian đọc"
-                    value={`~${contentSummary.estimatedReadTime} phút`}
-                    helper="Ước tính thời gian đọc"
-                />
-                <StatCard
-                    icon={<Calendar className="h-5 w-5 text-orange-500" />}
-                    label="Cập nhật"
-                    value={new Date(note.updatedAt).toLocaleDateString('vi-VN')}
-                    helper={new Date(note.updatedAt).toLocaleTimeString('vi-VN')}
-                />
-            </div>
+            {/* Main content with outline sidebar */}
+            <div className="flex-1 flex overflow-hidden relative">
+                {/* Editor - Main scrollable area, always full width */}
+                <div className="flex-1 overflow-auto">
+                    <div className="px-6 py-6">
+                        <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
+                            <div className="p-8 min-h-[calc(100vh-12rem)]">
+                                <BlockNoteView
+                                    editor={editor}
+                                    theme={resolvedTheme as "light" | "dark" | undefined}
+                                    className="w-full"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            {/* Editor */}
-            <PageSection
-                heading="Nội dung ghi chép"
-                description="Soạn thảo và định dạng nội dung ghi chép của bạn."
-                contentClassName="min-h-[600px] p-4"
-            >
-                <BlockNoteView
-                    editor={editor}
-                    theme={resolvedTheme as "light" | "dark" | undefined}
-                    className="w-full"
-                />
-            </PageSection>
+                {/* Outline Sidebar - Fixed overlay on right side */}
+                {showOutline && outline.length > 0 && (
+                    <div className="hidden xl:block fixed right-0 w-72 pointer-events-none z-20" style={{ top: '7rem', height: 'calc(100vh - 7rem)' }}>
+                        <div className="h-full flex flex-col p-4 pr-6 pointer-events-auto">
+                            <div className="rounded-lg border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/90 shadow-lg flex-1 flex flex-col max-h-full">
+                                <div className="p-4 border-b flex-shrink-0">
+                                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+                                        <List className="h-3.5 w-3.5" />
+                                        Mục lục
+                                    </h3>
+                                </div>
+                                <ScrollArea className="flex-1 min-h-0">
+                                    <div className="p-4 space-y-1">
+                                        {outline.map((item) => (
+                                            <button
+                                                key={item.id}
+                                                onClick={() => scrollToBlock(item.id)}
+                                                className={cn(
+                                                    "w-full text-left text-sm py-1.5 px-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors",
+                                                    "line-clamp-2"
+                                                )}
+                                                style={{ 
+                                                    paddingLeft: `${(item.level - 1) * 12 + 8}px`,
+                                                    fontSize: item.level === 1 ? '0.8125rem' : '0.75rem',
+                                                    fontWeight: item.level === 1 ? 600 : 400
+                                                }}
+                                            >
+                                                {item.text}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </ScrollArea>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
