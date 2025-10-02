@@ -52,8 +52,12 @@ export default defineConfig({
             if (id.includes('redux') || id.includes('@reduxjs')) return 'redux';
             
             // Editor/Rich text
-            if (id.includes('slate') || id.includes('lexical') || id.includes('prosemirror')) {
+            if (id.includes('slate') || id.includes('lexical')) {
               return 'editor';
+            }
+            // Keep prosemirror packages with the rest of the vendor stack to avoid circular chunks
+            if (id.includes('prosemirror')) {
+              return 'vendor';
             }
             
             // Other large libraries
