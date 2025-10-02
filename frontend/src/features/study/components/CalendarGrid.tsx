@@ -11,6 +11,7 @@ import {
 import ConfirmDialog from "@/shared/components/ConfirmDialog";
 import type { StudyEvent } from '../types/calendar';
 import { generateCalendarDays, getEventIcon, getEventColor } from '../utils/calendarUtils';
+import { cn } from "@/shared/lib/utils";
 
 interface CalendarGridProps {
   currentDate: Date;
@@ -109,31 +110,34 @@ export function CalendarGrid({
                   <Tooltip key={index}>
                     <TooltipTrigger asChild>
                       <div
-                        className={`
-                          p-2 text-center text-sm sm:text-xs cursor-pointer rounded-md transition-colors min-h-[60px] sm:min-h-[50px]
-                          ${date ? 'hover:bg-muted' : ''}
-                          ${date && date.toDateString() === new Date().toDateString() ? 'ring-2 ring-primary bg-background text-foreground font-bold' : ''}
-                          ${date && selectedDate && date.toDateString() === selectedDate.toDateString() ? 'bg-accent text-accent-foreground' : ''}
-                        `}
+                        className={cn(
+                          "flex flex-col items-center gap-1 p-2 text-center text-[11px] sm:text-xs cursor-pointer rounded-md transition-colors min-h-[64px] sm:min-h-[52px] overflow-hidden",
+                          date ? "hover:bg-muted" : "pointer-events-none opacity-50",
+                          date && date.toDateString() === new Date().toDateString() && "ring-2 ring-primary bg-background text-foreground font-bold",
+                          date && selectedDate && date.toDateString() === selectedDate.toDateString() && "bg-accent text-accent-foreground"
+                        )}
                         onClick={() => date && onDateChange(date)}
                       >
                         {date && (
-                          <div className="relative h-full">
+                          <div className="relative h-full w-full">
                             <span className="block text-foreground dark:text-foreground sm:text-xs">{date.getDate()}</span>
                             {hasEvents && (
                               <div className="mt-1 space-y-1">
                                 {dayEvents.slice(0, 2).map((event) => (
                                   <div
                                     key={event.id}
-                                    className={`text-xs px-1 py-0.5 rounded truncate ${getEventColor(event.type)}`}
+                                    className={cn(
+                                      "w-full overflow-hidden whitespace-nowrap text-ellipsis text-[10px] leading-tight px-1 py-0.5 rounded",
+                                      getEventColor(event.type)
+                                    )}
                                     title={event.title}
                                   >
-                                    {event.title.length > 8 ? `${event.title.substring(0, 8)}...` : event.title}
+                                    {event.title}
                                   </div>
                                 ))}
                                 {dayEvents.length > 2 && (
-                                  <div className="text-xs text-muted-foreground dark:text-muted-foreground">
-                                    +{dayEvents.length - 2} more
+                                  <div className="w-full text-[10px] text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
+                                    +{dayEvents.length - 2} nữa
                                   </div>
                                 )}
                               </div>

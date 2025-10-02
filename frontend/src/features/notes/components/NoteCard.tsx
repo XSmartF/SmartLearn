@@ -74,8 +74,8 @@ export const NoteCard: React.FC<NoteCardProps> = ({
   return (
     <div className="h-full group">
       <Card className={cn(
-        "h-full flex flex-col relative overflow-hidden transition-all duration-300",
-        "hover:shadow-2xl hover:scale-[1.03] hover:-translate-y-2",
+        "h-full w-full flex flex-col relative overflow-hidden transition-all duration-300",
+        "supports-[hover:hover]:hover:shadow-2xl supports-[hover:hover]:hover:scale-[1.03] supports-[hover:hover]:hover:-translate-y-2",
         "bg-gradient-to-br border-2",
         cardGradient
       )}>
@@ -91,7 +91,7 @@ export const NoteCard: React.FC<NoteCardProps> = ({
         {/* Decorative corner accent */}
         <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white/40 to-transparent dark:from-white/10 rounded-bl-full transform translate-x-12 -translate-y-12 group-hover:scale-150 transition-transform duration-500" />
 
-        <Link to={getNoteDetailPath(note.id)} className="flex-1 flex flex-col">
+  <Link to={getNoteDetailPath(note.id)} className="flex-1 flex flex-col min-w-0">
           <CardHeader className="pb-3 relative z-10">
             <div className="flex items-start justify-between gap-3">
               <div className="space-y-2.5 flex-1 min-w-0">
@@ -167,7 +167,9 @@ export const NoteCard: React.FC<NoteCardProps> = ({
         </Link>
 
         {/* Action buttons overlay */}
-        <div className="absolute bottom-3 right-3 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 z-20">
+        <div
+          className="absolute bottom-3 right-3 flex items-center gap-1.5 opacity-100 transition-all duration-300 z-20 supports-[hover:hover]:opacity-0 supports-[hover:hover]:pointer-events-none supports-[hover:hover]:group-hover:opacity-100 supports-[hover:hover]:group-hover:pointer-events-auto"
+        >
           <Button
             variant="secondary"
             size="sm"

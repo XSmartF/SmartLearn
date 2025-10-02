@@ -169,6 +169,12 @@ export default function MyLibrary() {
     return `Bạn đang quản lý ${libraries.length} bộ flashcard cá nhân và cộng tác trên ${shared.length} bộ được chia sẻ.`;
   }, [favorites.length, libraries.length, shared.length]);
 
+  const deleteTitle = deleteLib?.title ?? '';
+  const truncatedDeleteTitle = useMemo(() => {
+    if (deleteTitle.length <= 80) return deleteTitle;
+    return `${deleteTitle.slice(0, 77).trimEnd()}…`;
+  }, [deleteTitle]);
+
   return (
     <div className="space-y-6 sm:space-y-8">
       <PageHeader
@@ -480,8 +486,10 @@ export default function MyLibrary() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Xác nhận xóa thư viện</DialogTitle>
-            <DialogDescription>
-              Bạn có chắc muốn xóa thư viện "{deleteLib?.title}"? Hành động này không thể hoàn tác và sẽ xóa tất cả thẻ trong thư viện.
+            <DialogDescription className="text-sm leading-relaxed break-words">
+              Bạn có chắc muốn xóa thư viện "
+              <span className="font-semibold" title={deleteTitle}>{truncatedDeleteTitle}</span>
+              "? Hành động này không thể hoàn tác và sẽ xóa tất cả thẻ trong thư viện.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
