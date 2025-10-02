@@ -141,7 +141,7 @@ export class CalendarRepository {
     );
 
     return onSnapshot(q, (querySnapshot) => {
-      const events = querySnapshot.docs.map(doc => {
+      const events: StudyEvent[] = querySnapshot ? querySnapshot.docs.map(doc => {
         const data = doc.data() as Record<string, unknown>;
         const event: StudyEvent = {
           id: doc.id,
@@ -163,7 +163,7 @@ export class CalendarRepository {
           completedAt: data.completedAt ? convertToIsoString(data.completedAt) : undefined
         };
         return event;
-      });
+      }) : [];
 
       // Sort by startTime in memory
       const sortedEvents = events.sort((a, b) => a.startTime.getTime() - b.startTime.getTime());

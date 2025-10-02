@@ -41,7 +41,7 @@ export class ShareRepository {
     (async () => {
       if(cancelled) return;
       const qShared = query(collection(db, SHARES), where('targetUserId','==', user.uid));
-      unsub = onSnapshot(qShared, snap => { const arr: { libraryId: string; role: ShareRole }[] = []; snap.forEach(ds => { const d = ds.data() as { libraryId?: string; role?: ShareRole | 'editor' }; if(d.libraryId && d.role) arr.push({ libraryId: d.libraryId, role: (d.role === 'editor' ? 'contributor' : d.role) as ShareRole }); }); cb(arr); });
+      unsub = onSnapshot(qShared, snap => { const arr: { libraryId: string; role: ShareRole }[] = []; if (snap) { snap.forEach(ds => { const d = ds.data() as { libraryId?: string; role?: ShareRole | 'editor' }; if(d.libraryId && d.role) arr.push({ libraryId: d.libraryId, role: (d.role === 'editor' ? 'contributor' : d.role) as ShareRole }); }); } cb(arr); });
     })();
     return () => { cancelled = true; if(unsub) unsub(); };
   }
@@ -51,7 +51,7 @@ export class ShareRepository {
     (async () => {
       if(cancelled) return;
       const qShare = query(collection(db, SHARES), where('libraryId','==', libraryId), where('targetUserId','==', user.uid));
-      unsub = onSnapshot(qShare, snap => { if(snap.empty) { cb(null); return; } const d = snap.docs[0].data() as { role: ShareRole | 'editor' }; cb({ id: snap.docs[0].id, role: (d.role === 'editor' ? 'contributor' : d.role) as ShareRole }); });
+      unsub = onSnapshot(qShare, snap => { if(!snap || snap.empty) { cb(null); return; } const d = snap.docs[0].data() as { role: ShareRole | 'editor' }; cb({ id: snap.docs[0].id, role: (d.role === 'editor' ? 'contributor' : d.role) as ShareRole }); });
     })();
     return () => { cancelled = true; if(unsub) unsub(); };
   }

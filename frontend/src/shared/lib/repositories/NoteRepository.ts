@@ -111,21 +111,23 @@ export class NoteRepository {
       const qOwned = query(collection(db, NOTES), where('ownerId', '==', user.uid));
       unsub = onSnapshot(qOwned, snap => {
         const arr: NoteMeta[] = [];
-        snap.forEach(docSnap => {
-          const d = docSnap.data();
-          if (d.__deleted !== true) {
-            arr.push({
-              id: docSnap.id,
-              ownerId: d.ownerId,
-              title: d.title,
-              content: d.content,
-              tags: d.tags ?? [],
-              visibility: d.visibility,
-              createdAt: d.createdAt?.toMillis ? new Date(d.createdAt.toMillis()).toISOString() : '',
-              updatedAt: d.updatedAt?.toMillis ? new Date(d.updatedAt.toMillis()).toISOString() : ''
-            });
-          }
-        });
+        if (snap) {
+          snap.forEach(docSnap => {
+            const d = docSnap.data();
+            if (d.__deleted !== true) {
+              arr.push({
+                id: docSnap.id,
+                ownerId: d.ownerId,
+                title: d.title,
+                content: d.content,
+                tags: d.tags ?? [],
+                visibility: d.visibility,
+                createdAt: d.createdAt?.toMillis ? new Date(d.createdAt.toMillis()).toISOString() : '',
+                updatedAt: d.updatedAt?.toMillis ? new Date(d.updatedAt.toMillis()).toISOString() : ''
+              });
+            }
+          });
+        }
         cb(arr);
       });
     })();

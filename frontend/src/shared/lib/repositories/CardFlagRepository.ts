@@ -115,13 +115,15 @@ export class CardFlagRepository {
     );
     return onSnapshot(qFlags, (snap) => {
       const map: FlagMap = {};
-      snap.forEach((docSnap) => {
-        const data = docSnap.data() as CardFlagDoc;
-        map[data.cardId] = {
-          starred: data.starred === true,
-          difficulty: data.difficulty,
-        };
-      });
+      if (snap) {
+        snap.forEach((docSnap) => {
+          const data = docSnap.data() as CardFlagDoc;
+          map[data.cardId] = {
+            starred: data.starred === true,
+            difficulty: data.difficulty,
+          };
+        });
+      }
       cb(map);
     });
   }
@@ -131,12 +133,14 @@ export class CardFlagRepository {
     const qFlags = query(collection(db, CARD_FLAGS), where('userId', '==', userId));
     return onSnapshot(qFlags, (snap) => {
       const list: CardFlag[] = [];
-      snap.forEach((docSnap) => {
-        const data = docSnap.data() as CardFlagDoc;
-        if (data.starred === true || data.difficulty === 'hard') {
-          list.push({ id: docSnap.id, ...data });
-        }
-      });
+      if (snap) {
+        snap.forEach((docSnap) => {
+          const data = docSnap.data() as CardFlagDoc;
+          if (data.starred === true || data.difficulty === 'hard') {
+            list.push({ id: docSnap.id, ...data });
+          }
+        });
+      }
       cb(list);
     });
   }

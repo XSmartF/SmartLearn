@@ -41,7 +41,7 @@ export class ProgressRepository {
     return cached([`progress:${user.uid}:${libraryId}`], async () => {
   const qProg = query(collection(db, PROGRESS), where('userId','==', user.uid), where('libraryId','==', libraryId), limit(1));
   const snap = await getDocs(qProg);
-      if (snap.empty) return null;
+      if (!snap || snap.empty) return null;
       const docSnap = snap.docs[0];
       const d = docSnap.data() as Record<string, unknown> & { userId: string; libraryId: string; engineState?: Record<string, unknown>; updatedAt?: { toMillis?: () => number } };
       return { id: docSnap.id, userId: d.userId, libraryId: d.libraryId, engineState: (d.engineState as Record<string, unknown> | undefined) ?? null, updatedAt: d.updatedAt?.toMillis ? new Date(d.updatedAt.toMillis()).toISOString() : '' };

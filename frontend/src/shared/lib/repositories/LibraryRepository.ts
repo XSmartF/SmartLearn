@@ -101,12 +101,14 @@ export class LibraryRepository {
       const qOwned = query(collection(db, LIBRARIES), where('ownerId','==', user.uid));
       unsub = onSnapshot(qOwned, snap => {
         const arr: LibraryMeta[] = [];
-        snap.forEach(docSnap => { 
-          const d = docSnap.data(); 
-          if (d.__deleted !== true) {
-            arr.push({ id: docSnap.id, ownerId: d.ownerId, title: d.title, description: d.description, tags: d.tags ?? [], visibility: d.visibility, cardCount: d.cardCount ?? 0, subject: d.subject ?? '', createdAt: d.createdAt?.toMillis ? new Date(d.createdAt.toMillis()).toISOString() : '', updatedAt: d.updatedAt?.toMillis ? new Date(d.updatedAt.toMillis()).toISOString() : '' });
-          }
-        });
+        if (snap) {
+          snap.forEach(docSnap => { 
+            const d = docSnap.data(); 
+            if (d.__deleted !== true) {
+              arr.push({ id: docSnap.id, ownerId: d.ownerId, title: d.title, description: d.description, tags: d.tags ?? [], visibility: d.visibility, cardCount: d.cardCount ?? 0, subject: d.subject ?? '', createdAt: d.createdAt?.toMillis ? new Date(d.createdAt.toMillis()).toISOString() : '', updatedAt: d.updatedAt?.toMillis ? new Date(d.updatedAt.toMillis()).toISOString() : '' });
+            }
+          });
+        }
         cb(arr);
       });
     })();

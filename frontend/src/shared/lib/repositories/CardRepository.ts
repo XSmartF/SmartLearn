@@ -37,7 +37,7 @@ export class CardRepository {
     const qCards = query(collection(db, CARDS), where('libraryId','==', libraryId), limit(1000));
     try {
       const snapCache = await getDocsFromCache(qCards);
-      if(!snapCache.empty) {
+      if(snapCache && !snapCache.empty) {
         const list: EngineCard[] = []; snapCache.forEach(s=> { const d = s.data(); list.push({ id: s.id, front: d.front, back: d.back, domain: d.domain ?? undefined, difficulty: d.difficulty ?? undefined }); });
         getDocs(qCards).catch(()=>{}); // background refresh
         return list;
@@ -50,7 +50,7 @@ export class CardRepository {
     (async () => {
       if(cancelled) return;
       const qCards = query(collection(db, CARDS), where('libraryId','==', libraryId), limit(1000));
-      unsub = onSnapshot(qCards, snap => { const list: EngineCard[] = []; snap.forEach(s=> { const d = s.data(); list.push({ id: s.id, front: d.front, back: d.back, domain: d.domain ?? undefined, difficulty: d.difficulty ?? undefined }); }); cb(list); });
+      unsub = onSnapshot(qCards, snap => { const list: EngineCard[] = []; if (snap) { snap.forEach(s=> { const d = s.data(); list.push({ id: s.id, front: d.front, back: d.back, domain: d.domain ?? undefined, difficulty: d.difficulty ?? undefined }); }); } cb(list); });
     })();
     return () => { cancelled = true; if(unsub) unsub(); };
   }
