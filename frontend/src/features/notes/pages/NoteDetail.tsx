@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
@@ -20,6 +20,7 @@ import {
 } from '@/shared/components/ui/popover'
 import { ScrollArea } from '@/shared/components/ui/scroll-area'
 import { cn } from '@/shared/lib/utils'
+import { parseNoteContent } from '@/features/notes/utils/parseNoteContent'
 
 export default function NoteDetail() {
     const { id } = useParams<{ id: string }>();
@@ -31,20 +32,47 @@ export default function NoteDetail() {
     const [isFavorite, setIsFavorite] = useState(false);
     const [showOutline, setShowOutline] = useState(true);
     const { resolvedTheme } = usePersistentTheme();
+    const lastLoadedContentRef = useRef<string | null>(null);
+    const invalidContentNotifiedRef = useRef<string | null>(null);
+
+    const parsedContent = useMemo(() => parseNoteContent(note?.content ?? null), [note?.content]);
 
     const editor = useCreateBlockNote({
-        initialContent: note?.content ? JSON.parse(note.content) : undefined,
+        initialContent: parsedContent.content,
     });
 
     useEffect(() => {
-        if (note) {
-            setTitle(note.title);
-            setIsFavorite(favorites.includes(note.id));
-            if (note.content) {
-                editor.replaceBlocks(editor.document, JSON.parse(note.content));
-            }
+        if (!note) {
+            return;
         }
-    }, [note, editor, favorites]);
+
+        setTitle(note.title);
+        setIsFavorite(favorites.includes(note.id));
+
+        const noteContentKey = note.content ?? null;
+        const hasContentChanged = lastLoadedContentRef.current !== noteContentKey;
+
+        if (parsedContent.content && hasContentChanged) {
+            try {
+                editor.replaceBlocks(editor.document, parsedContent.content);
+                lastLoadedContentRef.current = noteContentKey;
+                invalidContentNotifiedRef.current = null;
+            } catch (replaceError) {
+                console.error('Failed to hydrate BlockNote editor from saved content', replaceError);
+                if (invalidContentNotifiedRef.current !== note.id) {
+                    toast.error('Không thể hiển thị nội dung ghi chép do lỗi định dạng. Hiển thị ghi chú trống.');
+                    invalidContentNotifiedRef.current = note.id;
+                }
+            }
+        } else if (parsedContent.error && hasContentChanged) {
+            console.warn('Invalid note content encountered', parsedContent.error);
+            if (invalidContentNotifiedRef.current !== note.id) {
+                toast.error('Nội dung ghi chép không hợp lệ, hiển thị ghi chú trống.');
+                invalidContentNotifiedRef.current = note.id;
+            }
+            lastLoadedContentRef.current = noteContentKey;
+        }
+    }, [note, editor, favorites, parsedContent]);
 
     // Tính toán outline từ headings
     interface OutlineItem {
