@@ -29,13 +29,13 @@ export function ShareManager(props: ShareManagerProps) {
   const { shares, loading, ownerId, currentUserId, inviteEmail, onInviteEmailChange, inviteRole, onInviteRoleChange, onInvite, removeShare, updateRole, searching, searchResults, inviteLoading } = props;
   const isOwner = ownerId === currentUserId;
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <label className="text-xs font-medium">Mời bằng email</label>
-        <div className="flex gap-2 items-center">
+    <div className="space-y-6">
+      <div className="space-y-3">
+        <label className="text-sm font-medium">Mời bằng email</label>
+        <div className="flex gap-3 items-center">
           <Input placeholder="user@example.com" value={inviteEmail} onChange={e=>onInviteEmailChange(e.target.value)} className="flex-1" />
           <Select value={inviteRole} onValueChange={(v: string)=>onInviteRoleChange(v as 'viewer'|'contributor')}>
-            <SelectTrigger className="h-9 text-sm w-[140px]">
+            <SelectTrigger className="h-10 text-sm w-[140px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -52,32 +52,32 @@ export function ShareManager(props: ShareManagerProps) {
         {searching && <div className="text-xs text-muted-foreground">Đang tìm...</div>}
         {!searching && inviteEmail && searchResults.length === 0 && <div className="text-xs text-red-500">Không tìm thấy người dùng</div>}
         {!searching && searchResults.length > 0 && (
-          <div className="border rounded p-2 max-h-32 overflow-auto space-y-1 bg-muted/30 text-xs">
+          <div className="border rounded-lg p-3 max-h-32 overflow-auto space-y-2 bg-muted/30 text-xs">
             {searchResults.map(u => (
               <div key={u.id} className="flex justify-between items-center">
                 <span>{u.displayName || u.email || u.id}</span>
-                <Button size="sm" variant="outline" className="h-6 px-2" onClick={async()=>{ await onInvite(u.id, inviteRole); }} disabled={inviteLoading}>Chọn</Button>
+                <Button size="sm" variant="outline" className="h-7 px-3" onClick={async()=>{ await onInvite(u.id, inviteRole); }} disabled={inviteLoading}>Chọn</Button>
               </div>
             ))}
           </div>
         )}
       </div>
-      <div className="space-y-2">
+      <div className="space-y-3">
         <div className="text-sm font-medium flex items-center gap-2"><UserPlus className="h-4 w-4" /> Người được chia sẻ</div>
         {loading ? (
-          <div className="flex justify-center">
+          <div className="flex justify-center py-4">
             <Loader size="sm" />
           </div>
         ) : (
-          <div className="border rounded-md divide-y">
-            {shares.length === 0 && <div className="p-3 text-xs text-muted-foreground">Chưa chia sẻ cho ai.</div>}
+          <div className="border rounded-lg divide-y">
+            {shares.length === 0 && <div className="p-4 text-sm text-muted-foreground">Chưa chia sẻ cho ai.</div>}
             {shares.map(s => (
               <ShareRow key={s.id} share={s} isOwner={isOwner} updateRole={updateRole} removeShare={removeShare} />
             ))}
           </div>
         )}
       </div>
-      {!isOwner && <div className="text-[10px] text-muted-foreground">Chỉ chủ sở hữu mới chỉnh sửa role.</div>}
+      {!isOwner && <div className="text-xs text-muted-foreground">Chỉ chủ sở hữu mới chỉnh sửa role.</div>}
     </div>
   );
 }
@@ -100,16 +100,16 @@ function ShareRow({ share, isOwner, updateRole, removeShare }: { share: { id: st
   useEffect(()=>{ let cancelled=false; (async()=>{ setLoadingProfile(true); try { const p = await userRepository.getUserProfile(share.targetUserId); if(!cancelled) setProfile(p); } finally { if(!cancelled) setLoadingProfile(false);} })(); return ()=>{cancelled=true}; }, [share.targetUserId]);
   return (
     <>
-      <div className="p-3 flex items-center gap-3 text-xs">
+      <div className="p-4 flex items-center gap-4 text-sm">
         <div className="flex-1">
           <div className="font-medium">
             {loadingProfile ? '...' : (profile?.displayName || profile?.email || share.targetUserId)}
           </div>
-          <div className="text-[10px] text-muted-foreground">Role: {share.role}</div>
+          <div className="text-xs text-muted-foreground mt-1">Role: {share.role}</div>
         </div>
         {isOwner ? (
     <Select value={share.role} onValueChange={async (v: string)=>{ const val = v as 'viewer'|'contributor'; setUpdating(true); try { await updateRole(share.id, val);} finally { setUpdating(false);} }}>
-            <SelectTrigger className="h-7 text-xs w-[130px]">
+            <SelectTrigger className="h-9 text-sm w-[130px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -118,10 +118,10 @@ function ShareRow({ share, isOwner, updateRole, removeShare }: { share: { id: st
             </SelectContent>
           </Select>
         ) : (
-          <span className="text-muted-foreground text-[11px]">{share.role}</span>
+          <span className="text-muted-foreground text-xs">{share.role}</span>
         )}
         {isOwner && (
-          <Button size="sm" variant="destructive" className="h-7 px-2" onClick={() => setDeleteDialogOpen(true)} disabled={updating}>Xóa</Button>
+          <Button size="sm" variant="destructive" className="h-9 px-3" onClick={() => setDeleteDialogOpen(true)} disabled={updating}>Xóa</Button>
         )}
       </div>
 

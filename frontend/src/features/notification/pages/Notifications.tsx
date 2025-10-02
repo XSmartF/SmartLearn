@@ -1,11 +1,9 @@
-import { useState, useEffect } from "react"
-import { H1 } from '@/shared/components/ui/typography';
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { Button } from "@/shared/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs"
-import { 
-  Check, 
-  Filter
-} from "lucide-react"
+import { Bell, Check, Filter } from "lucide-react"
+import { PageHeader } from '@/shared/components/PageHeader'
+import { PageSection } from '@/shared/components/PageSection'
 import { userRepository } from '@/shared/lib/repositories/UserRepository'
 import { libraryRepository } from '@/shared/lib/repositories/LibraryRepository'
 import {
@@ -16,9 +14,45 @@ import {
   NotificationQuickActions
 } from '../components'
 
+type NotificationItem = { id: string; type: string; title: string; message: string; read: boolean; createdAt: string; data?: Record<string, unknown> }
+type NotificationFeedTabKey = 'all' | 'unread' | 'flashcards' | 'reminders' | 'achievements'
+type NotificationTabKey = NotificationFeedTabKey | 'requests'
+
+const NOTIFICATION_FEED_TABS: ReadonlyArray<{
+  key: NotificationFeedTabKey;
+  label: string;
+  match: (notification: NotificationItem) => boolean;
+}> = [
+  {
+    key: 'all',
+    label: 'Tất cả',
+    match: () => true,
+  },
+  {
+    key: 'unread',
+    label: 'Chưa đọc',
+    match: (notification) => !notification.read,
+  },
+  {
+    key: 'flashcards',
+    label: 'Flashcard',
+    match: (notification) => notification.type === 'flashcard' || notification.type === 'review',
+  },
+  {
+    key: 'reminders',
+    label: 'Nhắc nhở',
+    match: (notification) => notification.type === 'reminder' || notification.type === 'streak',
+  },
+  {
+    key: 'achievements',
+    label: 'Thành tích',
+    match: (notification) => notification.type === 'achievement',
+  },
+]
+
 export default function Notifications() {
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedTab, setSelectedTab] = useState('all')
+  const [selectedTab, setSelectedTab] = useState<NotificationTabKey>('all')
   const [accessRequests, setAccessRequests] = useState<{ id: string; libraryId: string; requesterId: string; ownerId: string; status: string; createdAt: string; libraryTitle?: string; requesterName?: string }[]>([])
   const [loadingRequests, setLoadingRequests] = useState(false)
   const [acting, setActing] = useState<string|null>(null)
@@ -43,100 +77,141 @@ export default function Notifications() {
     return ()=>{ if(unsub) unsub(); };
   }, [])
 
-  const [notifications, setNotifications] = useState<{ id: string; type: string; title: string; message: string; read: boolean; createdAt: string; data?: Record<string, unknown> }[]>([])
+  const [notifications, setNotifications] = useState<NotificationItem[]>([])
   const [notifLoading, setNotifLoading] = useState(true)
   useEffect(()=>{ let unsub: (()=>void)|null=null; try { unsub = userRepository.listenUserNotifications(items=>{ setNotifications(items); setNotifLoading(false); }); } catch { setNotifLoading(false); } return ()=>{ if(unsub) unsub(); }; }, [])
 
-  const filteredNotifications = notifications.filter(notification => {
-    const matchesSearch = notification.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         notification.message.toLowerCase().includes(searchQuery.toLowerCase())
-    
-    const matchesTab = selectedTab === 'all' || 
-                      (selectedTab === 'unread' && !notification.read) ||
-                      (selectedTab === 'flashcards' && (notification.type === 'flashcard' || notification.type === 'review')) ||
-                      (selectedTab === 'reminders' && (notification.type === 'reminder' || notification.type === 'streak')) ||
-                      (selectedTab === 'achievements' && notification.type === 'achievement')
-    
-    return matchesSearch && matchesTab
-  })
+  const filteredNotifications = useMemo(() => {
+    if (selectedTab === 'requests') return []
+    const activeTab = NOTIFICATION_FEED_TABS.find((tab) => tab.key === selectedTab)
+    const searchTerm = searchQuery.trim().toLowerCase()
+    return notifications.filter((notification) => {
+      const matchesTab = activeTab ? activeTab.match(notification) : true
+      if (!matchesTab) return false
+      if (!searchTerm) return true
+      return (
+        notification.title.toLowerCase().includes(searchTerm) ||
+        notification.message.toLowerCase().includes(searchTerm)
+      )
+    })
+  }, [notifications, searchQuery, selectedTab])
+
+  const getBadgeForTab = useCallback(
+    (key: NotificationFeedTabKey) => {
+      switch (key) {
+        case 'unread':
+          return notifications.filter((notification) => !notification.read).length
+        case 'flashcards':
+          return notifications.filter((notification) =>
+            notification.type === 'flashcard' || notification.type === 'review'
+          ).length
+        case 'reminders':
+          return notifications.filter((notification) =>
+            notification.type === 'reminder' || notification.type === 'streak'
+          ).length
+        case 'achievements':
+          return notifications.filter((notification) => notification.type === 'achievement').length
+        case 'all':
+        default:
+          return notifications.length
+      }
+    },
+    [notifications],
+  )
 
   const markAsRead = async (id: string) => { try { await userRepository.markNotificationRead(id); } catch {/* ignore */} }
   const markAllAsRead = async () => { try { await userRepository.markAllNotificationsRead(); } catch {/* ignore */} }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <H1 className="text-2xl sm:text-3xl font-bold">Thông báo</H1>
-          <p className="text-muted-foreground text-sm sm:text-base">
-            Theo dõi các hoạt động và cập nhật mới nhất
-          </p>
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:gap-2">
-          <Button variant="outline" onClick={markAllAsRead}>
-            <Check className="h-4 w-4 mr-2" />
-            Đánh dấu tất cả đã đọc
-          </Button>
-          <Button variant="outline">
-            <Filter className="h-4 w-4 mr-2" />
-            Cài đặt thông báo
-          </Button>
-        </div>
-      </div>
+    <div className="space-y-8 sm:space-y-10">
+      <PageHeader
+        title="Trung tâm thông báo"
+        description="Theo dõi hoạt động mới nhất và quản lý các yêu cầu quyền truy cập từ bạn bè và đồng đội."
+        icon={<Bell className="h-6 w-6 text-primary" />}
+        actions={
+          <div className="flex flex-col gap-2 sm:flex-row sm:gap-2">
+            <Button variant="outline" onClick={markAllAsRead}>
+              <Check className="h-4 w-4 mr-2" />
+              Đánh dấu tất cả đã đọc
+            </Button>
+            <Button variant="outline">
+              <Filter className="h-4 w-4 mr-2" />
+              Cài đặt thông báo
+            </Button>
+          </div>
+        }
+      />
 
-      {/* Stats */}
-      <NotificationStats notifications={notifications} accessRequests={accessRequests} />
+      <PageSection
+        heading="Tổng quan"
+        description="Các chỉ số nhanh giúp bạn nắm bắt trạng thái thông báo và yêu cầu đang chờ."
+        contentClassName="space-y-6"
+      >
+        <NotificationStats notifications={notifications} accessRequests={accessRequests} />
+        <NotificationSearch searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+      </PageSection>
 
-      {/* Search */}
-      <NotificationSearch searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+      <PageSection
+        heading="Danh sách thông báo"
+        description="Lọc theo danh mục để xử lý nhanh các thông báo quan trọng."
+        contentClassName="space-y-6"
+      >
+  <Tabs value={selectedTab} onValueChange={(value) => setSelectedTab(value as NotificationTabKey)} className="space-y-4 sm:space-y-6">
+          <div className="overflow-x-auto">
+            <TabsList className="inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground min-w-max">
+              {NOTIFICATION_FEED_TABS.map((tab) => {
+                const badgeValue = getBadgeForTab(tab.key)
+                return (
+                  <TabsTrigger key={tab.key} value={tab.key} className="text-xs sm:text-sm">
+                    {tab.label}
+                    <span className="ml-1 sm:ml-2 bg-muted text-muted-foreground rounded-full px-1 sm:px-2 py-1 text-xs">
+                      {badgeValue}
+                    </span>
+                  </TabsTrigger>
+                )
+              })}
+              <TabsTrigger value="requests">
+                Yêu cầu truy cập
+                <span className="ml-2 bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs">{accessRequests.length}</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-    {/* Notification Tabs */}
-      <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4 sm:space-y-6">
-        <div className="overflow-x-auto">
-          <TabsList className="inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground min-w-max">
-            <TabsTrigger value="all" className="text-xs sm:text-sm">
-              Tất cả
-              <span className="ml-1 sm:ml-2 bg-muted text-muted-foreground rounded-full px-1 sm:px-2 py-1 text-xs">{notifications.length}</span>
-            </TabsTrigger>
-            <TabsTrigger value="unread">
-              Chưa đọc
-              <span className="ml-2 bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs">{notifications.filter(n => !n.read).length}</span>
-            </TabsTrigger>
-            <TabsTrigger value="flashcards">Flashcard</TabsTrigger>
-            <TabsTrigger value="reminders">Nhắc nhở</TabsTrigger>
-            <TabsTrigger value="achievements">Thành tích</TabsTrigger>
-            <TabsTrigger value="requests">Yêu cầu truy cập ({accessRequests.length})</TabsTrigger>
-          </TabsList>
-        </div>
+          {NOTIFICATION_FEED_TABS.map((tab) => (
+            <TabsContent key={tab.key} value={tab.key} className="space-y-4">
+              <NotificationList
+                notifications={notifications}
+                filteredNotifications={filteredNotifications}
+                searchQuery={searchQuery}
+                notifLoading={notifLoading}
+                onMarkAsRead={markAsRead}
+                actingNotif={actingNotif}
+                setActingNotif={setActingNotif}
+                actedRequests={actedRequests}
+                setActedRequests={setActedRequests}
+                setAccessRequests={setAccessRequests}
+              />
+            </TabsContent>
+          ))}
 
-        <TabsContent value={selectedTab} className="space-y-4">
-          <NotificationList
-            notifications={notifications}
-            filteredNotifications={filteredNotifications}
-            searchQuery={searchQuery}
-            notifLoading={notifLoading}
-            onMarkAsRead={markAsRead}
-            actingNotif={actingNotif}
-            setActingNotif={setActingNotif}
-            actedRequests={actedRequests}
-            setActedRequests={setActedRequests}
-            setAccessRequests={setAccessRequests}
-          />
-        </TabsContent>
+          <TabsContent value="requests" className="space-y-4">
+            <AccessRequests
+              accessRequests={accessRequests}
+              loadingRequests={loadingRequests}
+              acting={acting}
+              setActing={setActing}
+              setAccessRequests={setAccessRequests}
+            />
+          </TabsContent>
+        </Tabs>
+      </PageSection>
 
-        <TabsContent value="requests" className="space-y-4">
-          <AccessRequests
-            accessRequests={accessRequests}
-            loadingRequests={loadingRequests}
-            acting={acting}
-            setActing={setActing}
-            setAccessRequests={setAccessRequests}
-          />
-        </TabsContent>
-      </Tabs>
-
-      {/* Quick Actions */}
-      <NotificationQuickActions />
+      <PageSection
+        heading="Thao tác nhanh"
+        description="Bật ngay các tùy chọn phổ biến cho thông báo học tập của bạn."
+      >
+        <NotificationQuickActions />
+      </PageSection>
     </div>
   )
 }

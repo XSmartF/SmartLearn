@@ -1,7 +1,8 @@
 import { useEffect, useState, useMemo } from 'react'
-import { H1, H2, H3 } from '@/shared/components/ui/typography';
+import { H1, H2 } from '@/shared/components/ui/typography';
 import { useParams, Link, useLoaderData, useNavigate } from 'react-router-dom'
-import { Card, CardContent } from "@/shared/components/ui/card"
+import { PageSection } from "@/shared/components/PageSection"
+import { StatCard } from "@/shared/components/StatCard"
 import { Badge } from "@/shared/components/ui/badge"
 import { Button } from "@/shared/components/ui/button"
 import { VisibilityBadge } from '@/features/library/components/VisibilityDisplay'
@@ -283,11 +284,11 @@ export default function LibraryDetail() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-4">
             <Link to={ROUTES.MY_LIBRARY}>
               <Button variant="ghost" size="icon">
                 <ArrowLeft className="h-4 w-4" />
@@ -295,7 +296,7 @@ export default function LibraryDetail() {
             </Link>
             <div>
               <H1 className="text-3xl font-bold">{library?.title}</H1>
-              <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-center gap-2 mt-2">
                 <VisibilityBadge visibility={library?.visibility || 'public'} />
                 {isFavorite && <Heart className="h-4 w-4 fill-red-500 text-red-500" />}
               </div>
@@ -394,7 +395,7 @@ export default function LibraryDetail() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center gap-3">
           <Button 
             size="default" 
             disabled={!canStudy || navigatingToStudy} 
@@ -415,202 +416,147 @@ export default function LibraryDetail() {
               Kiểm tra
             </Button>
           </Link>
-          {/* Add Card Dialog Trigger moved here */}
-          <Dialog open={openAddCard} onOpenChange={setOpenAddCard}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="default" disabled={!canModify} title={!canModify ? 'Không thể thêm thẻ' : ''}>Thêm thẻ</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Thêm thẻ {bulkMode ? '(Nhiều)' : ''}</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-xs">
-                  <Button type="button" variant="ghost" size="sm" className="h-6 px-2 underline-offset-4 hover:underline" onClick={() => setBulkMode(m => !m)}>
-                    {bulkMode ? 'Chế độ 1 thẻ' : 'Chế độ nhiều thẻ'}
-                  </Button>
-                  {bulkMode && <div>{bulkPreview.length} dòng hợp lệ</div>}
-                </div>
-                {!bulkMode && (
-                  <>
-                    <div className="space-y-1">
-                      <label className="text-sm font-medium">Mặt trước</label>
-                      <Input value={front} onChange={(e) => setFront(e.target.value)} />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-sm font-medium">Mặt sau</label>
-                      <Input value={back} onChange={(e) => setBack(e.target.value)} />
-                    </div>
-                  </>
-                )}
-                {bulkMode && (
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium">Danh sách thẻ ( mỗi dòng: mặt trước|mặt sau )</label>
-                    <Textarea
-                      className="h-48 text-sm"
-                      value={bulkText}
-                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setBulkText(e.target.value)}
-                      placeholder={`Ví dụ:\nhello|xin chào\nworld|thế giới`}
-                    />
-                    {bulkText && bulkPreview.length === 0 && (
-                      <div className="text-xs text-red-500">Không có dòng hợp lệ. Định dạng: mặt trước|mặt sau</div>
-                    )}
-                    {bulkPreview.length > 0 && (
-                      <div className="max-h-32 overflow-auto border rounded p-2 text-xs space-y-1 bg-muted/30">
-                        {bulkPreview.slice(0, 20).map((p, i) => (
-                          <div key={i} className="flex justify-between gap-2"><span className="truncate font-medium" title={p.front}>{p.front}</span><span className="text-muted-foreground">|</span><span className="truncate" title={p.back}>{p.back}</span></div>
-                        ))}
-                        {bulkPreview.length > 20 && <div className="text-muted-foreground">... {bulkPreview.length - 20} dòng nữa</div>}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setOpenAddCard(false)}>Hủy</Button>
-                {!bulkMode && (
-                  <Button disabled={!front || !back || adding} onClick={async () => {
-                    if (!library) return;
-                    try {
-                      setAdding(true);
-                      const tempId = 'temp-' + Date.now();
-                      setCards(prev => [{ id: tempId, front, back } as EngineCard, ...prev]);
-                      await libraryRepository.createCard({ libraryId: library.id, front, back });
-                      setFront(''); setBack(''); setOpenAddCard(false);
-                      toast.success('Đã thêm thẻ');
-                    } finally { setAdding(false); }
-                  }}>{adding ? 'Đang lưu...' : 'Lưu'}</Button>
-                )}
-                {bulkMode && (
-                  <Button disabled={bulkPreview.length === 0 || adding} onClick={async () => {
-                    if (!library) return;
-                    try {
-                      setAdding(true);
-                      const baseTs = Date.now();
-                      const temps = bulkPreview.map((p, i) => ({ id: `temp-bulk-${baseTs}-${i}`, front: p.front, back: p.back } as EngineCard));
-                      setCards(prev => [...temps, ...prev]);
-                      const created = await libraryRepository.createCardsBulk(library.id, bulkPreview);
-                      setBulkText(''); setOpenAddCard(false);
-                      toast.success(`Đã thêm ${created} thẻ`);
-                    } finally { setAdding(false); }
-                  }}>{adding ? 'Đang lưu...' : `Lưu (${bulkPreview.length})`}</Button>
-                )}
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          {/* Add Card Button - opens dialog in cards section */}
+          <Button 
+            variant="outline" 
+            size="default" 
+            disabled={!canModify} 
+            title={!canModify ? 'Không thể thêm thẻ' : ''}
+            onClick={() => setOpenAddCard(true)}
+          >
+            Thêm thẻ
+          </Button>
         </div>
       </div>
 
       {/* Library Info */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div>
-                <H3 className="font-semibold mb-2">Mô tả</H3>
-                <p className="text-muted-foreground">{library?.description}</p>
-              </div>
-
-              <div className="flex items-center gap-2">
+      <PageSection
+        heading="Thông tin thư viện"
+        description={library?.description || 'Chưa có mô tả cho thư viện này.'}
+        actions={
+          library && !canStudy ? (
+            <Button
+              size="sm"
+              disabled={hasPendingRequest || requestingAccess}
+              onClick={async () => {
+                if (!library) return;
+                try {
+                  setRequestingAccess(true);
+                  await userRepository.createAccessRequest(library.id, library.ownerId);
+                  const reqs = await userRepository.listUserAccessRequests(library.id);
+                  setAccessRequests(reqs);
+                } finally {
+                  setRequestingAccess(false);
+                }
+              }}
+              variant={hasPendingRequest ? 'outline' : 'default'}
+            >
+              {hasPendingRequest ? 'Đã gửi yêu cầu' : requestingAccess ? 'Đang gửi...' : 'Yêu cầu truy cập'}
+            </Button>
+          ) : undefined
+        }
+        contentClassName="space-y-8"
+      >
+        <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+          <div className="space-y-4 md:max-w-2xl">
+            {(library?.tags?.length || 0) > 0 && (
+              <div className="flex flex-wrap items-center gap-2">
                 {(library?.tags || []).map((tag: string, index: number) => (
-                  <Badge key={index} variant="outline">{tag}</Badge>
+                  <Badge key={index} variant="outline">
+                    {tag}
+                  </Badge>
                 ))}
               </div>
+            )}
 
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <VisibilityBadge visibility={library?.visibility || 'public'} />
-                {library && !canStudy && (
-                  <div className="text-xs flex items-center gap-1">
-                    Chủ sở hữu: <span className="font-medium">{ownerProfile?.displayName || ownerProfile?.email || ownerProfile?.id?.slice(0, 6) || '—'}</span>
-                  </div>
-                )}
-              </div>
+            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+              <VisibilityBadge visibility={library?.visibility || 'public'} />
               {library && !canStudy && (
-                <div className="pt-2">
-                  <Button size="sm" disabled={hasPendingRequest || requestingAccess} onClick={async () => {
-                    if (!library) return; try { setRequestingAccess(true); await userRepository.createAccessRequest(library.id, library.ownerId); const reqs = await userRepository.listUserAccessRequests(library.id); setAccessRequests(reqs); } finally { setRequestingAccess(false); }
-                  }}
-                    variant={hasPendingRequest ? 'outline' : 'default'}>
-                    {hasPendingRequest ? 'Đã gửi yêu cầu' : (requestingAccess ? 'Đang gửi...' : 'Yêu cầu truy cập')}
-                  </Button>
+                <div className="flex items-center gap-1 text-xs">
+                  Chủ sở hữu:
+                  <span className="font-medium">
+                    {ownerProfile?.displayName || ownerProfile?.email || ownerProfile?.id?.slice(0, 6) || '—'}
+                  </span>
                 </div>
               )}
-            </div>
-
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                {stats.map((stat, index) => (
-                  <div key={index} className="bg-muted/30 rounded-lg p-4 space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-full bg-background">
-                        <stat.icon className={`h-5 w-5 ${stat.color}`} />
-                      </div>
-                      <span className="text-sm font-medium">{stat.title}</span>
-                    </div>
-                    <div className="text-3xl font-bold">{stat.value}</div>
-                    <Progress value={stat.percentage} className="h-3" />
-                    <div className="text-xs text-muted-foreground">{stat.percentage}%</div>
-                  </div>
-                ))}
-              </div>
+              {library?.updatedAt && (
+                <span className="text-xs">Cập nhật: {new Date(library.updatedAt).toLocaleDateString()}</span>
+              )}
             </div>
           </div>
-        </CardContent>
-      </Card>
+
+          <div className="grid w-full max-w-xl grid-cols-1 gap-4 sm:grid-cols-3">
+            {stats.map((stat, index) => (
+              <StatCard
+                key={index}
+                icon={<stat.icon className={`h-5 w-5 ${stat.color}`} />}
+                label={stat.title}
+                value={stat.value}
+                helper={
+                  index === 0 ? null : (
+                    <div className="space-y-1">
+                      <Progress value={stat.percentage} className="h-2" />
+                      <span>{stat.percentage}%</span>
+                    </div>
+                  )
+                }
+              />
+            ))}
+          </div>
+        </div>
+      </PageSection>
 
       {/* FlashCard Learning Section */}
-      <Card id="flashcard-section" className="overflow-hidden">
-        <CardContent className="p-0">
-          {canStudy ? (
-            <div className="p-6 border-b">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                  <H2 className="text-2xl font-semibold mb-2">Học với Flashcard</H2>
-                  <p className="text-muted-foreground">Lật thẻ để ghi nhớ nhanh</p>
-                </div>
-                <Link to={getStudyPath(id!)}>
-                  <Button variant="outline" size="lg">
-                    <BookOpen className="h-5 w-5 mr-2" />
-                    Chế độ học khác
-                  </Button>
-                </Link>
-              </div>
-            </div>
+      <PageSection
+        id="flashcard-section"
+        heading={canStudy ? 'Học với Flashcard' : 'Thư viện riêng tư'}
+        description={
+          canStudy
+            ? 'Lật thẻ để ghi nhớ nhanh hoặc chuyển sang chế độ học khác.'
+            : 'Bạn không có quyền xem các thẻ trong thư viện này.'
+        }
+        actions={
+          canStudy ? (
+            <Link to={getStudyPath(id!)}>
+              <Button variant="outline" size="lg">
+                <BookOpen className="mr-2 h-5 w-5" />
+                Chế độ học khác
+              </Button>
+            </Link>
+          ) : undefined
+        }
+        contentClassName={canStudy ? undefined : 'py-8'}
+      >
+        {canStudy ? (
+          cards.length > 0 ? (
+            <FlashCard
+              cards={cards.map((c) => ({ id: c.id, front: c.front, back: c.back, status: 'learning', difficulty: 'medium' }))}
+              onComplete={() => {
+                /* optional: toast */
+              }}
+              readLanguage={readLanguage}
+            />
           ) : (
-            <div className="p-6">
-              <div className="text-center py-8">
-                <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <H2 className="text-xl font-semibold mb-2">Thư viện riêng tư</H2>
-                <p className="text-muted-foreground">Bạn không có quyền xem các thẻ trong thư viện này.</p>
-              </div>
+            <div className="text-center py-12">
+              <Target className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+              <p className="text-lg text-muted-foreground">Chưa có thẻ. Thêm thẻ để bắt đầu học.</p>
             </div>
-          )}
-          {canStudy && (
-            <div className="p-6">
-              {cards.length > 0 ? (
-                <FlashCard
-                  cards={cards.map(c => ({ id: c.id, front: c.front, back: c.back, status: 'learning', difficulty: 'medium' }))}
-                  onComplete={() => { /* optional: toast */ }}
-                  readLanguage={readLanguage}
-                />
-              ) : (
-                <div className="text-center py-12">
-                  <Target className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-lg text-muted-foreground">Chưa có thẻ. Thêm thẻ để bắt đầu học.</p>
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          )
+        ) : (
+          <div className="text-center">
+            <BookOpen className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">Liên hệ chủ sở hữu để yêu cầu quyền truy cập.</p>
+          </div>
+        )}
+      </PageSection>
 
       {/* Unified Cards + Progress Section */}
-      <div className="space-y-6">
+      <div className="space-y-8">
         <ProgressSummarySection total={total} masteredVal={masteredVal} learningVal={learningVal} masteredPct={masteredPct} learningPct={learningPct} due={summary ? summary.due : progStats.due} />
         <LeaderboardSection libraryId={id!} currentUserId={currentUserId} />
         {canStudy ? (
-          <div className="space-y-4">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 p-4 bg-muted/20 rounded-lg">
+          <div className="space-y-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 p-6 bg-muted/20 rounded-lg">
               <div className="flex items-center gap-4">
                 <div className="text-sm text-muted-foreground font-medium">
                   {selectedIds.length ? `${selectedIds.length} đã chọn` : `${filteredCards.length} thẻ`}

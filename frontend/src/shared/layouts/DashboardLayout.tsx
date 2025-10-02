@@ -11,15 +11,15 @@ import {
 
 export default function DashboardLayout() {
   return (
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-        <header className="sticky top-0 z-50 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-2 sm:px-3">
-          <div className="flex flex-1 items-center gap-2 px-1 sm:px-0">
-            <SidebarTrigger />
+    <SidebarProvider>
+      <AppSidebar />
+  <SidebarInset className="flex h-screen flex-1 flex-col overflow-hidden">
+        <header className="glass-header z-40 flex h-16 shrink-0 items-center gap-2 px-4 sm:px-6">
+          <div className="flex flex-1 items-center gap-3 px-1 sm:px-0">
+            <SidebarTrigger className="neu-button h-10 w-10" />
             <Separator
               orientation="vertical"
-              className="mr-2 data-[orientation=vertical]:h-4"
+              className="mr-2 h-6 bg-border/50"
             />
             <DynamicBreadcrumb />
           </div>
@@ -27,12 +27,14 @@ export default function DashboardLayout() {
             <NavActions />
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 px-2 sm:px-4 py-4 sm:py-6">
-          <div className="max-w-7xl mx-auto w-full">
-            <Outlet />
+        <div className="flex-1 overflow-y-auto">
+          <div className="flex flex-col gap-8 px-6 sm:px-8 py-8 sm:py-10">
+            <div className="max-w-7xl mx-auto w-full">
+              <Outlet />
+            </div>
           </div>
         </div>
-        </SidebarInset>
-      </SidebarProvider>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }

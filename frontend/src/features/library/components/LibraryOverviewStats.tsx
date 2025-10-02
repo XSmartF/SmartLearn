@@ -1,5 +1,5 @@
-import { Card, CardContent } from "@/shared/components/ui/card"
 import { BookOpen, Users, Star, Target } from "lucide-react"
+import { StatCard } from "@/shared/components/StatCard"
 
 interface LibraryOverviewStatsProps {
   ownedCount: number
@@ -37,19 +37,14 @@ export default function LibraryOverviewStats({ ownedCount, sharedCount, favorite
   ]
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      {stats.map((stat, index) => (
-        <Card key={index}>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                <p className="text-2xl font-bold">{stat.value}</p>
-              </div>
-              <stat.icon className={`h-8 w-8 ${stat.color}`} />
-            </div>
-          </CardContent>
-        </Card>
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {stats.map((stat) => (
+        <StatCard
+          key={stat.title}
+          label={stat.title}
+          value={stat.value}
+          icon={<stat.icon className={`h-5 w-5 ${stat.color}`} />}
+        />
       ))}
     </div>
   )

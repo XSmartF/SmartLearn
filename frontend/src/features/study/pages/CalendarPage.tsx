@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react"
-import { H1 } from '@/shared/components/ui/typography'
 import { Button } from "@/shared/components/ui/button"
-import { Plus } from "lucide-react"
+import { CalendarDays, Plus } from "lucide-react"
 import { Stats, CalendarGrid, EventDialog, TaskStatusCards } from '../components'
 import { listenUserStudyEvents, createStudyEvent, updateStudyEvent, deleteStudyEvent, updateStudyEventStatus } from '@/shared/lib/firebaseCalendarService'
 import ConfirmDialog from "@/shared/components/ConfirmDialog"
@@ -10,6 +9,8 @@ import {
   calculateStats,
   updateEventStatus
 } from '../utils/calendarUtils'
+import { PageHeader } from '@/shared/components/PageHeader'
+import { PageSection } from '@/shared/components/PageSection'
 
 export default function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -149,51 +150,46 @@ export default function Calendar() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6 space-y-6">
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-center sm:text-left">
-            <H1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-              Lịch học tập
-            </H1>
-            <p className="text-muted-foreground text-base sm:text-lg">
-              Quản lý thời gian biểu và sự kiện học tập của bạn
-            </p>
-          </div>
-          <div className="flex items-center justify-center sm:justify-end">
-            <Button
-              onClick={handleAddEvent}
-              size="lg"
-              className="h-12 px-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg"
-            >
-              <Plus className="h-5 w-5 mr-2" />
+    <>
+      <div className="space-y-8 sm:space-y-10">
+        <PageHeader
+          title="Lịch học tập"
+          description="Theo dõi tiến độ từng ngày và chủ động sắp xếp các phiên học tập phù hợp với mục tiêu của bạn."
+          icon={<CalendarDays className="h-6 w-6 text-primary" />}
+          actions={
+            <Button onClick={handleAddEvent}>
+              <Plus className="mr-2 h-4 w-4" />
               Thêm sự kiện
             </Button>
-          </div>
-        </div>
+          }
+        />
 
-        {/* Stats */}
-        <div className="bg-card/80 backdrop-blur-sm rounded-xl p-6 shadow-lg">
+        <PageSection
+          heading="Tổng quan trong tháng"
+          description="Số liệu nhanh giúp bạn biết mình đã học bao nhiêu và còn những gì đang chờ."
+        >
           <Stats stats={stats} />
-        </div>
+        </PageSection>
 
-        <div className="grid gap-6 lg:gap-8">
-          {/* Calendar */}
-          <div className="bg-card/80 backdrop-blur-sm rounded-xl p-6 shadow-lg">
-            <CalendarGrid
-              currentDate={currentDate}
-              selectedDate={selectedDate}
-              events={events}
-              onDateChange={setSelectedDate}
-              onCurrentDateChange={setCurrentDate}
-              onViewEvent={handleViewEvent}
-              onDeleteEvent={handleDeleteEvent}
-            />
-          </div>
-        </div>
+        <PageSection
+          heading="Lịch sự kiện"
+          description="Chạm vào một ngày để xem chi tiết hoặc chỉnh sửa sự kiện học tập."
+        >
+          <CalendarGrid
+            currentDate={currentDate}
+            selectedDate={selectedDate}
+            events={events}
+            onDateChange={setSelectedDate}
+            onCurrentDateChange={setCurrentDate}
+            onViewEvent={handleViewEvent}
+            onDeleteEvent={handleDeleteEvent}
+          />
+        </PageSection>
 
-        {/* Task Status Cards */}
-        <div className="bg-card/80 backdrop-blur-sm rounded-xl p-6 shadow-lg">
+        <PageSection
+          heading="Nhiệm vụ & trạng thái"
+          description="Cập nhật tiến độ, đánh dấu hoàn thành hoặc điều chỉnh kế hoạch nếu cần."
+        >
           <TaskStatusCards
             events={events}
             onView={handleViewEvent}
@@ -201,32 +197,30 @@ export default function Calendar() {
             onStatusUpdate={handleStatusUpdate}
             onEdit={handleEditEvent}
           />
-        </div>
-
-        {/* Event Dialog */}
-        <EventDialog
-          isOpen={dialogOpen}
-          onClose={handleDialogClose}
-          onSave={handleSaveEvent}
-          editingEvent={editingEvent}
-          viewOnly={viewOnly}
-          onStatusUpdate={handleStatusUpdate}
-        />
-
-        {/* Delete Confirmation Dialog */}
-        <ConfirmDialog
-          open={deleteDialogOpen}
-          onOpenChange={setDeleteDialogOpen}
-          title="Xóa sự kiện"
-          description="Bạn có chắc chắn muốn xóa sự kiện này không? Hành động này không thể hoàn tác."
-          onConfirm={handleDeleteConfirm}
-          confirmText="Xóa"
-          cancelText="Hủy"
-          variant="destructive"
-        >
-          <div />
-        </ConfirmDialog>
+        </PageSection>
       </div>
-    </div>
+
+      <EventDialog
+        isOpen={dialogOpen}
+        onClose={handleDialogClose}
+        onSave={handleSaveEvent}
+        editingEvent={editingEvent}
+        viewOnly={viewOnly}
+        onStatusUpdate={handleStatusUpdate}
+      />
+
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Xóa sự kiện"
+        description="Bạn có chắc chắn muốn xóa sự kiện này không? Hành động này không thể hoàn tác."
+        onConfirm={handleDeleteConfirm}
+        confirmText="Xóa"
+        cancelText="Hủy"
+        variant="destructive"
+      >
+        <div />
+      </ConfirmDialog>
+    </>
   )
 }

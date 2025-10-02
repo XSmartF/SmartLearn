@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import { Progress } from "@/shared/components/ui/progress";
 import { progressRepository } from '@/shared/lib/repositories/ProgressRepository';
@@ -8,6 +7,7 @@ import { shareRepository } from '@/shared/lib/repositories/ShareRepository';
 import { libraryRepository } from '@/shared/lib/repositories/LibraryRepository';
 import { Trophy, Medal, Award, Star, Sprout } from "lucide-react";
 import { Loader } from '@/shared/components/ui/loader';
+import { PageSection } from '@/shared/components/PageSection';
 import type { UserLibraryProgressSummary } from '@/shared/lib/repositories/ProgressRepository';
 
 interface LeaderboardEntry {
@@ -153,90 +153,66 @@ export function LeaderboardSection({ libraryId, currentUserId }: LeaderboardSect
 
   if (loading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Trophy className="h-5 w-5" /> Bảng xếp hạng
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex justify-center">
-            <Loader size="sm" />
-          </div>
-        </CardContent>
-      </Card>
+      <PageSection heading={<span className="flex items-center gap-2"><Trophy className="h-5 w-5" /> Bảng xếp hạng</span>}>
+        <div className="flex justify-center py-6">
+          <Loader size="sm" />
+        </div>
+      </PageSection>
     );
   }
 
   if (entries.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Trophy className="h-5 w-5" /> Bảng xếp hạng
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-sm text-muted-foreground">Chưa có dữ liệu xếp hạng.</div>
-        </CardContent>
-      </Card>
+      <PageSection heading={<span className="flex items-center gap-2"><Trophy className="h-5 w-5" /> Bảng xếp hạng</span>}>
+        <div className="text-sm text-muted-foreground">Chưa có dữ liệu xếp hạng.</div>
+      </PageSection>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Trophy className="h-5 w-5" /> Bảng xếp hạng ({entries.length} người học)
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {entries.slice(0, 10).map((entry) => {
-            const percentage = Math.round(entry.progress.percentMastered);
-            return (
-              <div
-                key={entry.userId}
-                className={`flex items-center justify-between p-3 rounded-lg border ${
-                  entry.userId === currentUserId ? 'bg-primary/5 border-primary/20' : 'bg-card'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="text-lg">
-                    {getAchievementIcon(entry.rank, percentage)}
-                  </div>
-                  <div>
-                    <div className="font-medium">
-                      {getUserDisplayName(entry.userProfile)}
-                      {entry.userId === currentUserId && (
-                        <Badge variant="secondary" className="ml-2 text-xs">
-                          Bạn
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="mt-1">
-                      <Progress value={percentage} className="h-2" />
-                    </div>
-                  </div>
+    <PageSection
+      heading={<span className="flex items-center gap-2"><Trophy className="h-5 w-5" /> Bảng xếp hạng ({entries.length} người học)</span>}
+      contentClassName="space-y-4"
+    >
+      {entries.slice(0, 10).map((entry) => {
+        const percentage = Math.round(entry.progress.percentMastered);
+        return (
+          <div
+            key={entry.userId}
+            className={`flex items-center justify-between rounded-lg border p-4 transition-colors ${
+              entry.userId === currentUserId ? 'border-primary/40 bg-primary/5' : 'border-border/40 bg-card'
+            }`}
+          >
+            <div className="flex items-center gap-4">
+              <div className="text-lg">
+                {getAchievementIcon(entry.rank, percentage)}
+              </div>
+              <div className="flex-1">
+                <div className="font-medium">
+                  {getUserDisplayName(entry.userProfile)}
+                  {entry.userId === currentUserId && (
+                    <Badge variant="secondary" className="ml-2 text-xs">
+                      Bạn
+                    </Badge>
+                  )}
                 </div>
-                <div className="text-right">
-                  <div className="text-sm font-medium">
-                    #{entry.rank}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {percentage}%
-                  </div>
+                <div className="mt-2">
+                  <Progress value={percentage} className="h-2" />
                 </div>
               </div>
-            );
-          })}
-          {entries.length > 10 && (
-            <div className="text-center text-sm text-muted-foreground pt-2">
-              Và {entries.length - 10} người học khác...
             </div>
-          )}
+            <div className="text-right">
+              <div className="text-sm font-medium">#{entry.rank}</div>
+              <div className="text-xs text-muted-foreground">{percentage}%</div>
+            </div>
+          </div>
+        );
+      })}
+      {entries.length > 10 && (
+        <div className="pt-2 text-center text-sm text-muted-foreground">
+          Và {entries.length - 10} người học khác...
         </div>
-      </CardContent>
-    </Card>
+      )}
+    </PageSection>
   );
 }

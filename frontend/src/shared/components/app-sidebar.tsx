@@ -42,7 +42,6 @@ import {
   SidebarHeader,
   SidebarRail,
   SidebarFooter,
-  SidebarSeparator,
 } from "@/shared/components/ui/sidebar"
 import { Brand } from '@/shared/components/Brand'
 import { NavUser } from '@/shared/components/NavUser'
@@ -242,24 +241,36 @@ export const AppSidebar = React.memo(function AppSidebar({ ...props }: React.Com
     else if (url === ROUTES.SPEED_GAME) import('@/features/games/components/SpeedGame').catch(()=>{});  
   };  return (
     <Sidebar className="border-r-0" {...props}>
-      <SidebarHeader>
-        <div className="px-2 pt-2 pb-1">
-          <Brand to="/" />
-        </div>
-        <div onMouseOver={(e)=>{
-          const target = e.target as HTMLElement;
-          const link = target.closest('[data-url]') as HTMLElement | null;
-          if (link) { const url = link.getAttribute('data-url'); if(url) prefetchRoute(url); }
-        }}>
-          <NavMain items={navData.navMain.map(i=> ({ ...i, dataAttr: { url: i.url } }))} />
-        </div>
+      <SidebarHeader className="border-b border-border/30 pb-3">
+        <Brand to="/" />
       </SidebarHeader>
-      <SidebarContent>
-        <NavFavorites favorites={favorites.map(f => ({ name: f.title, url: `/library/${f.id}` }))} loading={loading} />
-        <NavFavoriteNotes favorites={noteFavorites} />
+      
+      <SidebarContent className="px-3 py-4">
+        {/* Main Navigation */}
+        <div className="mb-6">
+          <div 
+            className="mb-2"
+            onMouseOver={(e)=>{
+              const target = e.target as HTMLElement;
+              const link = target.closest('[data-url]') as HTMLElement | null;
+              if (link) { const url = link.getAttribute('data-url'); if(url) prefetchRoute(url); }
+            }}
+          >
+            <NavMain items={navData.navMain.map(i=> ({ ...i, dataAttr: { 'data-url': i.url } }))} />
+          </div>
+        </div>
+
+        {/* Favorites Section */}
+        <div className="space-y-4">
+          <NavFavorites 
+            favorites={favorites.map(f => ({ name: f.title, url: `/library/${f.id}` }))} 
+            loading={loading} 
+          />
+          <NavFavoriteNotes favorites={noteFavorites} />
+        </div>
       </SidebarContent>
-      <SidebarSeparator />
-      <SidebarFooter>
+
+      <SidebarFooter className="border-t border-border/30 pt-3 pb-2">
         <NavUser />
       </SidebarFooter>
       <SidebarRail />

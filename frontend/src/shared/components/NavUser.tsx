@@ -33,45 +33,96 @@ interface User {
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <button 
-          className={cn('flex w-full items-center gap-2 sm:gap-3 rounded-md px-2 py-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-left text-sm transition-colors duration-200')}
+          className={cn(
+            'group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-300',
+            'hover:bg-sidebar-accent/70 hover:shadow-[var(--neu-shadow-sm)]',
+            'dark:hover:shadow-[3px_3px_8px_rgba(0,0,0,0.4),-1px_-1px_4px_rgba(255,255,255,0.03)]'
+          )}
         >
-          <div className="relative h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-semibold overflow-hidden">
-            {user.avatarUrl ? <Avatar src={user.avatarUrl} alt={user.displayName || user.email} size={32} className="h-full w-full" fallback={initials} /> : initials}
+          <div className="relative">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary via-accent to-primary flex items-center justify-center text-white text-sm font-bold overflow-hidden shadow-[var(--neu-shadow-sm)] group-hover:shadow-[var(--neu-shadow)] transition-all duration-300">
+              {user.avatarUrl ? (
+                <Avatar src={user.avatarUrl} alt={user.displayName || user.email} size={40} className="h-full w-full" fallback={initials} />
+              ) : (
+                <span className="drop-shadow-sm">{initials}</span>
+              )}
+            </div>
+            <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-success border-2 border-sidebar" />
           </div>
-          <div className="flex min-w-0 flex-col">
-            <span className="font-medium truncate text-xs sm:text-sm">{user.displayName || user.email}</span>
-            <span className="text-xs text-muted-foreground truncate hidden sm:block">{user.email}</span>
+          <div className="flex min-w-0 flex-1 flex-col">
+            <span className="font-semibold truncate text-sm text-foreground group-hover:text-primary transition-colors">
+              {user.displayName || user.email}
+            </span>
+            <span className="text-xs text-muted-foreground truncate">
+              {user.email}
+            </span>
           </div>
-          <span className="ml-auto text-xs text-muted-foreground">{open ? '▲' : '▼'}</span>
+          <div className={cn(
+            "ml-auto text-muted-foreground transition-transform duration-200",
+            open && "rotate-180"
+          )}>
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent side="top" align="start" className="z-50 min-w-[220px] rounded-md border bg-popover p-1 text-popover-foreground shadow-md focus:outline-none">
-        <DropdownMenuLabel className="px-2 py-1.5 text-xs font-medium text-muted-foreground">Tài khoản</DropdownMenuLabel>
-        <div className="px-2 py-2 flex items-center gap-2">
-          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-sm overflow-hidden">
-            {user.avatarUrl ? <Avatar src={user.avatarUrl} alt={user.displayName || user.email} size={40} className="h-full w-full" fallback={<UserIcon className='h-5 w-5' />} /> : <UserIcon className="h-5 w-5" />}
+      <DropdownMenuContent 
+        side="top" 
+        align="start" 
+        className="z-[100] min-w-[240px] rounded-xl border border-border/30 bg-popover backdrop-blur-sm p-2 text-popover-foreground shadow-[var(--neu-shadow-lg)] focus:outline-none dark:border-white/10 dark:shadow-[10px_10px_32px_rgba(0,0,0,0.7),-4px_-4px_20px_rgba(255,255,255,0.05)]"
+      >
+        <DropdownMenuLabel className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          Tài khoản
+        </DropdownMenuLabel>
+        <div className="px-3 py-3 mb-2 flex items-center gap-3 rounded-lg bg-sidebar-accent/30">
+          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-sm font-bold overflow-hidden shadow-[var(--neu-shadow-sm)]">
+            {user.avatarUrl ? (
+              <Avatar src={user.avatarUrl} alt={user.displayName || user.email} size={48} className="h-full w-full" fallback={<UserIcon className='h-6 w-6' />} />
+            ) : (
+              <UserIcon className="h-6 w-6 drop-shadow-sm" />
+            )}
           </div>
-          <div className="flex flex-col min-w-0">
-            <span className="text-sm font-medium truncate">{user.displayName || 'Người dùng'}</span>
+          <div className="flex flex-col min-w-0 flex-1">
+            <span className="text-sm font-semibold truncate text-foreground">{user.displayName || 'Người dùng'}</span>
             <span className="text-xs text-muted-foreground truncate">{user.email}</span>
           </div>
         </div>
-        <DropdownMenuSeparator className="h-px my-1 bg-border" />
+        <DropdownMenuSeparator className="h-px my-2 bg-border/50" />
         <DropdownMenuItem asChild>
-          <Button variant="ghost" className="w-full justify-start gap-2 px-2 py-1.5 text-sm" onClick={()=> navigate(ROUTES.PROFILE)}>
-            <UserCircle2 className="h-4 w-4" />
-            Hồ sơ
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start gap-3 px-3 py-2.5 text-sm font-medium rounded-lg hover:bg-sidebar-accent/70" 
+            onClick={()=> navigate(ROUTES.PROFILE)}
+          >
+            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+              <UserCircle2 className="h-4 w-4" />
+            </div>
+            Hồ sơ cá nhân
           </Button>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Button variant="ghost" className="w-full justify-start gap-2 px-2 py-1.5 text-sm" onClick={()=> setTheme(theme === 'dark' ? 'light' : 'dark')}>
-            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            Đổi giao diện ({theme === 'dark' ? 'Sáng' : 'Tối'})
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start gap-3 px-3 py-2.5 text-sm font-medium rounded-lg hover:bg-sidebar-accent/70" 
+            onClick={()=> setTheme(theme === 'dark' ? 'light' : 'dark')}
+          >
+            <div className="h-8 w-8 rounded-lg bg-warning/10 flex items-center justify-center text-warning">
+              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </div>
+            {theme === 'dark' ? 'Chế độ sáng' : 'Chế độ tối'}
           </Button>
         </DropdownMenuItem>
+        <DropdownMenuSeparator className="h-px my-2 bg-border/50" />
         <DropdownMenuItem asChild>
-          <Button variant="ghost" className="w-full justify-start gap-2 px-2 py-1.5 text-sm text-red-600 hover:text-red-700" onClick={()=> signOut().catch(()=>{})}>
-            <LogOut className="h-4 w-4" />
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start gap-3 px-3 py-2.5 text-sm font-medium rounded-lg text-destructive hover:bg-destructive/10 hover:text-destructive" 
+            onClick={()=> signOut().catch(()=>{})}
+          >
+            <div className="h-8 w-8 rounded-lg bg-destructive/10 flex items-center justify-center">
+              <LogOut className="h-4 w-4" />
+            </div>
             Đăng xuất
           </Button>
         </DropdownMenuItem>

@@ -1,4 +1,6 @@
+import { StatCard } from "@/shared/components/StatCard"
 import { Progress } from "@/shared/components/ui/progress"
+import { cn } from "@/shared/lib/utils"
 
 interface ProgressSummarySectionProps {
   total: number;
@@ -7,6 +9,7 @@ interface ProgressSummarySectionProps {
   masteredPct: number;
   learningPct: number;
   due: number | undefined;
+  className?: string;
 }
 
 export function ProgressSummarySection({
@@ -15,34 +18,38 @@ export function ProgressSummarySection({
   learningVal,
   masteredPct,
   learningPct,
-  due
+  due,
+  className
 }: ProgressSummarySectionProps) {
   return (
-    <div className="space-y-4">
-      <div className="grid md:grid-cols-4 gap-4">
-        <div className="p-3 border rounded-md">
-          <div className="text-xs text-muted-foreground">Tổng</div>
-          <div className="text-xl font-semibold">{total}</div>
-        </div>
-        <div className="p-3 border rounded-md">
-          <div className="text-xs text-muted-foreground">Đã thuộc</div>
-          <div className="text-xl font-semibold">{masteredVal}</div>
-        </div>
-        <div className="p-3 border rounded-md">
-          <div className="text-xs text-muted-foreground">Đang học</div>
-          <div className="text-xl font-semibold">{learningVal}</div>
-        </div>
-        <div className="p-3 border rounded-md">
-          <div className="text-xs text-muted-foreground">Còn hạn (Due)</div>
-          <div className="text-xl font-semibold">{due ?? 0}</div>
-        </div>
-      </div>
-      <div>
-        <Progress value={masteredPct} />
-        <div className="flex justify-between text-xs mt-1 text-muted-foreground">
-          <span>{masteredPct}% đã thuộc</span>
-          <span>{learningPct}% đang học</span>
-        </div>
+    <div className={cn("space-y-4", className)}>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Tổng thẻ" value={total} helper="Tổng số thẻ trong thư viện" />
+        <StatCard
+          label="Đã thuộc"
+          value={masteredVal}
+          helper={
+            <div className="space-y-1">
+              <Progress value={masteredPct} className="h-2" />
+              <span>{masteredPct}% đã thuộc</span>
+            </div>
+          }
+        />
+        <StatCard
+          label="Đang học"
+          value={learningVal}
+          helper={
+            <div className="space-y-1">
+              <Progress value={learningPct} className="h-2" />
+              <span>{learningPct}% đang học</span>
+            </div>
+          }
+        />
+        <StatCard
+          label="Sắp đến hạn"
+          value={due ?? 0}
+          helper="Số thẻ cần ôn luyện trong hôm nay"
+        />
       </div>
     </div>
   );

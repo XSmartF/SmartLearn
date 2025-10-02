@@ -4,12 +4,13 @@ import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/shared/components/ui/card'
 import { Separator } from '@/shared/components/ui/separator'
-import { User as UserIcon, Loader2, Trophy } from 'lucide-react'
+import { User as UserIcon, Trophy } from 'lucide-react'
 import { Avatar } from '@/shared/components/ui/avatar'
 // Đã bỏ phần Giao diện (theme) theo yêu cầu
 import { Progress } from '@/shared/components/ui/progress'
 import { useAchievements } from '@/shared/hooks/useAchievements'
 import { H1 } from '@/shared/components/ui/typography'
+import Loader from '@/shared/components/ui/loader'
 
 interface User {
   displayName?: string;
@@ -83,7 +84,7 @@ export default function Profile() {
             <Separator />
             <div className="flex items-center gap-4">
               <Button disabled={saving} onClick={handleSave} className="min-w-32">
-                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {saving && <div className="mr-2 scale-50"><Loader size="sm" /></div>}
                 Lưu thay đổi
               </Button>
               {message && <span className="text-xs text-muted-foreground">{message}</span>}
@@ -124,7 +125,7 @@ export default function Profile() {
               <CardTitle className="flex items-center gap-2"><Trophy className="h-5 w-5 text-yellow-500" />Thành tích</CardTitle>
               <CardDescription>Tiến độ học tập tổng hợp (client-side).</CardDescription>
             </div>
-            <Button variant="outline" size="sm" onClick={refresh} disabled={loadingAch}>{loadingAch ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Làm mới'}</Button>
+            <Button variant="outline" size="sm" onClick={refresh} disabled={loadingAch}>{loadingAch ? <div className="scale-50"><Loader size="sm" /></div> : 'Làm mới'}</Button>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
             {achievements.map(a => (

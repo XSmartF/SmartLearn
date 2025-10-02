@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Button } from "@/shared/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/shared/components/ui/dialog'
 import { Input } from '@/shared/components/ui/input'
@@ -10,9 +10,10 @@ import type { LibraryVisibility } from '@/shared/lib/models'
 
 interface CreateLibraryDialogProps {
   onCreateLibrary: (title: string, description: string, visibility: LibraryVisibility) => Promise<void>
+  trigger?: ReactNode;
 }
 
-export default function CreateLibraryDialog({ onCreateLibrary }: CreateLibraryDialogProps) {
+export default function CreateLibraryDialog({ onCreateLibrary, trigger }: CreateLibraryDialogProps) {
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -40,10 +41,12 @@ export default function CreateLibraryDialog({ onCreateLibrary }: CreateLibraryDi
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Tạo thư viện
-        </Button>
+        {trigger ?? (
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Tạo thư viện
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>

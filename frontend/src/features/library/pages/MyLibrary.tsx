@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useDeferredValue } from 'react'
-import { H1, H3 } from '@/shared/components/ui/typography';
+import { H3 } from '@/shared/components/ui/typography';
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { toast } from 'sonner'
@@ -26,6 +26,7 @@ import { FlashcardCard, FlashcardListItem } from '../components'
 import LibraryFilters from '../components/LibraryFilters'
 import LibraryOverviewStats from '../components/LibraryOverviewStats'
 import CreateLibraryDialog from '../components/CreateLibraryDialog'
+import { PageHeader } from '@/shared/components/PageHeader'
 
 export default function MyLibrary() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
@@ -158,14 +159,24 @@ export default function MyLibrary() {
         : 'Đã xảy ra lỗi'
   ) : '';
 
+  const headerDescription = useMemo(() => {
+    if (!libraries.length && !shared.length) {
+      return 'Bắt đầu bằng cách tạo bộ flashcard đầu tiên để xây dựng nền tảng kiến thức của bạn.';
+    }
+    if (!shared.length) {
+      return `Bạn đang quản lý ${libraries.length} bộ flashcard với ${favorites.length} bộ yêu thích.`;
+    }
+    return `Bạn đang quản lý ${libraries.length} bộ flashcard cá nhân và cộng tác trên ${shared.length} bộ được chia sẻ.`;
+  }, [favorites.length, libraries.length, shared.length]);
+
   return (
     <div className="space-y-6 sm:space-y-8">
-      <div className="text-center sm:text-left">
-        <H1 className="text-3xl sm:text-4xl font-bold mb-2">Thư viện của tôi</H1>
-        <p className="text-muted-foreground text-base sm:text-lg">
-          Quản lý và theo dõi tiến độ học flashcard của bạn
-        </p>
-      </div>
+      <PageHeader
+        title="Thư viện của tôi"
+        eyebrow="Thư viện cá nhân"
+        description={headerDescription}
+        icon={<BookOpen className="h-6 w-6 text-primary" />}
+      />
 
       {/* Stats */}
       <LibraryOverviewStats
@@ -176,7 +187,7 @@ export default function MyLibrary() {
       />
 
       {/* Controls */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 p-6 bg-muted/20 rounded-xl">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 p-6 bg-muted/20 rounded-md">
         <LibraryFilters
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}

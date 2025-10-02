@@ -42,7 +42,7 @@ export function UnifiedCards({
     }
   }
   const allSelected = cards.length>0 && selectedIds.length===cards.length;
-  if (!cards.length) return <div className="text-sm text-muted-foreground border rounded-md p-4">Chưa có thẻ.</div>;
+  if (!cards.length) return <div className="text-sm text-muted-foreground border rounded-lg p-8 text-center">Chưa có thẻ.</div>;
   if (viewMode === 'list') {
     return (
       <div className="overflow-auto border rounded-md">
@@ -66,16 +66,16 @@ export function UnifiedCards({
               const st = map.get(c.id);
               return (
                 <TableRow key={c.id} className="hover:bg-muted/30">
-                  <TableCell className="p-2"><Checkbox checked={selectedIds.includes(c.id)} onCheckedChange={()=>onToggleSelect(c.id)} aria-label="Chọn thẻ" /></TableCell>
-                  <TableCell className="p-2 truncate" title={c.front}>{c.front}</TableCell>
-                  <TableCell className="p-2 truncate" title={c.back}>{c.back}</TableCell>
-                  <TableCell className="p-2 text-xs">{c.domain || '-'}</TableCell>
-                  <TableCell className="p-2 text-xs">{c.difficulty || '-'}</TableCell>
-                  <TableCell className="p-2 text-center">{st?.mastery ?? '-'}</TableCell>
-                  <TableCell className="p-2 text-center">{st?.seenCount ?? '-'}</TableCell>
-                  <TableCell className="p-2 text-center">{st?.wrongCount ?? '-'}</TableCell>
-                  <TableCell className="p-2 text-center">{st?.nextDue ?? '-'}</TableCell>
-                  <TableCell className="p-2 text-right space-x-2">
+                  <TableCell className="p-3"><Checkbox checked={selectedIds.includes(c.id)} onCheckedChange={()=>onToggleSelect(c.id)} aria-label="Chọn thẻ" /></TableCell>
+                  <TableCell className="p-3 truncate" title={c.front}>{c.front}</TableCell>
+                  <TableCell className="p-3 truncate" title={c.back}>{c.back}</TableCell>
+                  <TableCell className="p-3 text-xs">{c.domain || '-'}</TableCell>
+                  <TableCell className="p-3 text-xs">{c.difficulty || '-'}</TableCell>
+                  <TableCell className="p-3 text-center">{st?.mastery ?? '-'}</TableCell>
+                  <TableCell className="p-3 text-center">{st?.seenCount ?? '-'}</TableCell>
+                  <TableCell className="p-3 text-center">{st?.wrongCount ?? '-'}</TableCell>
+                  <TableCell className="p-3 text-center">{st?.nextDue ?? '-'}</TableCell>
+                  <TableCell className="p-3 text-right space-x-2">
                     {speakQuestion && <Button variant="ghost" size="sm" onClick={() => speakQuestion(c.front, readLanguage)}><Volume2 className="h-4 w-4" /></Button>}
                     <Button variant="outline" size="sm" onClick={()=>onEdit(c)} disabled={!canModify}>Sửa</Button>
                     <Button variant="destructive" size="sm" onClick={()=>onDeleteSingle(c.id)} disabled={!canModify}>Xóa</Button>
@@ -90,13 +90,13 @@ export function UnifiedCards({
   }
   // Grid mode
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-stretch">
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-stretch">
       {cards.map(c=>{
         const st = map.get(c.id);
         const selected = selectedIds.includes(c.id);
         return (
           <div key={c.id} className="h-full">
-            <div className={`border rounded-lg p-4 flex flex-col gap-3 relative group bg-card hover:shadow-md transition-all duration-200 h-full ${selected? 'ring-2 ring-primary shadow-md':''}`}>
+            <div className={`border rounded-lg p-5 flex flex-col gap-4 relative group bg-card hover:shadow-md transition-all duration-200 h-full ${selected? 'ring-2 ring-primary shadow-md':''}`}>
               <div className="flex items-start gap-3">
                 <Checkbox className="mt-1 flex-shrink-0" checked={selected} onCheckedChange={()=>onToggleSelect(c.id)} aria-label="Chọn thẻ" />
                 <div className="flex-1 min-w-0">

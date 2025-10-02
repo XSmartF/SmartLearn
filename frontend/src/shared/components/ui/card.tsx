@@ -11,7 +11,8 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
         ref={ref}
         data-slot="card"
         className={cn(
-          "bg-card text-card-foreground flex flex-col gap-6 rounded-2xl border border-border/50 py-6 shadow-lg shadow-black/5 backdrop-blur-sm transition-all duration-200 hover:shadow-xl hover:shadow-black/10",
+          "bg-card text-card-foreground flex flex-col gap-6 rounded-lg border border-border/30 py-6 shadow-[var(--neu-shadow)] backdrop-blur-sm transition-all duration-300 hover:shadow-[var(--neu-shadow-lg)] hover:-translate-y-1",
+          "dark:border-white/5 dark:shadow-[6px_6px_16px_rgba(0,0,0,0.5),-3px_-3px_12px_rgba(255,255,255,0.04)] dark:hover:shadow-[10px_10px_24px_rgba(0,0,0,0.6),-4px_-4px_16px_rgba(255,255,255,0.05)]",
           className
         )}
         {...props}
