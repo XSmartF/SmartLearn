@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { loadProgressSummary, type ProgressSummaryLite } from '@/shared/lib/firebaseProgressService';
+import { loadProgressSummary, type ProgressSummaryLite } from '@/shared/lib/firebase';
 import { useAllLibraries } from './useLibraries';
 import type { QueryResult } from '@/shared/types/query';
 

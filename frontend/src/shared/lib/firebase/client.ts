@@ -1,4 +1,4 @@
-// Firebase initialization
+// Firebase initialization utilities
 // Expect environment variables (create .env file):
 // VITE_FIREBASE_API_KEY=...
 // VITE_FIREBASE_AUTH_DOMAIN=...
@@ -47,15 +47,15 @@ export function getDb(): Firestore {
     // Attempt persistent multi-tab cache
     dbInstance = initializeFirestore(app, {
       localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
-    })
+    });
   } catch (e) {
     // If Firestore already initialized elsewhere (different options) or persistence unsupported
-    console.warn('[Firestore] Persistent local cache init failed; using existing or memory instance', e)
+    console.warn('[Firestore] Persistent local cache init failed; using existing or memory instance', e);
     try {
-      dbInstance = getFirestore(app)
+      dbInstance = getFirestore(app);
     } catch {
       // Absolute fallback: re-init with no special options
-      dbInstance = initializeFirestore(app, {})
+      dbInstance = initializeFirestore(app, {});
     }
   }
   return dbInstance;
@@ -65,6 +65,6 @@ export function getDb(): Firestore {
 export function preloadFirestore() {
   // Defer so it doesn't block current event loop / render.
   setTimeout(() => {
-    try { getDb() } catch { /* ignore */ }
-  }, 0)
+    try { getDb(); } catch { /* ignore */ }
+  }, 0);
 }

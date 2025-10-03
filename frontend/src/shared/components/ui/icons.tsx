@@ -79,3 +79,21 @@ export function SuccessIcon({ className }: IconProps) {
     </svg>
   )
 }
+
+export function ShieldCheckIcon({ className }: IconProps) {
+  return (
+    <svg
+      className={cn("w-4 h-4", className)}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M9 12l2 2 4-4m1-6l-6-2-6 2v7c0 5.25 3.5 10.74 6 12 2.5-1.26 6-6.75 6-12V4z"
+      />
+    </svg>
+  );
+}

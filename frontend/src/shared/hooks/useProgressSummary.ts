@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { loadProgressSummary, listenProgressSummary, type ProgressSummaryLite } from '@/shared/lib/firebaseProgressService';
+import { loadProgressSummary, listenProgressSummary, type ProgressSummaryLite } from '@/shared/lib/firebase';
 
 export function useProgressSummary(libraryId?: string) {
   const [summary, setSummary] = useState<ProgressSummaryLite | null>(null);

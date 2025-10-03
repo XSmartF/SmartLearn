@@ -2,14 +2,14 @@
 // but internally delegate to repository instances for maintainability.
 // This allows incremental migration: existing imports keep working.
 
-import type { LibraryMeta, LibraryVisibility, Card as EngineCard, ShareRole, LibraryShare } from './models';
-import { cardRepository } from './repositories/CardRepository';
-import { shareRepository } from './repositories/ShareRepository';
-import { userRepository } from './repositories/UserRepository';
-import type { NotificationDoc, AccessRequestDoc, UserFavoriteRecord } from './repositories/UserRepository';
-import { progressRepository } from './repositories/ProgressRepository';
-import type { UserLibraryProgressDoc } from './repositories/ProgressRepository';
-import { cached } from './cache';
+import type { LibraryMeta, LibraryVisibility, Card as EngineCard, ShareRole, LibraryShare } from '@/shared/lib/models';
+import { cardRepository } from '@/shared/lib/repositories/CardRepository';
+import { shareRepository } from '@/shared/lib/repositories/ShareRepository';
+import { userRepository } from '@/shared/lib/repositories/UserRepository';
+import type { NotificationDoc, AccessRequestDoc, UserFavoriteRecord } from '@/shared/lib/repositories/UserRepository';
+import { progressRepository } from '@/shared/lib/repositories/ProgressRepository';
+import type { UserLibraryProgressDoc } from '@/shared/lib/repositories/ProgressRepository';
+import { cached } from '@/shared/lib/cache';
 
 // Re-export legacy input types (mirror original interfaces)
 export type { UserFavoriteRecord, NotificationDoc, AccessRequestDoc, UserLibraryProgressDoc };
@@ -18,38 +18,38 @@ export interface CreateCardInput { libraryId: string; front: string; back: strin
 
 // Library CRUD & meta
 export const createLibrary = async (input: CreateLibraryInput) => {
-  const { libraryRepository } = await import('./repositories/LibraryRepository');
+  const { libraryRepository } = await import('@/shared/lib/repositories/LibraryRepository');
   return libraryRepository.createLibrary(input);
 };
 export const updateLibrary = async (id: string, data: { title?: string; description?: string; visibility?: LibraryVisibility; tags?: string[]; subject?: string; difficulty?: string }) => {
-  const { libraryRepository } = await import('./repositories/LibraryRepository');
+  const { libraryRepository } = await import('@/shared/lib/repositories/LibraryRepository');
   return libraryRepository.updateLibrary(id, data);
 };
 export const getLibraryMeta = async (id: string) => {
-  const { libraryRepository } = await import('./repositories/LibraryRepository');
+  const { libraryRepository } = await import('@/shared/lib/repositories/LibraryRepository');
   return libraryRepository.getLibraryMeta(id);
 };
 export const recalcLibraryCardCount = async (libraryId: string) => {
-  const { libraryRepository } = await import('./repositories/LibraryRepository');
+  const { libraryRepository } = await import('@/shared/lib/repositories/LibraryRepository');
   return libraryRepository.recalcLibraryCardCount(libraryId);
 };
 export const listenUserLibraries = (cb: (libs: LibraryMeta[]) => void) => {
-  import('./repositories/LibraryRepository').then(({ libraryRepository }) => {
+  import('@/shared/lib/repositories/LibraryRepository').then(({ libraryRepository }) => {
     libraryRepository.listenUserLibraries(cb);
   });
 };
 export const fetchLibrariesByIds = async (ids: string[]) => {
-  const { libraryRepository } = await import('./repositories/LibraryRepository');
+  const { libraryRepository } = await import('@/shared/lib/repositories/LibraryRepository');
   return libraryRepository.fetchLibrariesByIds(ids);
 };
 
 // Cards
 export const createCard = async (input: CreateCardInput) => {
-  const { libraryRepository } = await import('./repositories/LibraryRepository');
+  const { libraryRepository } = await import('@/shared/lib/repositories/LibraryRepository');
   return libraryRepository.createCard(input);
 };
 export const createCardsBulk = async (libraryId: string, items: { front: string; back: string; domain?: string }[]) => {
-  const { libraryRepository } = await import('./repositories/LibraryRepository');
+  const { libraryRepository } = await import('@/shared/lib/repositories/LibraryRepository');
   return libraryRepository.createCardsBulk(libraryId, items);
 };
 export const listCards = (libraryId: string) => cardRepository.listCards(libraryId);
@@ -70,7 +70,7 @@ export const listenCurrentUserShareForLibrary = (libraryId: string, cb: (share: 
 // Combined meta + cards (retain legacy helper) using existing cache keys
 export async function fetchLibraryWithCards(libraryId: string, opts: { preferCache?: boolean } = {}): Promise<{ meta: LibraryMeta | null; cards: EngineCard[] }> {
   const metaPromise = cached([`library:${libraryId}`], async () => {
-    const { libraryRepository } = await import('./repositories/LibraryRepository');
+    const { libraryRepository } = await import('@/shared/lib/repositories/LibraryRepository');
     return libraryRepository.getLibraryMeta(libraryId);
   });
   const listFn = opts.preferCache ? listCardsPreferCache : listCards;
@@ -81,7 +81,7 @@ export async function fetchLibraryWithCards(libraryId: string, opts: { preferCac
 
 export async function fetchLibraryMetaAndShares(libraryId: string): Promise<{ meta: LibraryMeta | null; shares: LibraryShare[] }> {
   const meta = await cached([`library:${libraryId}`], async () => {
-    const { libraryRepository } = await import('./repositories/LibraryRepository');
+    const { libraryRepository } = await import('@/shared/lib/repositories/LibraryRepository');
     return libraryRepository.getLibraryMeta(libraryId);
   });
   if(!meta) return { meta: null, shares: [] };

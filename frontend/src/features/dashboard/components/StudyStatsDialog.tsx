@@ -6,7 +6,7 @@ import { Progress } from "@/shared/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import { BarChart3, TrendingUp, Calendar, Target, BookOpen, Clock } from "lucide-react";
 import { Loader } from '@/shared/components/ui/loader';
-import { loadProgressSummary, type ProgressSummaryLite } from '@/shared/lib/firebaseProgressService';
+import { loadProgressSummary, type ProgressSummaryLite } from '@/shared/lib/firebase';
 import { useUserLibraries } from '@/shared/hooks/useLibraries';
 
 interface StudyStatsDialogProps {

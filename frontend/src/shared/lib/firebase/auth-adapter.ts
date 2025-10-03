@@ -1,10 +1,10 @@
 // Convert to on-demand dynamic imports so auth bundle only loads when adapter used
 import type { User as FirebaseUser, AuthProvider } from 'firebase/auth';
 import type { Firestore } from 'firebase/firestore';
-import type { AuthAdapter } from './auth';
-import type { UserProfile } from './models';
-import { getFirebaseAuth, getDb } from './firebaseClient';
-import { queueSetDoc } from './firestoreQueue';
+import type { AuthAdapter } from '@/shared/lib/auth';
+import type { UserProfile } from '@/shared/lib/models';
+import { getFirebaseAuth, getDb } from '@/shared/lib/firebase/client';
+import { queueSetDoc } from '@/shared/lib/firestoreQueue';
 import {
   GoogleAuthProvider,
   signInWithEmailAndPassword,
@@ -43,7 +43,7 @@ export class FirebaseAuthAdapter implements AuthAdapter {
   private mapUser(u: FirebaseUser): UserProfile {
     return {
       id: u.uid,
-  email: u.email ?? '',
+      email: u.email ?? '',
       displayName: u.displayName ?? undefined,
       avatarUrl: u.photoURL ?? undefined,
       createdAt: u.metadata?.creationTime ?? new Date().toISOString(),
@@ -72,7 +72,7 @@ export class FirebaseAuthAdapter implements AuthAdapter {
         displayName: displayName ?? null,
         createdAt: '__SERVER_TIMESTAMP__',
         updatedAt: '__SERVER_TIMESTAMP__'
-      })
+      });
     }
     return this.mapUser(cred.user);
   }
@@ -97,17 +97,17 @@ export class FirebaseAuthAdapter implements AuthAdapter {
         displayName: cred.user.displayName ?? null,
         avatarUrl: cred.user.photoURL ?? null,
         updatedAt: '__SERVER_TIMESTAMP__'
-      }, true)
+      }, true);
     }
     return this.mapUser(cred.user);
   }
 
   onAuthStateChanged(cb: (user: UserProfile | null) => void): () => void {
     // Keep static import small by dynamically loading listener only when first subscribed
-  let unsub: (() => void) | null = null
-  ;(async () => {
-      unsub = onAuthStateChanged(this.auth, (u) => cb(u ? this.mapUser(u) : null))
-    })()
-  return () => { if (unsub) { unsub() } }
+    let unsub: (() => void) | null = null;
+    (async () => {
+      unsub = onAuthStateChanged(this.auth, (u) => cb(u ? this.mapUser(u) : null));
+    })();
+    return () => { if (unsub) { unsub(); } };
   }
 }

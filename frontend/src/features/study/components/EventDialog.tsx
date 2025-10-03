@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from "@/shared/components/ui/dialog";
 import { useAllLibraries } from "@/shared/hooks/useLibraries";
-import { updateStudyEventStatus } from "@/shared/lib/firebaseCalendarService";
+import { updateStudyEventStatus } from "@/shared/lib/firebase";
 import { getStatusColor, getStatusText, updateEventStatus } from "../utils/calendarUtils";
 import type { StudyEvent, CreateStudyEventInput } from '../types/calendar';
 

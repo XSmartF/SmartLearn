@@ -72,8 +72,9 @@ export function QuestionCard({
     setJustRetriedAfterDontKnow(false)
   }, [currentQuestion])
 
-  const activeDifficultyChoice = submittingChoice ?? difficultyMeta?.lastChoice ?? null
   const isRatingRequired = difficultyMeta?.shouldPrompt ?? false
+  const activeDifficultyChoice = submittingChoice ?? (isRatingRequired ? null : difficultyMeta?.lastChoice ?? null)
+  const isLocked = !isRatingRequired && Boolean(difficultyMeta?.lastChoice)
   const difficultyPalette: Record<ReviewDifficultyChoice, { idle: string; active: string }> = {
     veryHard: {
       idle: 'border-destructive/50 text-destructive hover:border-destructive/70 hover:bg-destructive/10',
@@ -457,43 +458,78 @@ export function QuestionCard({
               </Badge>
             )}
           </div>
-          {isRatingRequired && !activeDifficultyChoice && (
+          {isRatingRequired && (
             <p className="mt-3 flex items-center gap-2 text-sm text-warning">
               <AlertTriangle className="h-4 w-4 text-warning" />
-              Thẻ này cần được đánh giá để SmartLearn sắp lịch ôn tập chính xác.
+              Thẻ này cần được đánh giá lại sau khi bạn trả lời sai nhiều lần. Vui lòng chọn lại mức độ phù hợp trước khi tiếp tục.
             </p>
           )}
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
-            {difficultyChoices.map(option => {
-              const isActive = activeDifficultyChoice === option.value
-              const isSubmitting = submittingChoice === option.value
-              const isDisabled = Boolean(submittingChoice && submittingChoice !== option.value)
-              const palette = difficultyPalette[option.value]
-              return (
-                <Button
-                  key={option.value}
-                  type="button"
-                  variant="outline"
-                  disabled={isDisabled}
-                  onClick={() => onDifficultyChoice(option.value)}
-                  className={cn(
-                    'h-auto justify-start py-3 px-4 text-left transition-all duration-200',
-                    isActive ? palette.active : palette.idle,
-                    isSubmitting && 'opacity-70 cursor-wait'
-                  )}
-                >
-                  <div className="flex flex-col items-start gap-1">
-                    <span className="text-sm font-semibold">{isSubmitting ? 'Đang lưu...' : option.label}</span>
-                    <span className="text-xs text-muted-foreground break-words">{option.description}</span>
-                  </div>
-                </Button>
-              )
-            })}
+          {isRatingRequired && difficultyMeta?.lastChoice && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Lần đánh giá gần nhất của bạn: {
+                (() => {
+                  const found = difficultyChoices.find(option => option.value === difficultyMeta.lastChoice)
+                  return found ? found.label : difficultyMeta.lastChoice
+                })()
+              }.
+            </p>
+          )}
+          <div
+            className={cn(
+              'mt-4 rounded-xl border p-4 transition-all duration-200',
+              isRatingRequired
+                ? 'border-warning/50 bg-warning/5 ring-1 ring-warning/40'
+                : activeDifficultyChoice
+                ? 'border-success/50 bg-success/5 ring-1 ring-success/30'
+                : 'border-border/40 bg-muted/10'
+            )}
+          >
+            <div className="grid gap-3 md:grid-cols-2">
+              {difficultyChoices.map(option => {
+                const isActive = activeDifficultyChoice === option.value
+                const isSubmitting = submittingChoice === option.value
+                const isDisabled = isLocked || Boolean(submittingChoice && submittingChoice !== option.value)
+                const palette = difficultyPalette[option.value]
+                return (
+                  <Button
+                    key={option.value}
+                    type="button"
+                    variant="outline"
+                    disabled={isDisabled}
+                    onClick={() => {
+                      if (isLocked) return
+                      onDifficultyChoice(option.value)
+                    }}
+                    className={cn(
+                      'h-auto justify-start py-3 px-4 text-left transition-all duration-200',
+                      isActive ? palette.active : palette.idle,
+                      isSubmitting && 'opacity-70 cursor-wait'
+                    )}
+                  >
+                    <div className="flex flex-col items-start gap-1">
+                      <span className="text-sm font-semibold">{isSubmitting ? 'Đang lưu...' : option.label}</span>
+                      <span className="text-xs text-muted-foreground break-words">{option.description}</span>
+                    </div>
+                  </Button>
+                )
+              })}
+            </div>
           </div>
           {isRatingRequired && !activeDifficultyChoice && (
             <p className="mt-3 text-xs text-warning flex items-center gap-1">
               <Sparkles className="h-3 w-3" />
               Hãy chọn một lựa chọn đánh giá để tiếp tục học hiệu quả hơn.
+            </p>
+          )}
+          {!isRatingRequired && activeDifficultyChoice && (
+            <p className="mt-3 text-xs text-success flex items-center gap-1">
+              <Sparkles className="h-3 w-3" />
+              SmartLearn đã lưu đánh giá của bạn. Khu vực này được đánh dấu để bạn dễ nhận biết.
+            </p>
+          )}
+          {isLocked && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Bạn chỉ có thể thay đổi mức độ khi hệ thống yêu cầu đánh giá lại.
             </p>
           )}
         </div>

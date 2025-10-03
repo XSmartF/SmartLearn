@@ -10,7 +10,7 @@ import {
   onSnapshot,
   serverTimestamp
 } from 'firebase/firestore';
-import { getDb, getFirebaseAuth } from '@/shared/lib/firebaseClient';
+import { getDb, getFirebaseAuth } from '@/shared/lib/firebase/client';
 import type { StudyEvent, CreateStudyEventInput } from '../../../features/study/types/calendar';
 
 const COLLECTION = 'calendar_events';

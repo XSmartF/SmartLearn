@@ -1,4 +1,3 @@
-import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
@@ -6,16 +5,8 @@ import { H1 } from '@/shared/components/ui/typography';
 import { ArrowLeft, RotateCcw, Clock, Target, Trophy, XCircle, HelpCircle } from 'lucide-react';
 import { Loader } from '@/shared/components/ui/loader';
 import { useNavigate } from 'react-router-dom';
-import {
-  createMemoryGame,
-  flipCard,
-  resetFlippedCards,
-  resetGame,
-  updateTime,
-  type MemoryGameState,
-  type Card as GameCard
-} from '../utils/memoryGame';
 import { useAllGameCards } from '../hooks/useGameCards';
+import { useMemoryGame, type MemoryCard } from '../hooks/useMemoryGame';
 
 interface MemoryGameProps {
   difficulty?: 'easy' | 'medium' | 'hard';
@@ -24,53 +15,14 @@ interface MemoryGameProps {
 export default function MemoryGame({ difficulty = 'easy' }: MemoryGameProps) {
   const navigate = useNavigate();
   const { cards, loading: cardsLoading, error: cardsError } = useAllGameCards();
-  const [gameState, setGameState] = useState<MemoryGameState | null>(null);
-
-  // Initialize game when cards are loaded
-  useEffect(() => {
-    if (cards.length > 0 && !gameState) {
-      setGameState(createMemoryGame(cards, difficulty));
-    }
-  }, [cards, difficulty, gameState]);
-
-  // Timer effect
-  useEffect(() => {
-    if (!gameState || gameState.gameWon) return;
-
-    const interval = setInterval(() => {
-      if (gameState.gameStarted) {
-        setGameState(prev => prev ? updateTime(prev, prev.timeElapsed + 1) : prev);
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [gameState]);
-
-  // Handle card flip with delay for non-matches
-  const handleCardClick = useCallback((cardId: number) => {
-    if (!gameState) return;
-
-    const newState = flipCard(gameState, cardId);
-    setGameState(newState);
-
-    // If two cards are flipped and don't match, flip them back after delay
-    if (newState.flippedCards.length === 2) {
-      const [firstId, secondId] = newState.flippedCards;
-      const firstCard = newState.cards.find(c => c.id === firstId);
-      const secondCard = newState.cards.find(c => c.id === secondId);
-
-      if (firstCard && secondCard && firstCard.value !== secondCard.value) {
-        setTimeout(() => {
-          setGameState(prev => prev ? resetFlippedCards(prev) : prev);
-        }, 1000);
-      }
-    }
-  }, [gameState]);
-
-  const handleReset = () => {
-    if (!cards.length) return;
-    setGameState(resetGame(cards, difficulty));
-  };
+  const {
+    gameState,
+    difficultyLabel,
+    gridClassName,
+    formatTime,
+    handleCardClick,
+    handleReset,
+  } = useMemoryGame({ cards, difficulty });
 
   // Loading state
   if (cardsLoading) {
@@ -124,28 +76,6 @@ export default function MemoryGame({ difficulty = 'easy' }: MemoryGameProps) {
 
   if (!gameState) return null;
 
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const getDifficultyLabel = () => {
-    switch (difficulty) {
-      case 'easy': return 'Dễ';
-      case 'medium': return 'Trung bình';
-      case 'hard': return 'Khó';
-      default: return 'Dễ';
-    }
-  };
-
-  const getGridCols = () => {
-    const totalCards = gameState.cards.length;
-    if (totalCards <= 12) return 'grid-cols-4';
-    if (totalCards <= 16) return 'grid-cols-4';
-    return 'grid-cols-6';
-  };
-
   return (
     <div className="container mx-auto p-6 max-w-4xl">
       {/* Header */}
@@ -161,7 +91,7 @@ export default function MemoryGame({ difficulty = 'easy' }: MemoryGameProps) {
           </Button>
           <H1 className="mb-0">Trò chơi ghi nhớ</H1>
         </div>
-        <Badge variant="secondary">{getDifficultyLabel()}</Badge>
+        <Badge variant="secondary">{difficultyLabel}</Badge>
       </div>
 
       {/* Game Stats */}
@@ -201,8 +131,8 @@ export default function MemoryGame({ difficulty = 'easy' }: MemoryGameProps) {
       {/* Game Board */}
       <Card className="mb-6">
         <CardContent className="p-6">
-          <div className={`grid ${getGridCols()} gap-3 max-w-2xl mx-auto`}>
-            {gameState.cards.map((card: GameCard) => (
+          <div className={`grid ${gridClassName} gap-3 max-w-2xl mx-auto`}>
+            {gameState.cards.map((card: MemoryCard) => (
               <Button
                 key={card.id}
                 variant="ghost"

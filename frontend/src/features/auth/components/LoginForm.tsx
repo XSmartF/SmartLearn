@@ -1,102 +1,142 @@
-import { useState } from 'react';
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
-import { Loader } from '@/shared/components/ui/loader';
-import { ErrorDisplay } from '@/shared/components/ui/error-display';
-import { EmailIcon, LockIcon } from '@/shared/components/ui/icons';
+import { Fragment } from "react";
+import { Button } from "@/shared/components/ui/button";
+import { ErrorDisplay } from "@/shared/components/ui/error-display";
+import { EmailIcon, LockIcon } from "@/shared/components/ui/icons";
+import { Input } from "@/shared/components/ui/input";
+import { Loader } from "@/shared/components/ui/loader";
+import { Progress } from "@/shared/components/ui/progress";
+import { Switch } from "@/shared/components/ui/switch";
+import type { LoginCredentials } from "@/features/auth/types";
 
 interface LoginFormProps {
-  onSubmit: (data: { email: string; password: string }) => Promise<void>;
+  values: LoginCredentials;
+  onFieldChange: (field: keyof LoginCredentials, value: string) => void;
+  onSubmit: () => Promise<void>;
   onGoogleSignIn: () => Promise<void>;
-  loading: boolean;
+  isSubmitting: boolean;
   error: string | null;
 }
 
-export default function LoginForm({ onSubmit, onGoogleSignIn, loading, error }: LoginFormProps) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await onSubmit({ email, password });
+export default function LoginForm({
+  values,
+  onFieldChange,
+  onSubmit,
+  onGoogleSignIn,
+  isSubmitting,
+  error
+}: LoginFormProps) {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    await onSubmit();
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700 flex items-center">
-          <EmailIcon className="mr-2 text-blue-500" />
-          Email
-        </label>
-        <div className="relative">
-          <Input
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            required
-            placeholder="your@email.com"
-            className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-          <EmailIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700 flex items-center">
-          <LockIcon className="mr-2 text-blue-500" />
-          Mật khẩu
-        </label>
-        <div className="relative">
-          <Input
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-            placeholder="••••••••"
-            className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-          <LockIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-        </div>
-      </div>
-      <ErrorDisplay error={error} />
-      <Button
-        type="submit"
-        disabled={loading}
-        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
-      >
-        {loading ? (
-          <div className="flex items-center">
-            <div className="mr-3 scale-50">
-              <Loader size="sm" />
-            </div>
-            Đang xử lý...
-          </div>
-        ) : (
-          <div className="flex items-center">
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-            </svg>
-            Đăng nhập
-          </div>
-        )}
-      </Button>
+    <form onSubmit={handleSubmit} className="space-y-7">
+      <fieldset className="grid gap-5">
+        {[
+          {
+            id: "email",
+            label: "Email",
+            placeholder: "vietanh@smartlearn.vn",
+            type: "email",
+            icon: EmailIcon,
+            helper: "Đăng nhập nhanh bằng tài khoản đã xác thực."
+          },
+          {
+            id: "password",
+            label: "Mật khẩu",
+            placeholder: "Nhập mật khẩu của bạn",
+            type: "password",
+            icon: LockIcon,
+            helper: "Tối thiểu 8 ký tự, nên bao gồm chữ và số."
+          }
+        ].map((field) => {
+          const Icon = field.icon;
+          const value = values[field.id as keyof LoginCredentials];
 
-      <div className="relative my-6">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-gray-300" />
+          return (
+            <Fragment key={field.id}>
+              <label htmlFor={field.id} className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <Icon className="h-4 w-4" />
+                </span>
+                {field.label}
+              </label>
+              <div className="relative">
+                <Input
+                  id={field.id}
+                  type={field.type}
+                  value={value as string}
+                  onChange={(event) => onFieldChange(field.id as keyof LoginCredentials, event.target.value)}
+                  required
+                  placeholder={field.placeholder}
+                  className="peer pl-12 pr-4 py-3 text-[15px] font-medium shadow-[0_12px_30px_-18px_rgba(37,99,235,0.45)] transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary/60"
+                />
+                <Icon className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70 peer-focus-visible:text-primary" />
+              </div>
+              <p className="text-xs text-muted-foreground/80">{field.helper}</p>
+            </Fragment>
+          );
+        })}
+      </fieldset>
+
+      <div className="flex items-center justify-between rounded-2xl border border-dashed border-muted-foreground/20 bg-muted/20 px-4 py-3">
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground/90">Ghi nhớ đăng nhập</p>
+          <p className="text-[11px] text-muted-foreground/70">Áp dụng cho lần đăng nhập tiếp theo trên thiết bị này.</p>
         </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-white px-3 text-gray-500 font-medium">Hoặc</span>
+        <Switch disabled={isSubmitting} label="" />
+      </div>
+
+      <ErrorDisplay error={error} />
+
+      <div className="grid gap-3">
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="relative flex h-12 items-center justify-center gap-3 rounded-2xl bg-gradient-to-br from-primary via-violet-600 to-sky-500 text-base font-semibold shadow-[0_18px_35px_-18px_rgba(56,189,248,0.75)] transition-transform duration-200 hover:translate-y-[-1px]"
+        >
+          {isSubmitting ? (
+            <div className="flex items-center gap-3">
+              <Loader size="sm" />
+              <span>Đang xử lý...</span>
+            </div>
+          ) : (
+            <span className="flex items-center gap-2">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+              </svg>
+              <span>Đăng nhập ngay</span>
+            </span>
+          )}
+        </Button>
+
+        <div className="rounded-2xl border border-border bg-background/80 p-4 backdrop-blur">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>Hoàn thành hồ sơ</span>
+            <span>70%</span>
+          </div>
+          <Progress value={70} className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
+            {/* indicator handled by component */}
+          </Progress>
         </div>
+      </div>
+
+      <div className="relative flex items-center justify-center py-4">
+        <span className="absolute inset-x-6 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+        <span className="relative z-10 bg-white px-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground/70">
+          Hoặc đăng nhập nhanh
+        </span>
       </div>
 
       <Button
         type="button"
         variant="outline"
         onClick={onGoogleSignIn}
-        disabled={loading}
-        className="w-full border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all duration-200 transform hover:scale-105 shadow-sm"
+        disabled={isSubmitting}
+        className="flex h-12 items-center justify-center gap-3 rounded-2xl border border-border bg-white/90 text-sm font-semibold shadow-[0_18px_35px_-20px_rgba(15,23,42,0.4)] backdrop-blur"
       >
-        <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
+        <svg className="h-5 w-5" viewBox="0 0 24 24">
           <path
             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
             fill="#4285F4"
@@ -114,8 +154,12 @@ export default function LoginForm({ onSubmit, onGoogleSignIn, loading, error }: 
             fill="#EA4335"
           />
         </svg>
-        <span className="font-medium">Đăng nhập với Google</span>
+        <span>Đăng nhập với Google</span>
       </Button>
+
+      <p className="text-center text-xs text-muted-foreground/80">
+        Bằng việc tiếp tục, bạn đồng ý với <a href="#" className="font-semibold text-primary underline-offset-4 hover:underline">Điều khoản</a> & <a href="#" className="font-semibold text-primary underline-offset-4 hover:underline">Chính sách bảo mật</a> của SmartLearn.
+      </p>
     </form>
   );
 }

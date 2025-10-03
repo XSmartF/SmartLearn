@@ -1,4 +1,4 @@
-import { getDb, getFirebaseAuth } from '@/shared/lib/firebaseClient';
+import { getDb, getFirebaseAuth } from '@/shared/lib/firebase/client';
 import {
   collection,
   deleteDoc,

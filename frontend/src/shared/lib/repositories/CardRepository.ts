@@ -1,6 +1,6 @@
 // Firestore functions dynamically imported to defer cost.
 // Keep type-only imports if needed in future.
-import { getDb } from '@/shared/lib/firebaseClient';
+import { getDb } from '@/shared/lib/firebase/client';
 import type { Card as EngineCard } from '@/shared/lib/models';
 import { invalidateCache, cached } from '@/shared/lib/cache';
 import {

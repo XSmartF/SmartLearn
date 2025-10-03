@@ -1,11 +1,10 @@
 import { doc, getDoc, serverTimestamp, writeBatch, onSnapshot } from 'firebase/firestore';
-import { getDb } from './firebaseClient';
-import type { SerializedState } from '../../features/study/utils/learnEngine';
-import { getFirebaseAuth } from './firebaseClient';
+import { getDb, getFirebaseAuth } from '@/shared/lib/firebase/client';
+import type { SerializedState } from '@/features/study/utils/learnEngine';
 
 // Collection: progress (doc id: userId__libraryId)
-const COLLECTION = 'progress';
-const db = getDb();
+const PROGRESS_COLLECTION = 'progress';
+const progressDb = getDb();
 
 export interface ProgressDoc {
   userId: string;
@@ -20,7 +19,7 @@ function key(userId: string, libraryId: string) {
 
 export async function loadProgress(libraryId: string): Promise<SerializedState | null> {
   const user = getFirebaseAuth().currentUser; if (!user) return null;
-  const ref = doc(db, COLLECTION, key(user.uid, libraryId));
+  const ref = doc(progressDb, PROGRESS_COLLECTION, key(user.uid, libraryId));
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
   const data = snap.data() as ProgressDoc;
@@ -29,7 +28,7 @@ export async function loadProgress(libraryId: string): Promise<SerializedState |
 
 export async function saveProgress(libraryId: string, engineState: SerializedState) {
   const user = getFirebaseAuth().currentUser; if (!user) throw new Error('Not authenticated');
-  const ref = doc(db, COLLECTION, key(user.uid, libraryId));
+  const ref = doc(progressDb, PROGRESS_COLLECTION, key(user.uid, libraryId));
   // derive lightweight stats for fast dashboard (mastered/learning/due)
   const total = engineState.states.length;
   let mastered = 0; let learning = 0; let due = 0;
@@ -39,7 +38,7 @@ export async function saveProgress(libraryId: string, engineState: SerializedSta
     if (s.mastery >= M) mastered++; else if (s.seenCount > 0) learning++; // simple classification
     if (s.nextDue <= sessionIndex) due++;
   }
-  const summaryRef = doc(db, COLLECTION, key(user.uid, libraryId) + '__summary');
+  const summaryRef = doc(progressDb, PROGRESS_COLLECTION, key(user.uid, libraryId) + '__summary');
   // Load existing summary to determine sessionCount increment logic
   let sessionCount = 1;
   try {
@@ -53,7 +52,7 @@ export async function saveProgress(libraryId: string, engineState: SerializedSta
     }
   } catch { /* ignore */ }
   const accuracyOverall = engineState.asked ? engineState.correct / engineState.asked : 0;
-  const batch = writeBatch(db);
+  const batch = writeBatch(progressDb);
   batch.set(ref, {
     userId: user.uid,
     libraryId,
@@ -81,7 +80,7 @@ export async function saveProgress(libraryId: string, engineState: SerializedSta
 export interface ProgressSummaryLite { total: number; mastered: number; learning: number; due: number; percentMastered: number; accuracyOverall?: number; sessionCount?: number; lastAccessed?: string; updatedAt?: string; }
 export async function loadProgressSummary(libraryId: string): Promise<ProgressSummaryLite | null> {
   const user = getFirebaseAuth().currentUser; if (!user) return null;
-  const ref = doc(db, COLLECTION, key(user.uid, libraryId) + '__summary');
+  const ref = doc(progressDb, PROGRESS_COLLECTION, key(user.uid, libraryId) + '__summary');
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
   const d = snap.data() as Record<string, unknown>;
@@ -116,7 +115,7 @@ export async function loadProgressSummary(libraryId: string): Promise<ProgressSu
 // Realtime listener helper
 export function listenProgressSummary(libraryId: string, cb: (summary: ProgressSummaryLite | null) => void) {
   const user = getFirebaseAuth().currentUser; if (!user) return () => {};
-  const summaryRef = doc(db, COLLECTION, key(user.uid, libraryId) + '__summary');
+  const summaryRef = doc(progressDb, PROGRESS_COLLECTION, key(user.uid, libraryId) + '__summary');
   return onSnapshot(summaryRef, (snap) => {
     if (!snap.exists()) { cb(null); return; }
     const d = snap.data() as Record<string, unknown>;

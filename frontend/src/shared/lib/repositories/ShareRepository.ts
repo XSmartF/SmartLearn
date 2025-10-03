@@ -1,5 +1,5 @@
 // Dynamically import Firestore functions per method.
-import { getDb, getFirebaseAuth } from '@/shared/lib/firebaseClient';
+import { getDb, getFirebaseAuth } from '@/shared/lib/firebase/client';
 import type { ShareRole, LibraryShare } from '@/shared/lib/models';
 import { invalidateCache, cached } from '@/shared/lib/cache';
 import {

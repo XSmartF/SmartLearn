@@ -2,7 +2,7 @@ import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { LibraryMeta } from '@/shared/lib/models';
 import { shareRepository } from '@/shared/lib/repositories/ShareRepository';
 import { userRepository } from '@/shared/lib/repositories/UserRepository';
-import { loadProgressSummary, listenProgressSummary, type ProgressSummaryLite } from '@/shared/lib/firebaseProgressService';
+import { loadProgressSummary, listenProgressSummary, type ProgressSummaryLite } from '@/shared/lib/firebase';
 
 // RTK Query service wrapping Firestore realtime listeners via onCacheEntryAdded.
 export const api = createApi({

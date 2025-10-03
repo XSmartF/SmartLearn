@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/shared/components/ui/button"
 import { CalendarDays, Plus } from "lucide-react"
 import { CalendarGrid, EventDialog, TaskStatusCards } from '../components'
-import { listenUserStudyEvents, createStudyEvent, updateStudyEvent, deleteStudyEvent, updateStudyEventStatus } from '@/shared/lib/firebaseCalendarService'
+import { listenUserStudyEvents, createStudyEvent, updateStudyEvent, deleteStudyEvent, updateStudyEventStatus } from '@/shared/lib/firebase'
 import ConfirmDialog from "@/shared/components/ConfirmDialog"
 import type { StudyEvent, CreateStudyEventInput } from '../types/calendar'
 import { updateEventStatus } from '../utils/calendarUtils'

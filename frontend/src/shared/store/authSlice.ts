@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { UserProfile } from 'firebase/auth';
-import { FirebaseAuthAdapter } from '../lib/firebaseAuthAdapter';
-import { preloadFirestore } from '../lib/firebaseClient';
+import { FirebaseAuthAdapter, preloadFirestore } from '@/shared/lib/firebase';
 import { flushFirestoreQueue } from '../lib/firestoreQueue';
 
 const adapter = new FirebaseAuthAdapter();

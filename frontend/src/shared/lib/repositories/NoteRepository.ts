@@ -1,5 +1,5 @@
 import type { FieldValue } from 'firebase/firestore';
-import { getDb, getFirebaseAuth } from '@/shared/lib/firebaseClient';
+import { getDb, getFirebaseAuth } from '@/shared/lib/firebase/client';
 import type { NoteMeta } from '@/features/notes/types';
 import { invalidateCache, cached } from '@/shared/lib/cache';
 import {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useUserLibraries } from '@/shared/hooks/useLibraries';
 import { cardRepository } from '@/shared/lib/repositories/CardRepository';
 
@@ -10,96 +10,127 @@ export interface GameCard {
   difficulty?: 'easy' | 'medium' | 'hard';
 }
 
-export function useGameCards(libraryId?: string): {
+interface GameCardSourceState {
   cards: GameCard[];
   loading: boolean;
   error: string | null;
-} {
-  const [cards, setCards] = useState<GameCard[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+}
+
+type GameCardScope = 'auto' | 'library' | 'all';
+
+interface GameCardSourceOptions {
+  scope?: GameCardScope;
+  libraryId?: string;
+  dedupe?: boolean;
+}
+
+interface GameCardSourceResult extends GameCardSourceState {
+  refetch: () => void;
+  scope: Exclude<GameCardScope, 'library'> | GameCardScope;
+  effectiveLibraryId?: string;
+}
+
+const CARD_DEDUPE_SEPARATOR = '||';
+
+const dedupeCards = (cards: GameCard[]): GameCard[] => {
+  if (cards.length < 2) return cards;
+  const seen = new Set<string>();
+  const unique: GameCard[] = [];
+
+  cards.forEach((card) => {
+    const key = `${card.front.toLowerCase()}${CARD_DEDUPE_SEPARATOR}${card.back.toLowerCase()}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    unique.push(card);
+  });
+
+  return unique;
+};
+
+export function useGameCardSource(options: GameCardSourceOptions = {}): GameCardSourceResult {
+  const { scope = 'auto', libraryId, dedupe = true } = options;
   const { libraries } = useUserLibraries();
+  const [state, setState] = useState<GameCardSourceState>({ cards: [], loading: true, error: null });
+  const [refreshToken, setRefreshToken] = useState(0);
+
+  const effectiveScope: GameCardScope = libraryId ? 'library' : scope;
+
+  const effectiveLibraryId = useMemo(() => {
+    if (effectiveScope === 'all') return undefined;
+    if (libraryId) return libraryId;
+    return libraries[0]?.id;
+  }, [effectiveScope, libraryId, libraries]);
 
   useEffect(() => {
+    let cancelled = false;
+
+    if (effectiveScope !== 'all' && !effectiveLibraryId) {
+      setState({ cards: [], loading: false, error: null });
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+
     const fetchCards = async () => {
       try {
-        setLoading(true);
-        setError(null);
+        let fetched: GameCard[] = [];
 
-        let targetLibraryId = libraryId;
-
-        // If no specific library, get cards from user's first library
-        if (!targetLibraryId && libraries.length > 0) {
-          targetLibraryId = libraries[0].id;
+        if (effectiveScope === 'all') {
+          if (!libraries.length) {
+            fetched = [];
+          } else {
+            const chunks = await Promise.all(
+              libraries.map((lib) => cardRepository.listCardsPreferCache(lib.id)),
+            );
+            fetched = chunks.flat();
+          }
+        } else if (effectiveLibraryId) {
+          fetched = await cardRepository.listCardsPreferCache(effectiveLibraryId);
         }
 
-        if (!targetLibraryId) {
-          setCards([]);
-          return;
-        }
+        const cards = dedupe ? dedupeCards(fetched) : fetched;
 
-        const fetchedCards = await cardRepository.listCardsPreferCache(targetLibraryId);
-        setCards(fetchedCards);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load cards');
-        setCards([]);
-      } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setState({ cards, loading: false, error: null });
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setState({
+            cards: [],
+            loading: false,
+            error: error instanceof Error ? error.message : 'Không thể tải danh sách thẻ',
+          });
+        }
       }
     };
 
     fetchCards();
-  }, [libraryId, libraries]);
 
+    return () => {
+      cancelled = true;
+    };
+  }, [effectiveScope, effectiveLibraryId, libraries, refreshToken, dedupe]);
+
+  const refetch = useCallback(() => {
+    setRefreshToken((token) => token + 1);
+  }, []);
+
+  return useMemo(() => ({
+    ...state,
+    refetch,
+    scope: effectiveScope,
+    effectiveLibraryId,
+  }), [state, refetch, effectiveScope, effectiveLibraryId]);
+}
+
+export function useGameCards(libraryId?: string) {
+  const { cards, loading, error } = useGameCardSource({ libraryId });
   return { cards, loading, error };
 }
 
-export function useAllGameCards(): {
-  cards: GameCard[];
-  loading: boolean;
-  error: string | null;
-} {
-  const [cards, setCards] = useState<GameCard[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { libraries } = useUserLibraries();
-
-  useEffect(() => {
-    const fetchAllCards = async () => {
-      if (libraries.length === 0) {
-        setCards([]);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        setError(null);
-
-        const allCardsPromises = libraries.map(lib =>
-          cardRepository.listCardsPreferCache(lib.id)
-        );
-
-        const allCardsArrays = await Promise.all(allCardsPromises);
-        const combinedCards = allCardsArrays.flat();
-
-        // Remove duplicates based on front/back content
-        const uniqueCards = combinedCards.filter((card, index, self) =>
-          index === self.findIndex(c =>
-            c.front === card.front && c.back === card.back
-          )
-        );
-
-        setCards(uniqueCards);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load cards');
-        setCards([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAllCards();
-  }, [libraries]);
-
+export function useAllGameCards() {
+  const { cards, loading, error } = useGameCardSource({ scope: 'all' });
   return { cards, loading, error };
 }

@@ -1,4 +1,3 @@
-import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
@@ -6,18 +5,9 @@ import { Progress } from '@/shared/components/ui/progress';
 import { H1 } from '@/shared/components/ui/typography';
 import { ArrowLeft, RotateCcw, Clock, CheckCircle, XCircle, HelpCircle, Trophy } from 'lucide-react';
 import { Loader } from '@/shared/components/ui/loader';
-import { useNavigate } from 'react-router-dom';
-import {
-  createQuizGame,
-  selectAnswer,
-  nextQuestion,
-  updateTime,
-  resetGame,
-  getCurrentQuestion,
-  getGameStats,
-  type QuizGameState
-} from '../utils/quizGame';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAllGameCards } from '../hooks/useGameCards';
+import { useQuizGame, type QuizGameSettings } from '../hooks/useQuizGame';
 
 interface QuizGameProps {
   difficulty?: 'easy' | 'medium' | 'hard';
@@ -25,41 +15,22 @@ interface QuizGameProps {
 
 export default function QuizGame({ difficulty = 'easy' }: QuizGameProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { cards, loading: cardsLoading, error: cardsError } = useAllGameCards();
-  const [gameState, setGameState] = useState<QuizGameState | null>(null);
+  const routeSettings = location.state?.settings as QuizGameSettings | undefined;
 
-  // Initialize game when cards are loaded
-  useEffect(() => {
-    if (cards.length > 0 && !gameState) {
-      setGameState(createQuizGame(cards, difficulty));
-    }
-  }, [cards, difficulty, gameState]);
-
-  // Timer effect
-  useEffect(() => {
-    if (!gameState || gameState.gameFinished || gameState.showResult) return;
-
-    const interval = setInterval(() => {
-      setGameState(prev => prev ? updateTime(prev) : prev);
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [gameState]);
-
-  const handleAnswerSelect = useCallback((answerIndex: number) => {
-    if (!gameState) return;
-    setGameState(prev => prev ? selectAnswer(prev, answerIndex) : prev);
-  }, [gameState]);
-
-  const handleNextQuestion = () => {
-    if (!gameState) return;
-    setGameState(prev => prev ? nextQuestion(prev) : prev);
-  };
-
-  const handleReset = () => {
-    if (!cards.length) return;
-    setGameState(resetGame(cards, difficulty));
-  };
+  const {
+    gameState,
+    currentQuestion,
+    difficultyLabel,
+    difficultyBadgeClass,
+    progressValue,
+    stats,
+    handleAnswerSelect,
+    handleNextQuestion,
+    handleReset,
+    feedback,
+  } = useQuizGame({ cards, defaultDifficulty: difficulty, settings: routeSettings });
 
   // Loading state
   if (cardsLoading) {
@@ -113,27 +84,6 @@ export default function QuizGame({ difficulty = 'easy' }: QuizGameProps) {
 
   if (!gameState) return null;
 
-  const currentQuestion = getCurrentQuestion(gameState);
-  const stats = getGameStats(gameState);
-
-  const getDifficultyLabel = () => {
-    switch (difficulty) {
-      case 'easy': return 'Dễ';
-      case 'medium': return 'Trung bình';
-      case 'hard': return 'Khó';
-      default: return 'Dễ';
-    }
-  };
-
-  const getDifficultyColor = () => {
-    switch (difficulty) {
-      case 'easy': return 'bg-green-100 text-green-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'hard': return 'bg-red-100 text-red-800';
-      default: return 'bg-green-100 text-green-800';
-    }
-  };
-
   if (gameState.gameFinished) {
     return (
       <div className="container mx-auto p-6 max-w-2xl">
@@ -150,7 +100,7 @@ export default function QuizGame({ difficulty = 'easy' }: QuizGameProps) {
             </Button>
             <H1 className="mb-0">Kết quả trò chơi</H1>
           </div>
-          <Badge className={getDifficultyColor()}>{getDifficultyLabel()}</Badge>
+          <Badge className={difficultyBadgeClass}>{difficultyLabel}</Badge>
         </div>
 
         {/* Results */}
@@ -159,27 +109,27 @@ export default function QuizGame({ difficulty = 'easy' }: QuizGameProps) {
             <Trophy className="h-16 w-16 mx-auto mb-4 text-yellow-500" />
             <h2 className="text-3xl font-bold mb-2">Hoàn thành!</h2>
             <div className="text-6xl font-bold text-blue-600 mb-4">
-              {stats.percentage}%
+              {stats?.percentage ?? 0}%
             </div>
             <p className="text-lg text-muted-foreground mb-6">
-              Bạn trả lời đúng {stats.correctAnswers}/{stats.totalQuestions} câu hỏi
+              Bạn trả lời đúng {stats?.correctAnswers ?? 0}/{stats?.totalQuestions ?? 0} câu hỏi
             </p>
 
             {/* Stats Grid */}
             <div className="grid grid-cols-3 gap-4 mb-6">
               <div className="text-center">
                 <CheckCircle className="h-8 w-8 mx-auto mb-2 text-green-500" />
-                <div className="text-2xl font-bold text-green-600">{stats.correctAnswers}</div>
+                <div className="text-2xl font-bold text-green-600">{stats?.correctAnswers ?? 0}</div>
                 <div className="text-sm text-muted-foreground">Đúng</div>
               </div>
               <div className="text-center">
                 <XCircle className="h-8 w-8 mx-auto mb-2 text-red-500" />
-                <div className="text-2xl font-bold text-red-600">{stats.incorrectAnswers}</div>
+                <div className="text-2xl font-bold text-red-600">{stats?.incorrectAnswers ?? 0}</div>
                 <div className="text-sm text-muted-foreground">Sai</div>
               </div>
               <div className="text-center">
                 <HelpCircle className="h-8 w-8 mx-auto mb-2 text-gray-500" />
-                <div className="text-2xl font-bold text-gray-600">{stats.unanswered}</div>
+                <div className="text-2xl font-bold text-gray-600">{stats?.unanswered ?? 0}</div>
                 <div className="text-sm text-muted-foreground">Bỏ qua</div>
               </div>
             </div>
@@ -211,7 +161,7 @@ export default function QuizGame({ difficulty = 'easy' }: QuizGameProps) {
           </Button>
           <H1 className="mb-0">Đố vui kiến thức</H1>
         </div>
-        <Badge className={getDifficultyColor()}>{getDifficultyLabel()}</Badge>
+        <Badge className={difficultyBadgeClass}>{difficultyLabel}</Badge>
       </div>
 
       {/* Progress */}
@@ -225,7 +175,7 @@ export default function QuizGame({ difficulty = 'easy' }: QuizGameProps) {
           </span>
         </div>
         <Progress
-          value={(gameState.currentQuestionIndex / gameState.questions.length) * 100}
+          value={progressValue}
           className="h-2"
         />
       </div>
@@ -243,7 +193,7 @@ export default function QuizGame({ difficulty = 'easy' }: QuizGameProps) {
             </div>
           </div>
           <Progress
-            value={(gameState.timeLeft / 30) * 100}
+            value={(gameState.timeLeft / gameState.timePerQuestion) * 100}
             className="h-2 mt-2"
           />
         </CardContent>
@@ -300,6 +250,34 @@ export default function QuizGame({ difficulty = 'easy' }: QuizGameProps) {
           </div>
         </CardContent>
       </Card>
+
+      {gameState.showResult && feedback && (
+        <Card className="mb-6">
+          <CardContent className="p-6 text-center">
+            <img
+              src={feedback.src}
+              alt={feedback.alt}
+              className="mx-auto h-48 object-contain"
+              loading="lazy"
+            />
+            {feedback.message && (
+              <p className="mt-4 text-lg font-semibold text-blue-600">
+                {feedback.message}
+              </p>
+            )}
+            {gameState.lastAnswerCorrect && (
+              <p className="mt-2 text-sm text-muted-foreground">
+                Chuỗi đúng hiện tại: {gameState.correctStreak}
+              </p>
+            )}
+            {gameState.lastAnswerCorrect === false && (
+              <p className="mt-2 text-sm text-muted-foreground">
+                Bạn đã sai {gameState.incorrectStreak} lần liên tiếp, đừng nản nhé!
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Next Button */}
       {gameState.showResult && (

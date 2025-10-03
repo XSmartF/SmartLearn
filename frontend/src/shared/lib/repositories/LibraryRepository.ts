@@ -1,6 +1,6 @@
 // Firestore functions are now dynamically imported per method to reduce upfront cost.
 import type { FieldValue } from 'firebase/firestore';
-import { getDb, getFirebaseAuth } from '@/shared/lib/firebaseClient';
+import { getDb, getFirebaseAuth } from '@/shared/lib/firebase/client';
 import type { LibraryMeta, LibraryVisibility } from '@/shared/lib/models';
 import { invalidateCache, cached } from '@/shared/lib/cache';
 import {

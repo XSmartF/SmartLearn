@@ -1,19 +1,3 @@
-// Route constants for the application
-// Centralize all route paths here to make them easy to manage and update
-//
-// USAGE:
-// - Import: import { ROUTES, getLibraryDetailPath } from '@/shared/constants/routes'
-// - Static routes: ROUTES.HOME, ROUTES.LOGIN, etc.
-// - Dynamic routes: getLibraryDetailPath(id), getStudyPath(id), etc.
-// - Examples:
-//   - getLibraryDetailPath('123') => '/library/123'
-//   - getStudyPath('456') => '/study/456'
-//
-// BENEFITS:
-// - Single source of truth for all routes
-// - Easy to update paths across the entire app
-// - Type safety with TypeScript
-// - Centralized route management
 
 export const ROUTES = {
   // Auth routes

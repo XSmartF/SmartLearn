@@ -1,4 +1,4 @@
-import { getFirebaseAuth } from './firebaseClient'
+import { getFirebaseAuth } from '@/shared/lib/firebase/client'
 import { queueSetDoc } from './firestoreQueue'
 import type { StudyEvent } from '@/features/study/types/calendar'
 

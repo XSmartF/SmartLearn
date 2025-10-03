@@ -8,3 +8,8 @@ export { TasksWidget } from './TasksWidget';
 export { CalendarWidget } from './CalendarWidget';
 export { MeetingsWidget } from './MeetingsWidget';
 export { AnalyticsChartsSection } from './AnalyticsChartsSection';
+export { DashboardHero } from './hero/DashboardHero';
+export { DashboardFlashcards } from './flashcards/DashboardFlashcards';
+export { DashboardProductivity } from './productivity/DashboardProductivity';
+export { DashboardEvents } from './events/DashboardEvents';
+export { DashboardSectionGrid } from './layout/DashboardSectionGrid';

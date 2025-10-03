@@ -1,6 +1,6 @@
 // Calendar service for managing study events
-import { CalendarRepository } from './repositories/CalendarRepository';
-import type { StudyEvent, CreateStudyEventInput } from '../../features/study/types/calendar';
+import { CalendarRepository } from '@/shared/lib/repositories/CalendarRepository';
+import type { StudyEvent, CreateStudyEventInput } from '@/features/study/types/calendar';
 
 export const createStudyEvent = async (input: CreateStudyEventInput): Promise<StudyEvent> => {
   return CalendarRepository.createEvent(input);

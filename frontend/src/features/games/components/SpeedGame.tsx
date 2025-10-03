@@ -1,4 +1,3 @@
-import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
@@ -8,20 +7,8 @@ import { H1 } from '@/shared/components/ui/typography';
 import { ArrowLeft, RotateCcw, Clock, Target, Zap, Trophy, CheckCircle, XCircle, Eye, HelpCircle } from 'lucide-react';
 import { Loader } from '@/shared/components/ui/loader';
 import { useNavigate, useLocation } from 'react-router-dom';
-import {
-  createSpeedGame,
-  startGame,
-  startAnswering,
-  submitAnswer,
-  showAnswer,
-  nextCard,
-  resetGame,
-  getGameStats,
-  formatReactionTime,
-  getDifficultySettings,
-  type SpeedGameState
-} from '../utils/speedGame';
 import { useAllGameCards } from '../hooks/useGameCards';
+import { useSpeedGame, formatReactionTime, type SpeedGameSettings } from '../hooks/useSpeedGame';
 
 interface SpeedGameProps {
   difficulty?: 'easy' | 'medium' | 'hard';
@@ -31,86 +18,24 @@ export default function SpeedGame({ difficulty = 'easy' }: SpeedGameProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { cards, loading: cardsLoading, error: cardsError } = useAllGameCards();
-  const [gameState, setGameState] = useState<SpeedGameState | null>(null);
-  const [inputValue, setInputValue] = useState('');
-  const [timeLeft, setTimeLeft] = useState<number | null>(null);
-
-  // Get settings from route state or use defaults
-  const routeSettings = location.state?.settings;
-  const gameDifficulty = routeSettings?.difficulty || difficulty;
-  const difficultySettings = getDifficultySettings(gameDifficulty);
-
-  // Initialize game when cards are loaded
-  useEffect(() => {
-    if (cards.length > 0 && !gameState) {
-      setGameState(createSpeedGame(cards, gameDifficulty));
-    }
-  }, [cards, gameDifficulty, gameState]);
-
-  // Timer for answering phase
-  useEffect(() => {
-    if (gameState?.gamePhase === 'answering' && timeLeft !== null) {
-      if (timeLeft <= 0) {
-        // Time's up - submit empty answer
-        setGameState(prev => prev ? submitAnswer(prev, '') : prev);
-        setTimeLeft(null);
-        return;
-      }
-
-      const timer = setTimeout(() => {
-        setTimeLeft(timeLeft - 100);
-      }, 100);
-
-      return () => clearTimeout(timer);
-    }
-  }, [gameState?.gamePhase, timeLeft]);
-
-  // Auto transition to answering phase
-  useEffect(() => {
-    if (gameState?.gamePhase === 'showing') {
-      const timer = setTimeout(() => {
-        setGameState(prev => prev ? startAnswering(prev) : prev);
-        setTimeLeft(routeSettings?.timeLimit || difficultySettings.timeLimit);
-        setInputValue('');
-      }, 2000); // Show card for 2 seconds
-
-      return () => clearTimeout(timer);
-    }
-  }, [gameState?.gamePhase, routeSettings?.timeLimit, difficultySettings.timeLimit]);
-
-  const handleStartGame = () => {
-    if (!cards.length) return;
-    setGameState(startGame(createSpeedGame(cards, gameDifficulty)));
-  };
-
-  const handleSubmitAnswer = useCallback((answer: string) => {
-    if (!gameState) return;
-    setGameState(prev => prev ? submitAnswer(prev, answer) : prev);
-    setTimeLeft(null);
-  }, [gameState]);
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && gameState?.gamePhase === 'answering') {
-      handleSubmitAnswer(inputValue);
-    }
-  };
-
-  const handleShowAnswer = () => {
-    if (!gameState) return;
-    setGameState(prev => prev ? showAnswer(prev) : prev);
-  };
-
-  const handleNextCard = () => {
-    if (!gameState) return;
-    setGameState(prev => prev ? nextCard(prev) : prev);
-  };
-
-  const handleReset = () => {
-    if (!cards.length) return;
-    setGameState(resetGame(cards, gameDifficulty));
-    setInputValue('');
-    setTimeLeft(null);
-  };
+  const routeSettings = location.state?.settings as SpeedGameSettings | undefined;
+  const {
+    gameState,
+    inputValue,
+    timeLeft,
+    difficultySettings,
+    difficultyBadgeClass,
+    progressValue,
+    stats,
+    maxAttemptsTarget,
+    handleStartGame,
+    handleSubmitAnswer,
+    handleShowAnswer,
+    handleNextCard,
+    handleReset,
+    handleInputChange,
+    handleAnswerKeyDown,
+  } = useSpeedGame({ cards, defaultDifficulty: difficulty, settings: routeSettings });
 
   // Loading state
   if (cardsLoading) {
@@ -164,17 +89,6 @@ export default function SpeedGame({ difficulty = 'easy' }: SpeedGameProps) {
 
   if (!gameState) return null;
 
-  const stats = getGameStats(gameState);
-
-  const getDifficultyColor = () => {
-    switch (gameDifficulty) {
-      case 'easy': return 'bg-green-100 text-green-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'hard': return 'bg-red-100 text-red-800';
-      default: return 'bg-green-100 text-green-800';
-    }
-  };
-
   if (gameState.gamePhase === 'finished') {
     return (
       <div className="container mx-auto p-6 max-w-2xl">
@@ -191,7 +105,7 @@ export default function SpeedGame({ difficulty = 'easy' }: SpeedGameProps) {
             </Button>
             <H1 className="mb-0">Kết quả trò chơi tốc độ học tập</H1>
           </div>
-          <Badge className={getDifficultyColor()}>{difficultySettings.name}</Badge>
+          <Badge className={difficultyBadgeClass}>{difficultySettings.name}</Badge>
         </div>
 
         {/* Results */}
@@ -203,13 +117,13 @@ export default function SpeedGame({ difficulty = 'easy' }: SpeedGameProps) {
             <div className="grid grid-cols-2 gap-6 mb-6">
               <div>
                 <div className="text-3xl font-bold text-blue-600 mb-1">
-                  {stats.accuracy}%
+                  {stats?.accuracy ?? 0}%
                 </div>
                 <div className="text-sm text-muted-foreground">Độ chính xác</div>
               </div>
               <div>
                 <div className="text-3xl font-bold text-green-600 mb-1">
-                  {formatReactionTime(stats.averageTime)}
+                  {formatReactionTime(stats?.averageTime ?? 0)}
                 </div>
                 <div className="text-sm text-muted-foreground">Thời gian trung bình</div>
               </div>
@@ -219,17 +133,17 @@ export default function SpeedGame({ difficulty = 'easy' }: SpeedGameProps) {
             <div className="grid grid-cols-3 gap-4 mb-6">
               <div className="text-center">
                 <Target className="h-8 w-8 mx-auto mb-2 text-blue-500" />
-                <div className="text-2xl font-bold">{stats.totalAttempts}</div>
+                <div className="text-2xl font-bold">{stats?.totalAttempts ?? 0}</div>
                 <div className="text-sm text-muted-foreground">Câu trả lời</div>
               </div>
               <div className="text-center">
                 <CheckCircle className="h-8 w-8 mx-auto mb-2 text-green-500" />
-                <div className="text-2xl font-bold">{stats.correctAnswers}</div>
+                <div className="text-2xl font-bold">{stats?.correctAnswers ?? 0}</div>
                 <div className="text-sm text-muted-foreground">Đúng</div>
               </div>
               <div className="text-center">
                 <Clock className="h-8 w-8 mx-auto mb-2 text-purple-500" />
-                <div className="text-2xl font-bold">{formatReactionTime(stats.totalTime)}</div>
+                <div className="text-2xl font-bold">{formatReactionTime(stats?.totalTime ?? 0)}</div>
                 <div className="text-sm text-muted-foreground">Tổng thời gian</div>
               </div>
             </div>
@@ -259,7 +173,7 @@ export default function SpeedGame({ difficulty = 'easy' }: SpeedGameProps) {
           </Button>
           <H1 className="mb-0">Trò chơi tốc độ học tập</H1>
         </div>
-        <Badge className={getDifficultyColor()}>{difficultySettings.name}</Badge>
+          <Badge className={difficultyBadgeClass}>{difficultySettings.name}</Badge>
       </div>
 
       {/* Progress */}
@@ -267,16 +181,13 @@ export default function SpeedGame({ difficulty = 'easy' }: SpeedGameProps) {
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium">
-              Câu hỏi {gameState.currentAttempt} / {routeSettings?.questionCount || gameState.maxAttempts}
+                Câu hỏi {gameState.currentAttempt} / {maxAttemptsTarget}
             </span>
             <span className="text-sm font-medium">
               Đúng: {gameState.correctAnswers}
             </span>
           </div>
-          <Progress
-            value={(gameState.currentAttempt / (routeSettings?.questionCount || gameState.maxAttempts)) * 100}
-            className="h-2"
-          />
+            <Progress value={progressValue} className="h-2" />
         </CardContent>
       </Card>
 
@@ -319,8 +230,8 @@ export default function SpeedGame({ difficulty = 'easy' }: SpeedGameProps) {
               <div className="mb-6">
                 <Input
                   value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyPress={handleKeyPress}
+                  onChange={(e) => handleInputChange(e.target.value)}
+                  onKeyDown={handleAnswerKeyDown}
                   placeholder="Nhập đáp án của bạn..."
                   className="text-center text-lg py-3"
                   autoFocus
@@ -391,7 +302,7 @@ export default function SpeedGame({ difficulty = 'easy' }: SpeedGameProps) {
                   </Button>
                 )}
                 <Button onClick={handleNextCard}>
-                  {gameState.currentAttempt >= (routeSettings?.questionCount || gameState.maxAttempts) ? 'Xem kết quả' : 'Câu tiếp theo'}
+                  {gameState.currentAttempt >= maxAttemptsTarget ? 'Xem kết quả' : 'Câu tiếp theo'}
                 </Button>
               </div>
             </div>

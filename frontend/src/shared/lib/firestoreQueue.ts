@@ -3,7 +3,7 @@
 
 import type { Firestore, SetOptions } from 'firebase/firestore'
 import { doc as fsDoc, setDoc as fsSetDoc, serverTimestamp as fsServerTimestamp } from 'firebase/firestore'
-import { getDb } from './firebaseClient'
+import { getDb } from '@/shared/lib/firebase/client'
 import { idbGetItem, idbSetItem } from './indexedDB'
 
 interface SerializableSetOp {

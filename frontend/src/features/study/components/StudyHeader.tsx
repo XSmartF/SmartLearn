@@ -9,10 +9,13 @@ import type { Question } from '@/features/study/utils/learnEngine'
 import type { LibraryMeta } from '@/shared/lib/models'
 import { getLibraryDetailPath } from '@/shared/constants/routes'
 
-interface StudyHeaderProps {
+interface StudyHeaderContext {
   library: LibraryMeta
   libraryId: string
   currentQuestion: Question | null
+}
+
+interface StudyHeaderSettings {
   allowMC: boolean
   allowTyped: boolean
   autoAdvance: boolean
@@ -21,6 +24,9 @@ interface StudyHeaderProps {
   readLanguage: string
   showKeyboardShortcuts: boolean
   answerSide: 'front' | 'back'
+}
+
+interface StudyHeaderHandlers {
   setAllowMC: (value: boolean) => void
   setAllowTyped: (value: boolean) => void
   setAutoAdvance: (value: boolean) => void
@@ -29,31 +35,42 @@ interface StudyHeaderProps {
   setReadLanguage: (value: string) => void
   setShowKeyboardShortcuts: (value: boolean) => void
   setAnswerSide: (side: 'front' | 'back') => void
-  handleResetSession: () => void
+  resetSession: () => void
+}
+
+interface StudyHeaderProps {
+  context: StudyHeaderContext
+  settings: StudyHeaderSettings
+  handlers: StudyHeaderHandlers
 }
 
 export function StudyHeader({
-  library,
-  libraryId,
-  currentQuestion,
-  allowMC,
-  allowTyped,
-  autoAdvance,
-  showCardProgress,
-  autoRead,
-  readLanguage,
-  showKeyboardShortcuts,
-  answerSide,
-  setAllowMC,
-  setAllowTyped,
-  setAutoAdvance,
-  setShowCardProgress,
-  setAutoRead,
-  setReadLanguage,
-  setShowKeyboardShortcuts,
-  setAnswerSide,
-  handleResetSession
+  context,
+  settings,
+  handlers
 }: StudyHeaderProps) {
+  const { library, libraryId, currentQuestion } = context
+  const {
+    allowMC,
+    allowTyped,
+    autoAdvance,
+    showCardProgress,
+    autoRead,
+    readLanguage,
+    showKeyboardShortcuts,
+    answerSide
+  } = settings
+  const {
+    setAllowMC,
+    setAllowTyped,
+    setAutoAdvance,
+    setShowCardProgress,
+    setAutoRead,
+    setReadLanguage,
+    setShowKeyboardShortcuts,
+    setAnswerSide,
+    resetSession
+  } = handlers
   return (
     <div className='bg-card/80 backdrop-blur-sm border-b border-border'>
       <div className='container mx-auto px-4 py-4'>
@@ -165,7 +182,7 @@ export function StudyHeader({
                   <Button
                     variant='outline'
                     size='sm'
-                    onClick={handleResetSession}
+                    onClick={resetSession}
                     className='w-full justify-start hover:bg-destructive/10 hover:border-destructive'
                   >
                     <RotateCcw className='h-4 w-4 mr-2'/>
