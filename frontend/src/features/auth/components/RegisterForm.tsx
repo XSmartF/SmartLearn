@@ -1,10 +1,8 @@
-import { Fragment } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { ErrorDisplay } from "@/shared/components/ui/error-display";
 import { EmailIcon, LockIcon, ShieldCheckIcon, SuccessIcon, UserIcon } from "@/shared/components/ui/icons";
 import { Input } from "@/shared/components/ui/input";
 import { Loader } from "@/shared/components/ui/loader";
-import { Progress } from "@/shared/components/ui/progress";
 import type { RegisterCredentials } from "@/features/auth/types";
 
 interface RegisterFormProps {
@@ -22,15 +20,15 @@ export default function RegisterForm({ values, onFieldChange, onSubmit, isSubmit
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      <fieldset className="grid gap-5">
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <fieldset className="grid gap-4">
         {[
           {
             id: "displayName",
             label: "Tên hiển thị",
             placeholder: "VD: Minh Anh",
             icon: UserIcon,
-            helper: "Tên sẽ xuất hiện trong bảng xếp hạng và lớp học của bạn."
+            required: false
           },
           {
             id: "email",
@@ -38,65 +36,54 @@ export default function RegisterForm({ values, onFieldChange, onSubmit, isSubmit
             placeholder: "nhatlinh@smartlearn.vn",
             type: "email",
             icon: EmailIcon,
-            helper: "Chúng tôi sẽ gửi email xác nhận tài khoản trong 2 phút."
+            required: true
           },
           {
             id: "password",
             label: "Mật khẩu",
-            placeholder: "Tạo mật khẩu bảo mật",
+            placeholder: "Tạo mật khẩu",
             type: "password",
             icon: LockIcon,
-            helper: "Nên dùng ít nhất 1 ký tự viết hoa, 1 số và 1 ký tự đặc biệt."
+            required: true
           }
         ].map((field) => {
           const Icon = field.icon;
           const value = values[field.id as keyof RegisterCredentials];
           return (
-            <Fragment key={field.id}>
-              <label htmlFor={field.id} className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+            <label key={field.id} htmlFor={field.id} className="space-y-2 text-left">
+              <span className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
                 <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-4 w-4" aria-hidden="true" />
                 </span>
                 {field.label}
-              </label>
+              </span>
               <div className="relative">
                 <Input
                   id={field.id}
                   type={field.type ?? "text"}
                   value={value as string}
                   onChange={(event) => onFieldChange(field.id as keyof RegisterCredentials, event.target.value)}
-                  required={field.id !== "displayName"}
+                  required={field.required}
                   placeholder={field.placeholder}
-                  className="peer pl-12 pr-4 py-3 text-[15px] font-medium shadow-[0_12px_30px_-18px_rgba(16,185,129,0.45)] transition-all duration-200 focus-visible:ring-2 focus-visible:ring-emerald-500/60"
+                  className="peer py-3 pl-11 pr-4 text-[15px] font-medium shadow-[0_12px_30px_-20px_rgba(16,185,129,0.55)] transition-all duration-200 focus-visible:ring-2 focus-visible:ring-emerald-500/60"
                 />
-                <Icon className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70 peer-focus-visible:text-emerald-500" />
+                <Icon
+                  className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70 peer-focus-visible:text-emerald-500"
+                  aria-hidden="true"
+                />
               </div>
-              <p className="text-xs text-muted-foreground/80">{field.helper}</p>
-            </Fragment>
+            </label>
           );
         })}
       </fieldset>
 
-      <div className="grid gap-4 rounded-3xl border border-emerald-200/60 bg-emerald-50/70 p-5 text-sm text-emerald-900 shadow-[0_25px_60px_-45px_rgba(16,185,129,0.75)]">
+      <div className="rounded-2xl border border-emerald-200/60 bg-emerald-50/70 p-4 text-xs text-emerald-900">
         <div className="flex items-start gap-3">
-          <ShieldCheckIcon className="mt-0.5 h-5 w-5" />
+          <ShieldCheckIcon className="mt-0.5 h-4 w-4" aria-hidden="true" />
           <div className="space-y-1">
-            <p className="font-semibold">Quyền lợi tài khoản SmartLearn</p>
-            <ul className="grid gap-1 text-xs">
-              <li>• Lộ trình học cá nhân hóa theo mục tiêu</li>
-              <li>• Ôn luyện hàng ngày với AI Mentor</li>
-              <li>• Chia sẻ tiến độ và hợp tác với bạn học</li>
-            </ul>
+            <p className="text-sm font-semibold">Quyền lợi tài khoản SmartLearn</p>
+            <p>AI Mentor đồng hành và lộ trình học cá nhân hóa giúp bạn duy trì nhịp độ.</p>
           </div>
-        </div>
-        <div className="space-y-2 text-xs">
-          <div className="flex items-center justify-between font-semibold">
-            <span>Chuẩn bị hoàn tất hồ sơ</span>
-            <span>55%</span>
-          </div>
-          <Progress value={55} className="h-2 overflow-hidden rounded-full bg-emerald-100">
-            {/* indicator inside */}
-          </Progress>
         </div>
       </div>
 
@@ -114,14 +101,14 @@ export default function RegisterForm({ values, onFieldChange, onSubmit, isSubmit
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <SuccessIcon className="h-4 w-4" />
+            <SuccessIcon className="h-4 w-4" aria-hidden="true" />
             <span>Hoàn tất đăng ký</span>
           </div>
         )}
       </Button>
 
       <p className="text-center text-xs text-muted-foreground/80">
-        Đã có tài khoản? <span className="font-semibold text-primary underline-offset-4 hover:underline">Đăng nhập ngay</span>
+        Đã có tài khoản? <a href="#" className="font-semibold text-primary underline-offset-4 hover:underline">Đăng nhập ngay</a>
       </p>
     </form>
   );
