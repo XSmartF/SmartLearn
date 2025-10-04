@@ -1,10 +1,13 @@
 import { Badge } from "@/shared/components/ui/badge";
 import { SmartImage } from "@/shared/components/ui/smart-image";
 import { H1, Lead, P } from "@/shared/components/ui/typography";
+import { cn } from "@/shared/lib/utils";
 import type { AuthHeroModel } from "@/features/auth/types";
 
 interface AuthHeroProps {
   model: AuthHeroModel;
+  variant?: "panel" | "background";
+  className?: string;
 }
 
 const ACCENT_POSITION_CLASS: Record<AuthHeroModel["accentShapes"][number]["position"], string> = {
@@ -14,9 +17,18 @@ const ACCENT_POSITION_CLASS: Record<AuthHeroModel["accentShapes"][number]["posit
   "bottom-right": "-bottom-24 -right-20"
 };
 
-export function AuthHero({ model }: AuthHeroProps) {
+export function AuthHero({ model, variant = "panel", className }: AuthHeroProps) {
+  const isBackground = variant === "background";
+
   return (
-    <div className="hidden xl:flex flex-1 bg-gradient-to-br from-primary/80 via-violet-700 to-indigo-800 relative overflow-hidden text-white">
+    <div
+      className={cn(
+        "relative overflow-hidden text-white bg-gradient-to-br from-primary/80 via-violet-700 to-indigo-800",
+        variant === "panel" && "hidden xl:flex flex-1",
+        isBackground && "hidden lg:flex h-full w-full items-stretch justify-start opacity-95 pointer-events-none",
+        className
+      )}
+    >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.25),transparent_55%)]" />
       <div className="absolute inset-0 backdrop-blur-sm" />
 
@@ -32,8 +44,13 @@ export function AuthHero({ model }: AuthHeroProps) {
         />
       ))}
 
-      <div className="relative z-10 w-full max-w-5xl px-12 py-16 mx-auto">
-        <div className="grid gap-12 xl:grid-cols-[1.1fr_0.9fr] items-center">
+      <div
+        className={cn(
+          "relative z-10 w-full max-w-5xl px-12 py-16 mx-auto",
+          isBackground && "mx-0 max-w-6xl px-10 lg:px-20"
+        )}
+      >
+        <div className={cn("grid gap-12 xl:grid-cols-[1.1fr_0.9fr] items-center", isBackground && "opacity-90")}> 
           <div className="space-y-8 text-left">
             <div className="flex items-center gap-3 text-sm font-medium text-white/80">
               <Badge variant="secondary" className="bg-white/15 text-white border-white/30 backdrop-blur-sm">
