@@ -1,14 +1,22 @@
+import { BookOpen, Keyboard, Check, X, Volume2, Lightbulb, Frown, Timer, AlertTriangle, Sparkles, Lock } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Badge } from '@/shared/components/ui/badge'
 import { H2, H3 } from '@/shared/components/ui/typography'
-import { BookOpen, Keyboard, Check, X, Volume2, Lightbulb, Frown, Timer, AlertTriangle, Sparkles } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import type { Question, Result, LearnEngine as LearnEngineType, Card as LearnCard, DifficultyMeta } from '@/features/study/utils/learnEngine'
 import type { ReviewDifficultyChoice } from '@/shared/lib/reviewScheduler'
 import { normalize } from '@/features/study/utils/learnEngine'
 import { cn } from '@/shared/lib/utils'
+import { 
+  validateRatingRequirement, 
+  getRatingStateMessage, 
+  getRatingPanelStyling,
+  validateDifficultySubmission,
+  debugRatingState 
+} from '../utils/difficultyRatingUtils'
+import { toast } from 'sonner'
 
 interface QuestionCardProps {
   currentQuestion: Question
@@ -61,6 +69,7 @@ export function QuestionCard({
   const [hintText, setHintText] = useState('')
   const [mustRetryAfterDontKnow, setMustRetryAfterDontKnow] = useState(false)
   const [justRetriedAfterDontKnow, setJustRetriedAfterDontKnow] = useState(false)
+  const [localDifficultyChoice, setLocalDifficultyChoice] = useState<ReviewDifficultyChoice | null>(null)
 
   // Reset state when question changes
   useEffect(() => {
@@ -72,9 +81,49 @@ export function QuestionCard({
     setJustRetriedAfterDontKnow(false)
   }, [currentQuestion])
 
-  const isRatingRequired = difficultyMeta?.shouldPrompt ?? false
-  const activeDifficultyChoice = submittingChoice ?? (isRatingRequired ? null : difficultyMeta?.lastChoice ?? null)
-  const isLocked = !isRatingRequired && Boolean(difficultyMeta?.lastChoice)
+  // Tối ưu hóa logic đánh giá độ khó với utility functions
+  const ratingValidation = useMemo(() => validateRatingRequirement(difficultyMeta), [difficultyMeta])
+  const {
+    isRequired: isRatingRecommended,
+    isLocked,
+    canModify,
+    hasExistingChoice
+  } = ratingValidation
+  
+  const activeDifficultyChoice = submittingChoice ?? localDifficultyChoice
+  
+  // Prevent unnecessary re-renders
+  const ratingPanelClassName = useMemo(() => 
+    getRatingPanelStyling(ratingValidation, activeDifficultyChoice), 
+    [ratingValidation, activeDifficultyChoice]
+  )
+
+  const ratingOptionsVisible = canModify
+  
+  const ratingStateMessage = useMemo(() => 
+    getRatingStateMessage(ratingValidation, difficultyMeta), 
+    [ratingValidation, difficultyMeta]
+  )
+
+  // Debug trong development
+  useEffect(() => {
+    debugRatingState(difficultyMeta, activeDifficultyChoice, submittingChoice)
+  }, [difficultyMeta, activeDifficultyChoice, submittingChoice])
+
+  useEffect(() => {
+    if (submittingChoice) return
+    if (!difficultyMeta) {
+      setLocalDifficultyChoice(null)
+      return
+    }
+
+    if (difficultyMeta.shouldPrompt) {
+      setLocalDifficultyChoice(null)
+      return
+    }
+
+    setLocalDifficultyChoice(difficultyMeta.lastChoice ?? null)
+  }, [difficultyMeta, submittingChoice])
   const difficultyPalette: Record<ReviewDifficultyChoice, { idle: string; active: string }> = {
     veryHard: {
       idle: 'border-destructive/50 text-destructive hover:border-destructive/70 hover:bg-destructive/10',
@@ -458,13 +507,19 @@ export function QuestionCard({
               </Badge>
             )}
           </div>
-          {isRatingRequired && (
+          {ratingStateMessage.type === 'warning' && (
             <p className="mt-3 flex items-center gap-2 text-sm text-warning">
               <AlertTriangle className="h-4 w-4 text-warning" />
-              Thẻ này cần được đánh giá lại sau khi bạn trả lời sai nhiều lần. Vui lòng chọn lại mức độ phù hợp trước khi tiếp tục.
+              {ratingStateMessage.message}
             </p>
           )}
-          {isRatingRequired && difficultyMeta?.lastChoice && (
+          {ratingStateMessage.type === 'info' && (
+            <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+              <Timer className="h-3.5 w-3.5" />
+              {ratingStateMessage.message}
+            </p>
+          )}
+          {ratingStateMessage.showPreviousChoice && difficultyMeta?.lastChoice && (
             <p className="mt-2 text-xs text-muted-foreground">
               Lần đánh giá gần nhất của bạn: {
                 (() => {
@@ -474,62 +529,123 @@ export function QuestionCard({
               }.
             </p>
           )}
-          <div
-            className={cn(
-              'mt-4 rounded-xl border p-4 transition-all duration-200',
-              isRatingRequired
-                ? 'border-warning/50 bg-warning/5 ring-1 ring-warning/40'
-                : activeDifficultyChoice
-                ? 'border-success/50 bg-success/5 ring-1 ring-success/30'
-                : 'border-border/40 bg-muted/10'
+          <div className={ratingPanelClassName}>
+            {ratingOptionsVisible ? (
+              <div className="grid gap-3 md:grid-cols-2">
+                {difficultyChoices.map(option => {
+                  const isActive = activeDifficultyChoice === option.value
+                  const isSubmitting = submittingChoice === option.value
+                  const isDisabled = isLocked || Boolean(submittingChoice && submittingChoice !== option.value)
+                  const palette = difficultyPalette[option.value]
+
+                  // Tối ưu hóa event handler với validation
+                  const handleClick = () => {
+                  const validation = validateDifficultySubmission(option.value, ratingValidation)
+                  if (!validation.isValid) {
+                    const reason = validation.reason ?? 'Lựa chọn đánh giá hiện không khả dụng.'
+                    if (!ratingValidation.canModify && !ratingValidation.isRequired) {
+                      toast.info(reason)
+                    } else {
+                      toast.warning(reason)
+                    }
+                    return
+                  }
+                  const previousChoice = localDifficultyChoice
+                  setLocalDifficultyChoice(option.value)
+
+                  const finalizeSuccess = () => {
+                    toast.success(`Đã lưu đánh giá: ${option.label}`)
+                  }
+
+                  const handleFailure = (error: unknown) => {
+                    setLocalDifficultyChoice(previousChoice ?? null)
+                    console.error('Failed to submit difficulty rating', error)
+                    toast.error('Không thể lưu đánh giá độ khó. Vui lòng thử lại.')
+                  }
+
+                  try {
+                    const maybePromise = onDifficultyChoice(option.value) as unknown
+                    if (
+                      typeof maybePromise === 'object' &&
+                      maybePromise !== null &&
+                      'then' in maybePromise &&
+                      typeof (maybePromise as PromiseLike<unknown>).then === 'function'
+                    ) {
+                      ;(maybePromise as PromiseLike<void>).then(
+                        () => finalizeSuccess(),
+                        (error) => handleFailure(error)
+                      )
+                    } else {
+                      finalizeSuccess()
+                    }
+                  } catch (error) {
+                    handleFailure(error)
+                  }
+                }
+                
+                  return (
+                    <Button
+                      key={option.value}
+                      type="button"
+                      variant="outline"
+                      disabled={isDisabled}
+                      onClick={handleClick}
+                      className={cn(
+                        'h-auto justify-start py-3 px-4 text-left transition-all duration-200',
+                        isActive ? palette.active : palette.idle,
+                        isSubmitting && 'opacity-70 cursor-wait'
+                      )}
+                      aria-pressed={isActive}
+                      data-state={isActive ? 'active' : 'idle'}
+                    >
+                      <div className="flex w-full flex-col items-start gap-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold">{isSubmitting ? 'Đang lưu...' : option.label}</span>
+                          {isActive && !isSubmitting && (
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-current">
+                              <Check className="h-3 w-3" />
+                              Đã lưu
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs text-muted-foreground break-words leading-snug">{option.description}</span>
+                      </div>
+                    </Button>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3 rounded-lg border border-border/60 bg-muted/30 px-4 py-5 text-sm text-muted-foreground">
+                <div className="flex items-center gap-3 text-muted-foreground">
+                  <Lock className="h-4 w-4" />
+                  <span>Đánh giá gần nhất của bạn đang được lưu. Thuật toán vẫn tự điều chỉnh lộ trình cho thẻ này.</span>
+                </div>
+                {activeDifficultyChoice && (
+                  <Badge variant="secondary" className="w-fit bg-primary/10 text-primary">
+                    Mức hiện tại: {(() => {
+                      const found = difficultyChoices.find(option => option.value === activeDifficultyChoice)
+                      return found ? found.label : activeDifficultyChoice
+                    })()}
+                  </Badge>
+                )}
+                {!activeDifficultyChoice && !hasExistingChoice && (
+                  <p className="text-xs text-muted-foreground/80">
+                    Bạn chưa đánh giá thẻ này. SmartLearn vẫn sẽ xử lý tiến trình một cách tự động.
+                  </p>
+                )}
+              </div>
             )}
-          >
-            <div className="grid gap-3 md:grid-cols-2">
-              {difficultyChoices.map(option => {
-                const isActive = activeDifficultyChoice === option.value
-                const isSubmitting = submittingChoice === option.value
-                const isDisabled = isLocked || Boolean(submittingChoice && submittingChoice !== option.value)
-                const palette = difficultyPalette[option.value]
-                return (
-                  <Button
-                    key={option.value}
-                    type="button"
-                    variant="outline"
-                    disabled={isDisabled}
-                    onClick={() => {
-                      if (isLocked) return
-                      onDifficultyChoice(option.value)
-                    }}
-                    className={cn(
-                      'h-auto justify-start py-3 px-4 text-left transition-all duration-200',
-                      isActive ? palette.active : palette.idle,
-                      isSubmitting && 'opacity-70 cursor-wait'
-                    )}
-                  >
-                    <div className="flex flex-col items-start gap-1">
-                      <span className="text-sm font-semibold">{isSubmitting ? 'Đang lưu...' : option.label}</span>
-                      <span className="text-xs text-muted-foreground break-words">{option.description}</span>
-                    </div>
-                  </Button>
-                )
-              })}
-            </div>
           </div>
-          {isRatingRequired && !activeDifficultyChoice && (
-            <p className="mt-3 text-xs text-warning flex items-center gap-1">
+          {isRatingRecommended && (
+            <p className="mt-3 text-xs text-info flex items-center gap-1">
               <Sparkles className="h-3 w-3" />
-              Hãy chọn một lựa chọn đánh giá để tiếp tục học hiệu quả hơn.
+              Tùy chọn: hãy đánh giá mức độ phù hợp nếu bạn muốn SmartLearn ghi chú cảm nhận của mình. Bạn vẫn có thể chuyển sang thẻ tiếp theo bình thường.
             </p>
           )}
-          {!isRatingRequired && activeDifficultyChoice && (
+          {ratingStateMessage.type === 'success' && (
             <p className="mt-3 text-xs text-success flex items-center gap-1">
               <Sparkles className="h-3 w-3" />
-              SmartLearn đã lưu đánh giá của bạn. Khu vực này được đánh dấu để bạn dễ nhận biết.
-            </p>
-          )}
-          {isLocked && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              Bạn chỉ có thể thay đổi mức độ khi hệ thống yêu cầu đánh giá lại.
+              {ratingStateMessage.message}
             </p>
           )}
         </div>

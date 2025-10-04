@@ -87,7 +87,10 @@ export interface DifficultyMeta {
   wrongStreak: number;
   mastery: number;
   lastChoice?: ReviewDifficultyChoice;
+  canAdjust: boolean;
 }
+
+const DIFFICULTY_ADJUSTMENT_COOLDOWN = 3;
 
 // ===== Progress Types =====
 export interface ProgressSummary {
@@ -628,12 +631,18 @@ export class LearnEngine {
   public getDifficultyMeta(cardId: string): DifficultyMeta | null {
     const state = this.state.get(cardId);
     if (!state) return null;
+    const lastPromptIndex = state.lastPromptAt ?? -Infinity;
+    const canAdjust =
+      state.pendingDifficultyChoice ||
+      lastPromptIndex === -Infinity ||
+      (this.sessionIndex - lastPromptIndex) >= DIFFICULTY_ADJUSTMENT_COOLDOWN;
     return {
       shouldPrompt: state.pendingDifficultyChoice ?? false,
       wrongCount: state.wrongCount,
       wrongStreak: state.wrongStreak ?? 0,
       mastery: state.mastery,
       lastChoice: state.lastDifficultyChoice,
+      canAdjust,
     };
   }
 

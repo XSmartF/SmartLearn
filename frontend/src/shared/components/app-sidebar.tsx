@@ -248,11 +248,11 @@ export const AppSidebar = React.memo(function AppSidebar({ ...props }: React.Com
     else if (url === ROUTES.SPEED_GAME) import('@/features/games/components/SpeedGame').catch(()=>{});  
   };  return (
     <Sidebar className="border-r-0" {...props}>
-      <SidebarHeader className="border-b border-border/30 pb-3">
+      <SidebarHeader className="border-b border-border/30 pb-3 group-data-[state=collapsed]:hidden">
         <Brand to="/" />
       </SidebarHeader>
       
-      <SidebarContent className="px-3 py-4">
+      <SidebarContent className="px-3 py-4 group-data-[state=collapsed]:hidden group-data-[state=collapsed]:opacity-0 group-data-[state=collapsed]:pointer-events-none">
         {/* Main Navigation */}
         <div className="mb-6">
           <div 
@@ -277,7 +277,7 @@ export const AppSidebar = React.memo(function AppSidebar({ ...props }: React.Com
         </div>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-border/30 pt-3 pb-2">
+      <SidebarFooter className="border-t border-border/30 pt-3 pb-2 group-data-[state=collapsed]:hidden">
         <NavUser />
       </SidebarFooter>
       <SidebarRail />

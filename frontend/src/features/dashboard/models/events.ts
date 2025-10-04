@@ -2,8 +2,18 @@ import { MAX_UPCOMING_EVENTS } from "../constants";
 import type { DashboardSources } from "../data/useDashboardSources";
 import type { DashboardEventItemModel, DashboardEventSectionModel } from "../types";
 import { getUpcomingEvents } from "@/features/study/utils/calendarUtils";
+import type { StudyEvent } from "@/features/study/types/calendar";
 
 const relativeTimeFormatter = new Intl.RelativeTimeFormat("vi", { numeric: "auto" });
+
+const EVENT_TYPE_LABELS: Record<StudyEvent["type"], string> = {
+  review: "Phiên ôn tập",
+  study: "Buổi học",
+  deadline: "Hạn nộp",
+  challenge: "Thử thách",
+  favorite_review: "Ôn thẻ yêu thích",
+  create: "Tạo mới",
+};
 
 const formatRelativeTime = (target: Date) => {
   const diffMs = target.getTime() - Date.now();
@@ -35,6 +45,7 @@ export function buildDashboardEventsSectionModel(
     relativeTime: formatRelativeTime(event.startTime),
     location: event.flashcardSet,
     type: event.type,
+    typeLabel: EVENT_TYPE_LABELS[event.type],
   }));
 
   return {

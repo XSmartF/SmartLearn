@@ -54,19 +54,19 @@ export function CardProgressCard({ engine, showCardAnswers, setShowCardAnswers }
                       variant={cardProgress.mastery >= 5 ? "default" : "outline"}
                       className={cardProgress.mastery >= 5 ? "bg-success" : ""}
                     >
-                      Lv {cardProgress.mastery}
+                      Mức độ: {cardProgress.mastery}/5
                     </Badge>
                     {cardProgress.wrongCount > 0 && (
                       <Badge variant="destructive" className="bg-destructive/10">
-                        {cardProgress.wrongCount} sai
+                        Sai {cardProgress.wrongCount} lần
                       </Badge>
                     )}
                     <Badge variant="outline">
-                      Seen: {cardProgress.seenCount}
+                      Đã xem: {cardProgress.seenCount} lần
                     </Badge>
                     {currentState && (
                       <Badge variant="outline">
-                        Next: {currentState.nextDue}
+                        Sẽ xuất hiện sau khoảng {currentState.nextDue} câu
                       </Badge>
                     )}
                   </div>
@@ -105,7 +105,7 @@ export function CardProgressCard({ engine, showCardAnswers, setShowCardAnswers }
                   <div className="text-2xl font-bold text-info">
                     {(engine.getAllCardStates().reduce((sum, state) => sum + state.mastery, 0) / engine.getAllCardStates().length).toFixed(1)}
                   </div>
-                  <div className="text-sm text-muted-foreground">Mastery TB</div>
+                  <div className="text-sm text-muted-foreground">Mức độ trung bình</div>
                 </div>
               </div>
             </div>

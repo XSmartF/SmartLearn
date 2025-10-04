@@ -1,22 +1,13 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Badge } from '@/shared/components/ui/badge'
 import { Button } from '@/shared/components/ui/button'
-import { Star, FileText, Calendar, Eye, Trash2, Edit3, BookOpen } from "lucide-react"
+import { Star, FileText, Calendar, Trash2, Edit3, BookOpen, Lock } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import type { NoteMeta } from '../types'
 import { getNoteDetailPath } from '@/shared/constants/routes'
 import { cn } from '@/shared/lib/utils'
-
-interface NoteCardProps {
-  note: NoteMeta;
-  isFav: boolean;
-  onToggleFavorite: (id: string, isFav: boolean) => void;
-  onEdit?: (note: NoteMeta) => void;
-  onDelete?: (note: NoteMeta) => void;
-  currentUserId: string;
-  favUpdating: boolean;
-}
 
 const CARD_GRADIENTS = [
   'from-indigo-50 via-blue-50 to-cyan-50 dark:from-indigo-950/40 dark:via-blue-950/40 dark:to-cyan-950/40 border-indigo-200 dark:border-indigo-800',
@@ -27,6 +18,99 @@ const CARD_GRADIENTS = [
   'from-sky-50 via-blue-50 to-indigo-50 dark:from-sky-950/40 dark:via-blue-950/40 dark:to-indigo-950/40 border-sky-200 dark:border-sky-800',
 ]
 
+interface VisibilityConfig {
+  label: string
+  className: string
+  ariaLabel: string
+  icon?: LucideIcon
+}
+
+const VISIBILITY_CONFIG: Record<NonNullable<NoteMeta['visibility']>, VisibilityConfig> = {
+  private: {
+    label: '',
+    className: 'bg-orange-100 text-orange-600 border border-orange-200',
+    ariaLabel: 'Ghi chú riêng tư',
+    icon: Lock,
+  },
+  public: {
+    label: 'Công khai',
+    className: 'bg-green-100 text-green-600 border border-green-200',
+    ariaLabel: 'Ghi chú công khai',
+  },
+}
+
+const NOTE_PREVIEW_LENGTH = 150
+
+interface NoteCardProps {
+  note: NoteMeta
+  isFav: boolean
+  onToggleFavorite: (id: string, isFav: boolean) => void
+  onEdit?: (note: NoteMeta) => void
+  onDelete?: (note: NoteMeta) => void
+  currentUserId: string
+  favUpdating: boolean
+}
+
+function getCardGradient(noteId: string) {
+  const seed = noteId.split('').reduce((total, char) => total + char.charCodeAt(0), 0)
+  return CARD_GRADIENTS[seed % CARD_GRADIENTS.length]
+}
+
+function extractInlineText(block: { content?: unknown[] }) {
+  if (!Array.isArray(block.content)) {
+    return ''
+  }
+
+  return block.content
+    .map((item) => (typeof item === 'object' && item && 'text' in item ? String((item as { text: unknown }).text) : ''))
+    .join('')
+}
+
+function buildPreview(rawContent: string | null | undefined) {
+  if (!rawContent) {
+    return ''
+  }
+
+  try {
+    const parsed = JSON.parse(rawContent)
+    if (Array.isArray(parsed)) {
+      return parsed.map(extractInlineText).join(' ').trim()
+    }
+  } catch (error) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('Failed to parse note content', error)
+    }
+  }
+
+  return rawContent.slice(0, NOTE_PREVIEW_LENGTH)
+}
+
+function NoteVisibilityBadge({ visibility }: { visibility?: NonNullable<NoteMeta['visibility']> }) {
+  if (!visibility) {
+    return null
+  }
+
+  const config = VISIBILITY_CONFIG[visibility]
+  const Icon = config.icon
+  const showLabel = Boolean(config.label)
+
+  return (
+    <Badge
+      variant="secondary"
+      className={cn(
+        'inline-flex items-center gap-1 text-[11px] sm:text-xs px-2 py-1 font-medium shrink-0',
+        !showLabel && 'px-1.5',
+        config.className,
+      )}
+      aria-label={config.ariaLabel}
+    >
+      {Icon ? <Icon className="h-3.5 w-3.5" aria-hidden="true" /> : null}
+      {showLabel ? <span>{config.label}</span> : null}
+      <span className="sr-only">{config.ariaLabel}</span>
+    </Badge>
+  )
+}
+
 export const NoteCard: React.FC<NoteCardProps> = ({
   note,
   isFav,
@@ -34,193 +118,148 @@ export const NoteCard: React.FC<NoteCardProps> = ({
   onEdit,
   onDelete,
   currentUserId,
-  favUpdating
+  favUpdating,
 }) => {
-  // Generate consistent gradient based on note ID
-  const gradientIndex = note.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % CARD_GRADIENTS.length
-  const cardGradient = CARD_GRADIENTS[gradientIndex]
-
-  // Extract text content from BlockNote JSON
-  const extractTextFromContent = (content: string): string => {
-    try {
-      const parsed = JSON.parse(content)
-      if (Array.isArray(parsed)) {
-        return parsed
-          .map((block: { content?: unknown[] }) => {
-            if (block.content && Array.isArray(block.content)) {
-              return block.content
-                .map((item: unknown) => {
-                  if (typeof item === 'object' && item !== null && 'text' in item) {
-                    return String((item as { text: unknown }).text)
-                  }
-                  return ''
-                })
-                .join('')
-            }
-            return ''
-          })
-          .filter(Boolean)
-          .join(' ')
-          .trim()
-      }
-      return ''
-    } catch {
-      return content.substring(0, 150)
-    }
-  }
-
-  const contentPreview = note.content ? extractTextFromContent(note.content) : ''
+  const cardGradient = useMemo(() => getCardGradient(note.id), [note.id])
+  const contentPreview = useMemo(() => buildPreview(note.content), [note.content])
+  const formattedDate = useMemo(
+    () =>
+      new Date(note.updatedAt).toLocaleDateString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      }),
+    [note.updatedAt]
+  )
+  const tags = note.tags ?? []
+  const visibleTags = tags.slice(0, 3)
+  const extraTagCount = Math.max(0, tags.length - visibleTags.length)
 
   return (
-    <div className="h-full group min-w-0 max-w-full">
-      <Card className={cn(
-        "h-full w-full max-w-full flex flex-col relative overflow-hidden transition-all duration-300",
-        "supports-[hover:hover]:hover:shadow-2xl supports-[hover:hover]:hover:scale-[1.03] supports-[hover:hover]:hover:-translate-y-2",
-        "bg-gradient-to-br border sm:border-2",
-        cardGradient
-      )}>
-        {/* Favorite star indicator */}
-        {isFav && (
-          <div className="absolute top-3 right-3 z-10">
-            <div className="bg-yellow-400 dark:bg-yellow-500 text-yellow-900 dark:text-yellow-950 rounded-full p-1.5 shadow-lg">
+    <div className="group h-full min-w-0 max-w-full">
+      <Card
+        className={cn(
+          'relative flex h-full w-full max-w-full flex-col overflow-hidden transition-all duration-300',
+          'supports-[hover:hover]:hover:-translate-y-2 supports-[hover:hover]:hover:scale-[1.03] supports-[hover:hover]:hover:shadow-2xl',
+          'bg-gradient-to-br border sm:border-2',
+          cardGradient,
+        )}
+      >
+        {isFav ? (
+          <div className="absolute right-3 top-3 z-10">
+            <div className="rounded-full bg-yellow-400 p-1.5 text-yellow-900 shadow-lg dark:bg-yellow-500 dark:text-yellow-950">
               <Star className="h-3.5 w-3.5 fill-current" />
             </div>
           </div>
-        )}
+        ) : null}
 
-        {/* Decorative corner accent */}
-  <div className="hidden sm:block absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white/30 to-transparent dark:from-white/10 rounded-bl-full transform translate-x-12 -translate-y-12 group-hover:scale-150 transition-transform duration-500" />
+        <div className="supports-[hover:hover]:group-hover:scale-150 absolute right-0 top-0 hidden h-24 w-24 -translate-y-12 translate-x-12 rounded-bl-full bg-gradient-to-br from-white/30 to-transparent transition-transform duration-500 dark:from-white/10 sm:block" />
 
-  <Link to={getNoteDetailPath(note.id)} className="flex-1 flex flex-col min-w-0 w-full max-w-full">
-          <CardHeader className="pb-2 sm:pb-3 relative z-10">
+        <Link to={getNoteDetailPath(note.id)} className="flex w-full max-w-full flex-1 flex-col min-w-0">
+          <CardHeader className="relative z-10 pb-2 sm:pb-3">
             <div className="flex items-start justify-between gap-3">
-              <div className="space-y-2 sm:space-y-2.5 flex-1 min-w-0">
-                {/* Title with icon */}
+              <div className="flex-1 space-y-2 sm:space-y-2.5">
                 <div className="flex items-start gap-2.5">
-                  <div className="mt-0.5 p-1.5 sm:p-2 rounded-lg bg-white/50 dark:bg-white/10 backdrop-blur-sm shadow-sm">
+                  <div className="mt-0.5 rounded-lg bg-white/50 p-1.5 shadow-sm backdrop-blur-sm dark:bg-white/10 sm:p-2">
                     <BookOpen className="h-4 w-4 text-primary" />
                   </div>
-                  <CardTitle className="text-sm sm:text-lg font-bold group-hover:text-primary transition-colors line-clamp-2 break-words leading-snug flex-1">
+                  <CardTitle className="flex-1 break-words text-sm font-bold leading-snug transition-colors line-clamp-2 sm:text-lg group-hover:text-primary">
                     {note.title}
                   </CardTitle>
                 </div>
 
-                {/* Tags */}
-                {note.tags && note.tags.length > 0 && (
-                  <div className="hidden sm:flex flex-wrap gap-1.5">
-                    {note.tags.slice(0, 3).map(tag => (
-                      <Badge key={tag} variant="outline" className="text-[10px] sm:text-xs font-medium bg-white/50 dark:bg-white/10 backdrop-blur-sm">
+                {visibleTags.length ? (
+                  <div className="hidden flex-wrap gap-1.5 sm:flex">
+                    {visibleTags.map((tag) => (
+                      <Badge key={tag} variant="outline" className="bg-white/50 text-[10px] font-medium backdrop-blur-sm dark:bg-white/10 sm:text-xs">
                         {tag}
                       </Badge>
                     ))}
-                    {note.tags.length > 3 && (
-                      <Badge variant="outline" className="text-[10px] sm:text-xs font-medium bg-white/50 dark:bg-white/10 backdrop-blur-sm">
-                        +{note.tags.length - 3}
+                    {extraTagCount > 0 ? (
+                      <Badge variant="outline" className="bg-white/50 text-[10px] font-medium backdrop-blur-sm dark:bg-white/10 sm:text-xs">
+                        +{extraTagCount}
                       </Badge>
-                    )}
+                    ) : null}
                   </div>
-                )}
+                ) : null}
               </div>
             </div>
           </CardHeader>
 
-          <CardContent className="pt-0 sm:pt-0 flex-1 flex flex-col justify-between relative z-10">
-            {/* Content preview */}
-            <div className="mb-3 sm:mb-4 flex-1">
+          <CardContent className="relative z-10 flex flex-1 flex-col justify-between pt-0">
+            <div className="mb-3 flex-1 sm:mb-4">
               {contentPreview ? (
-                <p className="text-[13px] sm:text-sm text-muted-foreground line-clamp-2 sm:line-clamp-3 leading-relaxed break-words">
+                <p className="text-[13px] leading-relaxed text-muted-foreground line-clamp-2 break-words sm:text-sm sm:line-clamp-3">
                   {contentPreview}
                 </p>
               ) : (
-                <div className="flex items-center gap-2 text-[13px] sm:text-sm text-muted-foreground/60 italic">
+                <div className="flex items-center gap-2 text-[13px] italic text-muted-foreground/60 sm:text-sm">
                   <FileText className="h-4 w-4" />
                   <span>Chưa có nội dung</span>
                 </div>
               )}
             </div>
 
-            {/* Footer info */}
-            <div className="flex flex-wrap items-center justify-between gap-y-2 pt-2 sm:pt-3 border-t border-border/50">
-              <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs text-muted-foreground min-w-0">
-                <div className="p-1 rounded-md bg-primary/10">
+            <div className="flex flex-wrap items-center justify-between gap-y-2 border-t border-border/50 pt-2 sm:pt-3">
+              <div className="flex min-w-0 items-center gap-1.5 text-[11px] text-muted-foreground sm:gap-2 sm:text-xs">
+                <div className="rounded-md bg-primary/10 p-1">
                   <Calendar className="h-3 w-3 text-primary" />
                 </div>
-                <span className="font-medium truncate">
-                  {new Date(note.updatedAt).toLocaleDateString('vi-VN', { 
-                    day: '2-digit', 
-                    month: '2-digit', 
-                    year: 'numeric' 
-                  })}
-                </span>
+                <span className="truncate font-medium">{formattedDate}</span>
               </div>
-              {note.visibility && (
-                <div
-                  className={cn(
-                    "flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full border text-primary-foreground/70 shrink-0",
-                    note.visibility === 'private'
-                      ? 'bg-orange-100 border-orange-200 text-orange-500'
-                      : 'bg-green-100 border-green-200 text-green-600'
-                  )}
-                  aria-label={note.visibility === 'private' ? 'Ghi chép riêng tư' : 'Ghi chép công khai'}
-                >
-                  <Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5" aria-hidden="true" />
-                </div>
-              )}
+              <NoteVisibilityBadge visibility={note.visibility ?? undefined} />
             </div>
           </CardContent>
         </Link>
 
-        {/* Action buttons overlay */}
-        <div
-          className="absolute bottom-3 right-3 flex items-center gap-1.5 opacity-100 transition-all duration-300 z-20 supports-[hover:hover]:opacity-0 supports-[hover:hover]:pointer-events-none supports-[hover:hover]:group-hover:opacity-100 supports-[hover:hover]:group-hover:pointer-events-auto"
-        >
+        <div className="supports-[hover:hover]:opacity-0 supports-[hover:hover]:pointer-events-none supports-[hover:hover]:group-hover:pointer-events-auto supports-[hover:hover]:group-hover:opacity-100 absolute bottom-3 right-3 z-20 flex items-center gap-1.5 opacity-100 transition-all duration-300">
           <Button
             variant="secondary"
             size="sm"
-            onClick={(e) => {
-              e.preventDefault();
-              onToggleFavorite(note.id, isFav);
+            onClick={(event) => {
+              event.preventDefault()
+              onToggleFavorite(note.id, isFav)
             }}
             disabled={favUpdating}
-            className="h-9 w-9 p-0 shadow-lg hover:shadow-xl backdrop-blur-sm bg-white/90 dark:bg-gray-900/90"
+            className="h-9 w-9 bg-white/90 p-0 shadow-lg backdrop-blur-sm hover:shadow-xl dark:bg-gray-900/90"
             title={isFav ? 'Bỏ yêu thích' : 'Yêu thích'}
           >
-            <Star className={`h-4 w-4 ${isFav ? 'fill-yellow-400 text-yellow-400' : ''}`} />
+            <Star className={cn('h-4 w-4', isFav && 'fill-yellow-400 text-yellow-400')} />
           </Button>
-          {(note.ownerId === currentUserId) && (
+          {note.ownerId === currentUserId ? (
             <>
-              {onEdit && (
+              {onEdit ? (
                 <Button
                   variant="secondary"
                   size="sm"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onEdit(note);
+                  onClick={(event) => {
+                    event.preventDefault()
+                    onEdit(note)
                   }}
-                  className="h-9 w-9 p-0 shadow-lg hover:shadow-xl backdrop-blur-sm bg-white/90 dark:bg-gray-900/90"
+                  className="h-9 w-9 bg-white/90 p-0 shadow-lg backdrop-blur-sm hover:shadow-xl dark:bg-gray-900/90"
                   title="Chỉnh sửa"
                 >
                   <Edit3 className="h-4 w-4" />
                 </Button>
-              )}
-              {onDelete && (
+              ) : null}
+              {onDelete ? (
                 <Button
                   variant="destructive"
                   size="sm"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onDelete(note);
+                  onClick={(event) => {
+                    event.preventDefault()
+                    onDelete(note)
                   }}
                   className="h-9 w-9 p-0 shadow-lg hover:shadow-xl"
                   title="Xóa"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
-              )}
+              ) : null}
             </>
-          )}
+          ) : null}
         </div>
       </Card>
     </div>
-  );
-};
+  )
+}

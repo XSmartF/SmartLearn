@@ -9,7 +9,6 @@ import { useDashboardPalette } from "../hooks/useDashboardPalette";
 import { useDashboardStudyEvents } from "../hooks/useDashboardStudyEvents";
 import { useOwnerProfiles } from "../hooks/useOwnerProfiles";
 import { useProgressSummaries } from "../hooks/useProgressSummaries";
-import { useDashboardAnalytics, type DashboardProductivityPoint } from "../hooks/useDashboardAnalytics";
 import type { DashboardChartPalette } from "../types";
 import type { LibraryMeta } from "@/shared/lib/models";
 import type { ProgressSummaryLite } from "@/shared/lib/firebase";
@@ -40,7 +39,6 @@ export interface DashboardSources {
   summaries: Record<string, ProgressSummaryLite>;
   ownerProfiles: Record<string, DashboardOwnerProfile>;
   studyEvents: StudyEvent[];
-  fallbackProductivity: DashboardProductivityPoint[];
 }
 
 export function useDashboardSources(): DashboardSources {
@@ -62,7 +60,6 @@ export function useDashboardSources(): DashboardSources {
   const ownerProfiles = useOwnerProfiles(allLibraries);
   const summaries = useProgressSummaries(allLibraries);
   const studyEvents = useDashboardStudyEvents();
-  const { productivity: fallbackProductivity } = useDashboardAnalytics();
 
   return useMemo(
     () => ({
@@ -78,13 +75,11 @@ export function useDashboardSources(): DashboardSources {
       summaries,
       ownerProfiles,
       studyEvents,
-      fallbackProductivity,
     }),
     [
       allLibraries,
       favoriteIds,
       favorites,
-      fallbackProductivity,
       isDarkMode,
       libsLoading,
       ownerProfiles,

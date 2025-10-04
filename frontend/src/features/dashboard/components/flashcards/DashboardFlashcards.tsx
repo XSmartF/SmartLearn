@@ -1,9 +1,11 @@
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Progress } from "@/shared/components/ui/progress";
 import { MutedSmall } from "@/shared/components/ui/typography";
+import { useMediaQuery } from "@/shared/hooks/useMediaQuery";
 import type { DashboardFlashcardItemModel, DashboardFlashcardSectionModel } from "@/features/dashboard/types";
 
 interface DashboardFlashcardsProps {
@@ -11,6 +13,12 @@ interface DashboardFlashcardsProps {
 }
 
 export function DashboardFlashcards({ model }: DashboardFlashcardsProps) {
+  const isLargeScreen = useMediaQuery("(min-width: 1024px)");
+  const visibleItems = useMemo(() => {
+    const limit = isLargeScreen ? 6 : 4;
+    return model.items.slice(0, limit);
+  }, [model.items, isLargeScreen]);
+
   if (model.isLoading) {
     return (
       <section className="grid gap-4">
@@ -53,8 +61,8 @@ export function DashboardFlashcards({ model }: DashboardFlashcardsProps) {
         <CardTitle>{model.title}</CardTitle>
         <CardDescription>{model.description}</CardDescription>
       </header>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {model.items.map((item) => (
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 xl:auto-rows-fr">
+        {visibleItems.map((item) => (
           <DashboardFlashcardItem key={item.id} item={item} />
         ))}
       </div>
@@ -80,35 +88,35 @@ function DashboardFlashcardItem({ item }: DashboardFlashcardItemProps) {
           </Link>
         </CardTitle>
         <CardDescription className="space-y-1">
-          <MutedSmall>Total cards: {item.totalCards}</MutedSmall>
-          <MutedSmall>Mastered: {item.masteredCards}</MutedSmall>
+          <MutedSmall>Tổng số thẻ: {item.totalCards}</MutedSmall>
+          <MutedSmall>Đã ghi nhớ: {item.masteredCards}</MutedSmall>
           {typeof item.accuracyPercent === "number" ? (
-            <MutedSmall>Accuracy: {item.accuracyPercent}%</MutedSmall>
+            <MutedSmall>Độ chính xác: {item.accuracyPercent}%</MutedSmall>
           ) : null}
           {typeof item.sessions === "number" ? (
-            <MutedSmall>Sessions: {item.sessions}</MutedSmall>
+            <MutedSmall>Lượt học: {item.sessions}</MutedSmall>
           ) : null}
           {item.ownerName && !item.isOwned ? (
-            <MutedSmall>Shared by {item.ownerName}</MutedSmall>
+            <MutedSmall>Chia sẻ bởi {item.ownerName}</MutedSmall>
           ) : null}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
           <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
-            <span>Progress</span>
+            <span>Tiến độ</span>
             <span>{item.progressPercent}%</span>
           </div>
           <Progress value={item.progressPercent} className="mt-2 h-2" />
         </div>
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>Mastery</span>
+          <span>Mức độ ghi nhớ</span>
           <span>{masteredPercent}%</span>
         </div>
       </CardContent>
       <CardContent>
         <Button asChild className="w-full">
-          <Link to={item.continueHref}>{item.isOwned ? "Continue" : "Review"}</Link>
+          <Link to={item.continueHref}>{item.isOwned ? "Tiếp tục học" : "Ôn lại"}</Link>
         </Button>
       </CardContent>
     </Card>

@@ -73,7 +73,7 @@ export const AnalyticsChartsSection = memo(({ productivity, completion }: Analyt
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-muted" />
-                <XAxis dataKey="week" tickLine={false} axisLine={false} className="text-[9px]" />
+                <XAxis dataKey="label" tickLine={false} axisLine={false} className="text-[9px]" />
                 <YAxis tickLine={false} axisLine={false} className="text-[9px]" />
                 <Tooltip content={<ChartTooltipContent />} />
                 <Legend verticalAlign="top" align="right" content={<ChartLegendContent />} wrapperStyle={{ fontSize: '10px' }} />

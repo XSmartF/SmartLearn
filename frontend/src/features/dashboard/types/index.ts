@@ -46,7 +46,8 @@ export interface DashboardChartPalette {
 }
 
 export interface DashboardProductivityPoint {
-  week: string;
+  date: string;
+  label: string;
   focusMinutes: number;
   reviewSessions: number;
 }
@@ -66,6 +67,7 @@ export interface DashboardEventItemModel {
   relativeTime: string;
   location?: string;
   type?: StudyEvent["type"];
+  typeLabel?: string;
 }
 
 export interface DashboardEventSectionModel {

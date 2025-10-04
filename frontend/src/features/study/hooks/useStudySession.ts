@@ -9,7 +9,6 @@ import { idbGetItem, idbSetItem } from '@/shared/lib/indexedDB'
 import { consumeReviewSession } from '@/shared/constants/review'
 import { scheduleAutoReview } from '@/shared/lib/reviewScheduler'
 import { STUDY_DIFFICULTY_CHOICES } from '@/features/study/constants/difficulty'
-import { STUDY_KEYBOARD_SHORTCUTS } from '@/features/study/constants/shortcuts'
 import { useStudyPreferences } from '@/features/study/hooks/useStudyPreferences'
 import type { LibraryMeta } from '@/shared/lib/models'
 import type {
@@ -87,10 +86,6 @@ export interface StudySessionViewModel {
   library: LibraryMeta | null
   reviewContext: StudyReviewContext | null
   header: StudyHeaderModel | null
-  keyboardShortcuts: {
-    visible: boolean
-    items: typeof STUDY_KEYBOARD_SHORTCUTS
-  }
   questionCard: StudyQuestionCardModel | null
   cardProgress: StudyCardProgressModel | null
   stats: StudyStatsModel | null
@@ -118,7 +113,6 @@ export function useStudySession({ libraryId, isReviewSession }: UseStudySessionP
     showCardProgress,
     autoRead,
     readLanguage,
-    showKeyboardShortcuts,
     answerSide
   } = preferences
   const {
@@ -128,7 +122,6 @@ export function useStudySession({ libraryId, isReviewSession }: UseStudySessionP
     setShowCardProgress,
     setAutoRead,
     setReadLanguage,
-    setShowKeyboardShortcuts,
     setAnswerSide
   } = preferenceHandlers
 
@@ -154,7 +147,8 @@ export function useStudySession({ libraryId, isReviewSession }: UseStudySessionP
   const currentCardId = currentQuestion?.cardId
   const currentDifficultyMeta: DifficultyMeta | null = currentCardId && engine ? engine.getDifficultyMeta(currentCardId) : null
   const mustRateBeforeNext = currentDifficultyMeta?.shouldPrompt ?? false
-  const effectiveAutoAdvance = autoAdvance && !mustRateBeforeNext && submittingChoice === null
+  const effectiveAutoAdvance = autoAdvance && submittingChoice === null
+
 
   const speakQuestion = useCallback((text: string, lang: string) => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
@@ -441,12 +435,6 @@ export function useStudySession({ libraryId, isReviewSession }: UseStudySessionP
 
   const handleNext = useCallback(() => {
     if (!engine || submittingChoice) return
-    if (currentQuestion) {
-      const meta = engine.getDifficultyMeta(currentQuestion.cardId)
-      if (meta?.shouldPrompt) {
-        return
-      }
-    }
     setShowResult(false)
     setUserAnswer('')
     setLastResult(null)
@@ -455,12 +443,12 @@ export function useStudySession({ libraryId, isReviewSession }: UseStudySessionP
     const nextQuestion = engine.nextQuestion()
     setCurrentQuestion(nextQuestion)
     if (!nextQuestion || engine.isFinished()) setIsFinished(true)
-  }, [engine, currentQuestion, submittingChoice])
+  }, [engine, submittingChoice])
 
   const handleSelectDifficulty = useCallback((choice: ReviewDifficultyChoice) => {
     if (!currentQuestion || submittingChoice) return
     handleDifficultyChoice(currentQuestion.cardId, choice)
-  }, [currentQuestion, handleDifficultyChoice, submittingChoice])
+  }, [currentQuestion, submittingChoice, handleDifficultyChoice])
 
   useEffect(() => {
     if (showResult && effectiveAutoAdvance) {
@@ -580,12 +568,11 @@ export function useStudySession({ libraryId, isReviewSession }: UseStudySessionP
         setShowCardProgress,
         setAutoRead,
         setReadLanguage,
-        setShowKeyboardShortcuts,
         setAnswerSide,
         resetSession: handleResetSession
       }
     }
-  }, [library, libraryId, currentQuestion, preferences, setAllowMC, setAllowTyped, setAutoAdvance, setShowCardProgress, setAutoRead, setReadLanguage, setShowKeyboardShortcuts, setAnswerSide, handleResetSession])
+  }, [library, libraryId, currentQuestion, preferences, setAllowMC, setAllowTyped, setAutoAdvance, setShowCardProgress, setAutoRead, setReadLanguage, setAnswerSide, handleResetSession])
 
   const questionCardModel: StudyQuestionCardModel | null = useMemo(() => {
     if (!engine || !currentQuestion) return null
@@ -604,14 +591,14 @@ export function useStudySession({ libraryId, isReviewSession }: UseStudySessionP
       speakQuestion,
       handleAnswer,
       handleNext,
-      disableNext: mustRateBeforeNext,
+      disableNext: Boolean(submittingChoice),
       answerSide,
       difficultyMeta: currentDifficultyMeta,
       difficultyChoices: STUDY_DIFFICULTY_CHOICES,
       onDifficultyChoice: handleSelectDifficulty,
       submittingChoice
     }
-  }, [engine, currentQuestion, cards, userAnswer, showResult, lastResult, selectedOptionIndex, correctOptionIndex, effectiveAutoAdvance, readLanguage, speakQuestion, handleAnswer, handleNext, mustRateBeforeNext, answerSide, currentDifficultyMeta, handleSelectDifficulty, submittingChoice])
+  }, [engine, currentQuestion, cards, userAnswer, showResult, lastResult, selectedOptionIndex, correctOptionIndex, effectiveAutoAdvance, readLanguage, speakQuestion, handleAnswer, handleNext, answerSide, currentDifficultyMeta, handleSelectDifficulty, submittingChoice])
 
   const cardProgressModel: StudyCardProgressModel | null = useMemo(() => {
     if (!engine || !showCardProgress) return null
@@ -650,10 +637,6 @@ export function useStudySession({ libraryId, isReviewSession }: UseStudySessionP
     library,
     reviewContext,
     header: headerModel,
-    keyboardShortcuts: {
-      visible: showKeyboardShortcuts,
-      items: STUDY_KEYBOARD_SHORTCUTS
-    },
     questionCard: questionCardModel,
     cardProgress: cardProgressModel,
     stats: statsModel,

@@ -22,7 +22,6 @@ interface StudyHeaderSettings {
   showCardProgress: boolean
   autoRead: boolean
   readLanguage: string
-  showKeyboardShortcuts: boolean
   answerSide: 'front' | 'back'
 }
 
@@ -33,7 +32,6 @@ interface StudyHeaderHandlers {
   setShowCardProgress: (value: boolean) => void
   setAutoRead: (value: boolean) => void
   setReadLanguage: (value: string) => void
-  setShowKeyboardShortcuts: (value: boolean) => void
   setAnswerSide: (side: 'front' | 'back') => void
   resetSession: () => void
 }
@@ -57,7 +55,6 @@ export function StudyHeader({
     showCardProgress,
     autoRead,
     readLanguage,
-    showKeyboardShortcuts,
     answerSide
   } = settings
   const {
@@ -67,7 +64,6 @@ export function StudyHeader({
     setShowCardProgress,
     setAutoRead,
     setReadLanguage,
-    setShowKeyboardShortcuts,
     setAnswerSide,
     resetSession
   } = handlers
@@ -155,13 +151,6 @@ export function StudyHeader({
                     <Switch
                       checked={autoRead}
                       onCheckedChange={v => setAutoRead(!!v)}
-                    />
-                  </div>
-                  <div className='flex items-center justify-between'>
-                    <label className='text-sm'>Hiển thị phím tắt</label>
-                    <Switch
-                      checked={showKeyboardShortcuts}
-                      onCheckedChange={v => setShowKeyboardShortcuts(!!v)}
                     />
                   </div>
                   <div className='space-y-2'>

@@ -46,7 +46,7 @@ export function StatsCard({ engine, progress }: StatsCardProps) {
     {
       icon: Clock,
       value: averageTimeLabel,
-      label: 'Thời gian TB',
+      label: 'Thời gian trung bình',
       color: 'text-warning',
       bgColor: 'bg-warning/10'
     },

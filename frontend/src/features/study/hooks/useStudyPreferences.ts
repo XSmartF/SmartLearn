@@ -9,7 +9,6 @@ export type StudyPreferences = {
   showCardProgress: boolean;
   autoRead: boolean;
   readLanguage: string;
-  showKeyboardShortcuts: boolean;
   answerSide: AnswerSide;
 };
 
@@ -22,7 +21,6 @@ const DEFAULT_STUDY_PREFERENCES: StudyPreferences = {
   showCardProgress: false,
   autoRead: false,
   readLanguage: 'en-US',
-  showKeyboardShortcuts: true,
   answerSide: 'back',
 };
 
@@ -46,7 +44,6 @@ export interface StudyPreferenceHandlers {
   setShowCardProgress: (value: boolean) => void;
   setAutoRead: (value: boolean) => void;
   setReadLanguage: (value: string) => void;
-  setShowKeyboardShortcuts: (value: boolean) => void;
   setAnswerSide: (side: AnswerSide) => void;
 }
 
@@ -85,7 +82,6 @@ export function useStudyPreferences() {
     setShowCardProgress: (value: boolean) => updatePreference('showCardProgress', value),
     setAutoRead: (value: boolean) => updatePreference('autoRead', value),
     setReadLanguage: (value: string) => updatePreference('readLanguage', value),
-    setShowKeyboardShortcuts: (value: boolean) => updatePreference('showKeyboardShortcuts', value),
     setAnswerSide: (side: AnswerSide) => updatePreference('answerSide', side),
   }), [updatePreference]);
 

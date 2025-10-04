@@ -1,26 +1,25 @@
-import { useId } from "react";
 import {
-  Area,
-  AreaChart,
+  Bar,
+  BarChart,
   CartesianGrid,
-  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis
 } from "recharts";
+import { memo, useMemo } from "react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { ChartContainer, ChartLegendContent, ChartTooltipContent } from "@/shared/components/ui/chart";
+import { ChartContainer, ChartTooltipContent } from "@/shared/components/ui/chart";
 import type { DashboardProductivitySectionModel } from "@/features/dashboard/types";
 
 interface DashboardProductivityProps {
   model: DashboardProductivitySectionModel;
 }
 
-export function DashboardProductivity({ model }: DashboardProductivityProps) {
-  const focusGradientId = useId();
-  const reviewGradientId = useId();
+export const DashboardProductivity = memo(({ model }: DashboardProductivityProps) => {
+  const chartData = useMemo(() => model.data, [model.data]);
+  const legendItems = useMemo(() => Object.entries(model.config), [model.config]);
 
   return (
     <Card className="flex h-full flex-col">
@@ -28,31 +27,60 @@ export function DashboardProductivity({ model }: DashboardProductivityProps) {
         <CardTitle className="text-base font-semibold">{model.title}</CardTitle>
         <CardDescription>{model.description}</CardDescription>
       </CardHeader>
-      <CardContent className="flex-1 min-h-[320px]">
-        <ChartContainer config={model.config} className="h-full w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={model.data} margin={{ left: 0, right: 0, top: 8, bottom: 0 }}>
-              <defs>
-                <linearGradient id={focusGradientId} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={model.palette.focus} stopOpacity={0.5} />
-                  <stop offset="95%" stopColor={model.palette.focus} stopOpacity={0.1} />
-                </linearGradient>
-                <linearGradient id={reviewGradientId} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={model.palette.review} stopOpacity={0.45} />
-                  <stop offset="95%" stopColor={model.palette.review} stopOpacity={0.08} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={model.palette.grid} />
-              <XAxis dataKey="week" tickLine={false} axisLine={false} tickMargin={6} stroke={model.palette.axis} />
-              <YAxis tickLine={false} axisLine={false} tickMargin={4} stroke={model.palette.axis} />
-              <Tooltip content={<ChartTooltipContent />} />
-              <Legend verticalAlign="top" align="right" content={<ChartLegendContent />} wrapperStyle={{ fontSize: "12px", paddingBottom: "8px" }} iconSize={10} />
-              <Area type="monotone" dataKey="focusMinutes" stroke={model.palette.focus} fill={`url(#${focusGradientId})`} strokeWidth={2} />
-              <Area type="monotone" dataKey="reviewSessions" stroke={model.palette.review} fill={`url(#${reviewGradientId})`} strokeWidth={2} />
-            </AreaChart>
-          </ResponsiveContainer>
-        </ChartContainer>
+      <CardContent className="flex flex-1 flex-col gap-4">
+        <div className="flex flex-wrap items-center gap-3 text-xs font-medium text-muted-foreground">
+          {legendItems.map(([key, item]) => (
+            <div key={key} className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color ?? "currentColor" }} />
+              <span>{item.label ?? key}</span>
+            </div>
+          ))}
+        </div>
+        <div className="relative w-full">
+          <ChartContainer config={model.config} className="h-[220px] sm:h-[260px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ left: 0, right: 12, top: 4, bottom: 12 }} barCategoryGap="30%">
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={model.palette.grid} />
+                <XAxis
+                  dataKey="label"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={6}
+                  stroke={model.palette.axis}
+                  interval={0}
+                />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={4}
+                  stroke={model.palette.axis}
+                  width={36}
+                />
+                <Tooltip
+                  content={<ChartTooltipContent />}
+                  cursor={{ fill: model.palette.grid, fillOpacity: 0.16 }}
+                />
+                <Bar
+                  dataKey="focusMinutes"
+                  fill={model.palette.focus}
+                  radius={[8, 8, 0, 0]}
+                  maxBarSize={32}
+                  isAnimationActive={false}
+                />
+                <Bar
+                  dataKey="reviewSessions"
+                  fill={model.palette.review}
+                  radius={[8, 8, 0, 0]}
+                  maxBarSize={32}
+                  isAnimationActive={false}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </div>
       </CardContent>
     </Card>
   );
-}
+});
+
+DashboardProductivity.displayName = "DashboardProductivity";

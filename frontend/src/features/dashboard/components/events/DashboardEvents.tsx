@@ -5,6 +5,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import type { DashboardEventItemModel, DashboardEventSectionModel } from "@/features/dashboard/types";
 import { format } from "date-fns";
+import { vi } from "date-fns/locale";
 
 interface DashboardEventsProps {
   model: DashboardEventSectionModel;
@@ -21,7 +22,7 @@ export function DashboardEvents({ model, manageHref }: DashboardEventsProps) {
         </div>
         {manageHref ? (
           <Button variant="ghost" size="sm" asChild>
-            <Link to={manageHref}>Manage</Link>
+            <Link to={manageHref}>Quản lý</Link>
           </Button>
         ) : null}
       </header>
@@ -59,7 +60,7 @@ function DashboardEventItem({ item }: DashboardEventItemProps) {
           </CardTitle>
           <CardDescription className="flex flex-wrap items-center gap-2 text-sm">
             <time dateTime={item.scheduledAt.toISOString()} className="font-medium text-foreground">
-              {format(item.scheduledAt, "PPpp")}
+              {format(item.scheduledAt, "PPpp", { locale: vi })}
             </time>
             <span aria-hidden="true">•</span>
             <span>{item.relativeTime}</span>
@@ -73,7 +74,7 @@ function DashboardEventItem({ item }: DashboardEventItemProps) {
         </div>
       </CardContent>
       <CardContent className="flex items-center gap-3 p-0">
-        {item.type ? <Badge variant="secondary">{item.type}</Badge> : null}
+        {item.typeLabel ? <Badge variant="secondary">{item.typeLabel}</Badge> : null}
       </CardContent>
     </Card>
   );

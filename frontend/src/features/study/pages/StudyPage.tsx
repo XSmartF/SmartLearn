@@ -9,8 +9,7 @@ import {
   StatsCard,
   StudyLoading,
   StudyError,
-  StudyFinished,
-  StudyKeyboardShortcuts
+  StudyFinished
 } from '../components'
 
 export default function StudyPage() {
@@ -59,10 +58,6 @@ export default function StudyPage() {
               </div>
             )}
           </Alert>
-        )}
-
-        {session.keyboardShortcuts.visible && (
-          <StudyKeyboardShortcuts shortcuts={session.keyboardShortcuts.items} />
         )}
 
         <div className='space-y-6 lg:space-y-8'>

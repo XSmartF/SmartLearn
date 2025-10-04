@@ -34,7 +34,8 @@ export interface DashboardMeeting {
 }
 
 export interface DashboardProductivityPoint {
-  week: string;
+  date: string;
+  label: string;
   focusMinutes: number;
   reviewSessions: number;
 }
@@ -103,12 +104,17 @@ export function useDashboardAnalytics(): DashboardAnalytics {
         highlight: 'Tham gia ngay'
       }
     ],
-    productivity: [
-      { week: 'Tuần 1', focusMinutes: 320, reviewSessions: 9 },
-      { week: 'Tuần 2', focusMinutes: 380, reviewSessions: 12 },
-      { week: 'Tuần 3', focusMinutes: 420, reviewSessions: 15 },
-      { week: 'Tuần 4', focusMinutes: 460, reviewSessions: 18 }
-    ],
+    productivity: Array.from({ length: 7 }, (_, index) => {
+      const reference = new Date();
+      reference.setDate(reference.getDate() - (6 - index));
+      const label = reference.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+      return {
+        date: reference.toISOString(),
+        label,
+        focusMinutes: 300 + index * 25,
+        reviewSessions: 8 + index,
+      };
+    }),
     completion: [
       { topic: 'Marketing', completion: 82, color: 'hsl(var(--primary))' },
       { topic: 'Thiết kế', completion: 68, color: 'hsl(var(--accent))' },

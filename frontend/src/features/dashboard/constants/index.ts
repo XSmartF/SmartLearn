@@ -1,6 +1,6 @@
 import type { DashboardChartPalette, DashboardSectionLayout } from "@/features/dashboard/types";
 
-export const MAX_RECENT_FLASHCARDS = 7;
+export const MAX_RECENT_FLASHCARDS = 6;
 export const MAX_UPCOMING_EVENTS = 5;
 export const MAX_SUMMARY_LIBRARIES = 10;
 
@@ -24,7 +24,7 @@ export const DASHBOARD_LAYOUT: DashboardSectionLayout[] = [
 
 export const DASHBOARD_HERO_IMAGE = {
   src: "/picture1.png",
-  alt: "SmartLearn dashboard hero"
+  alt: "Minh hoạ bảng điều khiển SmartLearn"
 };
 
 export const DEFAULT_CHART_PALETTE: DashboardChartPalette = {

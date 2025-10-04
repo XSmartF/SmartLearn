@@ -4,20 +4,15 @@ import { useAuth } from '@/shared/hooks/useAuthRedux';
 import { useUserLibraries } from '@/shared/hooks/useLibraries';
 import { useFavoriteLibraries } from '@/shared/hooks/useFavorites';
 import { useGetSharedLibrariesQuery } from '@/shared/store/api';
-import { loadProgressSummary, listenProgressSummary, listenUserStudyEvents, type ProgressSummaryLite } from '@/shared/lib/firebase';
-import { userRepository } from '@/shared/lib/repositories/UserRepository';
+import { listenUserStudyEvents } from '@/shared/lib/firebase';
 import type { LibraryMeta } from '@/shared/lib/models';
 import type { StudyEvent } from '../../study/types/calendar';
 import { getUpcomingEvents } from '../../study/utils/calendarUtils';
-import { useDashboardAnalytics, type DashboardProductivityPoint } from './useDashboardAnalytics';
+import { buildUserProductivityPoints } from '../models/productivity';
+import type { DashboardProductivityPoint } from '@/features/dashboard/types';
 import type { ChartConfig } from '@/shared/components/ui/chart';
-
-interface OwnerProfile {
-  id: string;
-  displayName?: string;
-  email?: string;
-  avatarUrl?: string;
-}
+import { useOwnerProfiles, type DashboardOwnerProfile } from './useOwnerProfiles';
+import { useProgressSummaries } from './useProgressSummaries';
 
 interface ChartPalette {
   focus: string;
@@ -47,7 +42,7 @@ interface DashboardOverviewViewModel {
   libsLoading: boolean;
   libraries: LibraryMeta[];
   allLibraries: LibraryMeta[];
-  ownerProfiles: Record<string, OwnerProfile>;
+  ownerProfiles: Record<string, DashboardOwnerProfile>;
   recentFlashcards: RecentFlashcardItem[];
   upcomingEvents: StudyEvent[];
   chartProductivity: DashboardProductivityPoint[];
@@ -68,11 +63,7 @@ export function useDashboardOverview(): DashboardOverviewViewModel {
     grid: 'rgba(148, 163, 184, 0.18)',
     radial: ['#8b5cf6', '#38bdf8', '#34d399', '#fbbf24', '#f472b6'],
   }));
-  const [summaries, setSummaries] = useState<Record<string, ProgressSummaryLite>>({});
   const [studyEvents, setStudyEvents] = useState<StudyEvent[]>([]);
-  const [ownerProfiles, setOwnerProfiles] = useState<Record<string, OwnerProfile>>({});
-
-  const { productivity: fallbackProductivity } = useDashboardAnalytics();
 
   useEffect(() => {
     const unsubscribe = listenUserStudyEvents((events) => {
@@ -116,74 +107,8 @@ export function useDashboardOverview(): DashboardOverviewViewModel {
     return Array.from(map.values());
   }, [libraries, shared]);
 
-  useEffect(() => {
-    const missingOwners = allLibraries
-      .map((lib) => lib.ownerId)
-      .filter((ownerId): ownerId is string => Boolean(ownerId) && !ownerProfiles[ownerId]);
-    if (missingOwners.length === 0) return;
-
-    let cancelled = false;
-    (async () => {
-      const entries = await Promise.all(
-        Array.from(new Set(missingOwners)).map(async (ownerId) => {
-          try {
-            const profile = await userRepository.getUserProfile(ownerId);
-            return profile || { id: ownerId };
-          } catch {
-            return { id: ownerId };
-          }
-        }),
-      );
-      if (cancelled) return;
-      setOwnerProfiles((prev) => {
-        const next = { ...prev };
-        for (const entry of entries) {
-          next[entry.id] = entry;
-        }
-        return next;
-      });
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [allLibraries, ownerProfiles]);
-
-  useEffect(() => {
-    const unsubs: Array<() => void> = [];
-    const tracked = allLibraries.slice(0, 10);
-
-    (async () => {
-      const initial: Record<string, ProgressSummaryLite> = {};
-      for (const lib of tracked) {
-        try {
-          const summary = await loadProgressSummary(lib.id);
-          if (summary) initial[lib.id] = summary;
-        } catch {
-          /* ignore errors */
-        }
-      }
-      setSummaries((prev) => ({ ...initial, ...prev }));
-    })();
-
-    tracked.forEach((lib) => {
-      const off = listenProgressSummary(lib.id, (summary) => {
-        if (!summary) return;
-        setSummaries((prev) => ({ ...prev, [lib.id]: summary }));
-      });
-      unsubs.push(off);
-    });
-
-    return () => {
-      unsubs.forEach((off) => {
-        try {
-          off();
-        } catch {
-          /* ignore */
-        }
-      });
-    };
-  }, [allLibraries]);
+  const ownerProfiles = useOwnerProfiles(allLibraries);
+  const summaries = useProgressSummaries(allLibraries);
 
   const recentFlashcards = useMemo<RecentFlashcardItem[]>(() => {
     const withAccess = allLibraries
@@ -237,15 +162,10 @@ export function useDashboardOverview(): DashboardOverviewViewModel {
     return { totalCards, totalMastered, totalSessions, averageAccuracy };
   }, [allLibraries, summaries]);
 
-  const chartProductivity = useMemo<DashboardProductivityPoint[]>(() => {
-    if (!aggregates.totalSessions) return fallbackProductivity;
-    const focusBase = Math.max(aggregates.totalSessions * 40, 120);
-    return Array.from({ length: 4 }, (_, index) => ({
-      week: `Tuần ${index + 1}`,
-      focusMinutes: Math.round((focusBase * (0.7 + index * 0.05)) / 4),
-      reviewSessions: Math.max(1, Math.round((aggregates.totalSessions * (0.6 + index * 0.08)) / 4)),
-    }));
-  }, [aggregates.totalSessions, fallbackProductivity]);
+  const chartProductivity = useMemo<DashboardProductivityPoint[]>(
+    () => buildUserProductivityPoints(studyEvents),
+    [studyEvents],
+  );
 
   const productivityChartConfig = useMemo<ChartConfig>(() => ({
     focusMinutes: {

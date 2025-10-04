@@ -1,9 +1,9 @@
-import { Outlet } from 'react-router-dom'
 import { AppSidebar } from "@/shared/components/app-sidebar"
 import { NavActions } from "@/shared/components/nav-actions"
 import DynamicBreadcrumb from '@/shared/components/DynamicBreadcrumb'
 import { SpeedDial } from '@/shared/components/SpeedDial'
 import { Separator } from "@/shared/components/ui/separator"
+import { OutletLoader } from '@/shared/components/OutletLoader'
 import {
   SidebarInset,
   SidebarProvider,
@@ -30,9 +30,7 @@ export default function DashboardLayout() {
         </header>
         <div className="flex-1 overflow-y-auto">
           <div className="flex flex-col gap-8 px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-            <div className="w-full">
-              <Outlet />
-            </div>
+            <OutletLoader className="w-full" />
           </div>
         </div>
         <SpeedDial />

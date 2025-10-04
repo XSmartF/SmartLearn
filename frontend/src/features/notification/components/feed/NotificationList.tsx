@@ -19,7 +19,11 @@ interface NotificationListProps {
   onMarkAsRead: (notificationId: string) => void
   notificationAccessRequestMap: Record<string, string>
   handledRequests: Record<string, AccessRequestDecision>
-  onRequestDecision: (requestId: string, decision: AccessRequestDecision, options?: { notificationId?: string }) => void
+  onRequestDecision: (
+    requestId: string,
+    decision: AccessRequestDecision,
+    options?: { notificationId?: string }
+  ) => void
   requestActionId: string | null
 }
 
