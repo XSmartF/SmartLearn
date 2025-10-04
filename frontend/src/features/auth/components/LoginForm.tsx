@@ -121,7 +121,7 @@ export default function LoginForm({
         variant="outline"
         onClick={onGoogleSignIn}
         disabled={isSubmitting}
-        className="flex h-11 items-center justify-center gap-3 rounded-2xl border border-border bg-white/90 text-sm font-semibold shadow-[0_18px_35px_-20px_rgba(15,23,42,0.4)] backdrop-blur"
+        className="flex h-12 w-full items-center justify-center gap-3 rounded-2xl border border-border bg-white/90 text-sm font-semibold shadow-[0_18px_35px_-20px_rgba(15,23,42,0.4)] backdrop-blur"
       >
         <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
           <path

@@ -21,17 +21,42 @@ export function AuthHero({ model, variant = "panel", className }: AuthHeroProps)
   const isBackground = variant === "background";
   const highlights = model.features.slice(0, 2);
 
+  if (isBackground) {
+    return (
+      <div
+        className={cn(
+          "relative hidden h-full w-full overflow-hidden bg-gradient-to-br from-primary/75 via-violet-700 to-indigo-800 opacity-95",
+          "pointer-events-none lg:flex",
+          className
+        )}
+        aria-hidden="true"
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.18),transparent_55%)]" />
+        {model.accentShapes.map((shape, index) => (
+          <div
+            key={`${shape.position}-${index}`}
+            className={`pointer-events-none absolute rounded-full bg-white/12 blur-3xl mix-blend-screen ${ACCENT_POSITION_CLASS[shape.position]}`}
+            style={{
+              width: shape.size,
+              height: shape.size,
+              animationDelay: `${index * 150}ms`
+            }}
+          />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
         "relative overflow-hidden text-white bg-gradient-to-br from-primary/80 via-violet-700 to-indigo-800",
         variant === "panel" && "hidden xl:flex flex-1",
-        isBackground && "hidden lg:flex h-full w-full items-stretch justify-center opacity-95 pointer-events-none",
         className
       )}
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.25),transparent_55%)]" />
-      {!isBackground && <div className="absolute inset-0 backdrop-blur-sm" />}
+      <div className="absolute inset-0 backdrop-blur-sm" />
 
       {model.accentShapes.map((shape, index) => (
         <div
