@@ -8,3 +8,11 @@
   to = "/index.html"
   status = 200
   force = true
+
+[[_headers]]
+  for = "/*"
+  [[_headers.headers]]
+    # Allow popups to communicate with the opener window (fixes firebase_auth window.closed blocking)
+    Cross-Origin-Opener-Policy = "same-origin-allow-popups"
+    # We don't force Cross-Origin-Embedder-Policy in production here. Only enable COEP if you require cross-origin embedder isolation.
+    Cross-Origin-Embedder-Policy = "unsafe-none"

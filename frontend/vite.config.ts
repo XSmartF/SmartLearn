@@ -25,7 +25,9 @@ export default defineConfig({
   },
   server: {
     headers: {
-      'Cross-Origin-Opener-Policy': 'unsafe-none',
+      // Allow popups opened by the app to communicate with the opener (needed for Firebase popup flows)
+      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+      // We don't enable COEP here; keep unsafe-none unless you need cross-origin embedder isolation
       'Cross-Origin-Embedder-Policy': 'unsafe-none'
     }
   },
