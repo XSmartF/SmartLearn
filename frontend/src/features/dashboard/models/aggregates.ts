@@ -1,5 +1,5 @@
 import type { LibraryMeta } from "@/shared/lib/models";
-import type { ProgressSummaryLite } from "@/shared/lib/firebase";
+import type { ProgressSummaryLite } from "@/shared/services";
 
 export interface DashboardAggregates {
   totalCards: number;

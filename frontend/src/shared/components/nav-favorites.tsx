@@ -56,7 +56,7 @@ function NavFavoritesBase({
         const libraryId = item.url.split('/').pop() || '';
         if (libraryId) {
           try {
-            const progressRepo = await import('@/shared/lib/repositories/ProgressRepository').then(m => m.progressRepository);
+            const progressRepo = await import('@/shared/services').then(m => m.progressRepository);
             const progress = await progressRepo.getUserLibraryProgress(libraryId);
             newStates[libraryId] = (progress?.engineState && Object.keys(progress.engineState).length > 0) || false;
           } catch {

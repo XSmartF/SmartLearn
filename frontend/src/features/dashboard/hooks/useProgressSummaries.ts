@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { loadProgressSummary, listenProgressSummary, type ProgressSummaryLite } from "@/shared/lib/firebase";
+import { loadProgressSummary, listenProgressSummary, type ProgressSummaryLite } from "@/shared/services";
 import type { LibraryMeta } from "@/shared/lib/models";
 import { MAX_SUMMARY_LIBRARIES } from "@/features/dashboard/constants";
 import {

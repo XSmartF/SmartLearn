@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { normalize } from "@/features/study/utils/learnEngine";
-import { cardRepository } from "@/shared/lib/repositories/CardRepository";
-import { libraryRepository } from "@/shared/lib/repositories/LibraryRepository";
+import { cardRepository } from "@/shared/services";
+import { libraryRepository } from "@/shared/services";
 import { loadTestQuestionGenerator } from "@/shared/lib/lazyModules";
 import { idbGetItem } from "@/shared/lib/indexedDB";
 import { getLibraryDetailPath, getTestSetupPath } from "@/shared/constants/routes";

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Button } from "@/shared/components/ui/button"
 import { Input } from "@/shared/components/ui/input"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/shared/components/ui/select"
-import { userRepository } from '@/shared/lib/repositories/UserRepository'
+import { userRepository } from '@/shared/services'
 import { UserPlus } from "lucide-react"
 import ConfirmDialog from "@/shared/components/ConfirmDialog"
 import { Loader } from '@/shared/components/ui/loader'

@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { progressRepository } from '@/shared/lib/repositories/ProgressRepository';
+import { progressRepository } from '@/shared/services';
 
 interface ProgressState {
   mastered: number;

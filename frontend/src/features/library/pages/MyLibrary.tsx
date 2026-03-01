@@ -60,7 +60,7 @@ export default function MyLibrary() {
       : null;
 
   return (
-    <div className="space-y-8 sm:space-y-12">
+    <div className="space-y-5">
       <LibraryHeader summaryText={summaryText} onCreate={openCreateDialog} />
 
       <PageSection

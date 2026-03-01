@@ -5,13 +5,18 @@ import App from './App.tsx';
 import { Provider } from 'react-redux';
 import { initAuthListener } from './shared/store/authSlice.ts';
 import { store } from './shared/store/store.ts';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 initAuthListener(store.dispatch);
+
+const queryClient = new QueryClient();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Provider store={store}>
-      <App />
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
     </Provider>
   </StrictMode>
 );

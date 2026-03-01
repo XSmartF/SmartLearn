@@ -1,8 +1,8 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { libraryRepository } from '@/shared/lib/repositories/LibraryRepository';
-import { shareRepository } from '@/shared/lib/repositories/ShareRepository';
-import { userRepository } from '@/shared/lib/repositories/UserRepository';
+import { libraryRepository } from '@/shared/services';
+import { shareRepository } from '@/shared/services';
+import { userRepository } from '@/shared/services';
 import { useUserLibraries } from '@/shared/hooks/useLibraries';
 import { useFavoriteLibraries } from '@/shared/hooks/useFavorites';
 import { useAuth } from '@/shared/hooks/useAuthRedux';

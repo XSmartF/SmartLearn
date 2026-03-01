@@ -1,6 +1,4 @@
 export { ProgressSummarySection } from './ProgressSummarySection'
 export { ShareManager } from './ShareManager'
 export { UnifiedCards } from './UnifiedCards'
-export { FlashcardCard } from './FlashcardCard'
-export { FlashcardListItem } from './FlashcardListItem'
 export { LeaderboardSection } from './LeaderboardSection'

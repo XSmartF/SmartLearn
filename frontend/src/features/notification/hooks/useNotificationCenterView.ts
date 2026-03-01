@@ -1,7 +1,7 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { libraryRepository } from '@/shared/lib/repositories/LibraryRepository'
-import { userRepository } from '@/shared/lib/repositories/UserRepository'
+import { libraryRepository } from '@/shared/services'
+import { userRepository } from '@/shared/services'
 import {
   NOTIFICATION_FEED_TABS,
   NOTIFICATION_FALLBACK_ICON,

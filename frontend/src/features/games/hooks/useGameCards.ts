@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useUserLibraries } from '@/shared/hooks/useLibraries';
-import { cardRepository } from '@/shared/lib/repositories/CardRepository';
+import { cardRepository } from '@/shared/services';
 
 export interface GameCard {
   id: string;

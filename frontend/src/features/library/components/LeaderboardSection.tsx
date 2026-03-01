@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Badge } from "@/shared/components/ui/badge";
 import { Progress } from "@/shared/components/ui/progress";
-import { progressRepository } from '@/shared/lib/repositories/ProgressRepository';
-import { userRepository } from '@/shared/lib/repositories/UserRepository';
-import { shareRepository } from '@/shared/lib/repositories/ShareRepository';
-import { libraryRepository } from '@/shared/lib/repositories/LibraryRepository';
+import { progressRepository } from '@/shared/services';
+import { userRepository } from '@/shared/services';
+import { shareRepository } from '@/shared/services';
+import { libraryRepository } from '@/shared/services';
 import { Trophy, Medal, Award, Star, Sprout } from "lucide-react";
 import { Loader } from '@/shared/components/ui/loader';
 import { PageSection } from '@/shared/components/PageSection';
-import type { UserLibraryProgressSummary, UserLibraryProgressDoc } from '@/shared/lib/repositories/ProgressRepository';
+import type { UserLibraryProgressSummary, UserLibraryProgressDoc } from '@/shared/services';
 import type { SerializedState } from '@/features/study/utils/learnEngine';
 
 interface LeaderboardEntry {

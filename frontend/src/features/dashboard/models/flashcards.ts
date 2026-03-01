@@ -1,7 +1,7 @@
 import { MAX_RECENT_FLASHCARDS } from "../constants";
 import type { DashboardSources } from "../data/useDashboardSources";
 import type { DashboardFlashcardItemModel, DashboardFlashcardSectionModel } from "../types";
-import type { ProgressSummaryLite } from "@/shared/lib/firebase";
+import type { ProgressSummaryLite } from "@/shared/services";
 import { getStudyPath, ROUTES } from "@/shared/constants/routes";
 
 const sortByLastAccessedDesc = (

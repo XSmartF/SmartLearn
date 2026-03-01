@@ -10,7 +10,7 @@ export default function DashboardPage() {
   const view = useDashboardView();
 
   return (
-    <div className="flex h-[calc(100vh-120px)] flex-col gap-4">
+    <div className="flex flex-col gap-4">
       <DashboardHero model={view.hero} />
       <DashboardSectionGrid
         layout={view.layout}

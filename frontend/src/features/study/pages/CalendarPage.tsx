@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/shared/components/ui/button"
 import { CalendarDays, Plus } from "lucide-react"
 import { CalendarGrid, EventDialog, TaskStatusCards } from '../components'
-import { listenUserStudyEvents, createStudyEvent, updateStudyEvent, deleteStudyEvent, updateStudyEventStatus } from '@/shared/lib/firebase'
+import { calendarRepository } from '@/shared/services'
 import ConfirmDialog from "@/shared/components/ConfirmDialog"
 import type { StudyEvent, CreateStudyEventInput } from '../types/calendar'
 import { updateEventStatus } from '../utils/calendarUtils'
@@ -20,70 +20,50 @@ export default function Calendar() {
   const [eventToDelete, setEventToDelete] = useState<string | null>(null)
 
   useEffect(() => {
-    const unsubscribe = listenUserStudyEvents((fetchedEvents) => {
+    const unsubscribe = calendarRepository.listenUserEvents((fetchedEvents) => {
       setEvents(fetchedEvents);
     });
 
     return unsubscribe;
   }, []);
 
+  // Auto-update event statuses based on time (single effect, runs once after events load)
   useEffect(() => {
-    const updateStatuses = async () => {
-      const now = new Date();
-      const eventsToUpdate = events.filter(event => {
-        const currentStatus = event.status;
-        const calculatedStatus = event.endTime < now ? 'overdue' : 'upcoming';
-        return currentStatus !== calculatedStatus && currentStatus !== 'completed';
-      });
+    if (!events.length) return;
+    let cancelled = false;
 
-      for (const event of eventsToUpdate) {
-        const newStatus = event.endTime < now ? 'overdue' : 'upcoming';
-        try {
-          await updateStudyEventStatus(event.id, newStatus);
-        } catch (error) {
-          console.error('Error updating event status:', error);
-        }
-      }
-    };
-
-    if (events.length > 0) {
-      updateStatuses();
-    }
-  }, [events]);
-
-  // Auto-update event statuses based on time
-  useEffect(() => {
-    const updateStatuses = async () => {
-      const eventsToUpdate = events.filter(event => {
+    const run = async () => {
+      const toUpdate = events.filter(event => {
         if (event.status === 'completed') return false;
         const newStatus = updateEventStatus(event);
         return newStatus !== event.status;
       });
 
-      for (const event of eventsToUpdate) {
+      for (const event of toUpdate) {
+        if (cancelled) return;
+        const newStatus = updateEventStatus(event);
         try {
-          const newStatus = updateEventStatus(event);
-          await updateStudyEventStatus(event.id, newStatus);
+          await calendarRepository.updateEventStatus(event.id, newStatus);
         } catch (error) {
           console.error('Error auto-updating event status:', error);
         }
       }
     };
 
-    if (events.length > 0) {
-      updateStatuses();
-    }
-  }, [events]);
+    run();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [events.length]);
 
   // Removed monthly overview stats section
 
   const handleCreateEvent = async (eventData: CreateStudyEventInput) => {
-    await createStudyEvent(eventData)
+    await calendarRepository.createEvent(eventData)
   }
 
   const handleUpdateEvent = async (eventData: CreateStudyEventInput) => {
     if (editingEvent) {
-      await updateStudyEvent(editingEvent.id, eventData)
+      await calendarRepository.updateEvent(editingEvent.id, eventData)
     }
   }
 
@@ -94,7 +74,7 @@ export default function Calendar() {
 
   const handleDeleteConfirm = async () => {
     if (eventToDelete) {
-      await deleteStudyEvent(eventToDelete)
+      await calendarRepository.deleteEvent(eventToDelete)
       setDeleteDialogOpen(false)
       setEventToDelete(null)
     }
@@ -126,7 +106,7 @@ export default function Calendar() {
 
   const handleStatusUpdate = async (eventId: string, status: StudyEvent['status']) => {
     try {
-      await updateStudyEventStatus(eventId, status);
+      await calendarRepository.updateEventStatus(eventId, status);
       // Update local state
       setEvents(prevEvents =>
         prevEvents.map(event =>
@@ -148,7 +128,7 @@ export default function Calendar() {
 
   return (
     <>
-      <div className="space-y-8 sm:space-y-12">
+      <div className="space-y-5">
         <PageHeader
           title="Lịch học tập"
           eyebrow="Quản lý lịch học"

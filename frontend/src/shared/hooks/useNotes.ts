@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { noteRepository } from '@/shared/lib/repositories/NoteRepository';
+import { noteRepository } from '@/shared/services';
 import type { NoteMeta } from '@/features/notes/types';
 
 export function useUserNotes() {
@@ -56,7 +56,6 @@ export function useNote(id: string) {
   return { note, loading, error };
 }
 
-// Mock favorites hook - replace with real Firebase implementation
 export function useNoteFavorites() {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [updating, setUpdating] = useState(false);

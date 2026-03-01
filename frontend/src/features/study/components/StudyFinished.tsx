@@ -1,6 +1,12 @@
+import { lazy, Suspense } from 'react'
 import { Button } from '@/shared/components/ui/button'
 import { Card, CardContent } from '@/shared/components/ui/card'
 import { Trophy, RotateCcw, Home, PartyPopper } from 'lucide-react'
+import { useMediaQuery } from '@/shared/hooks/useMediaQuery'
+
+const LazyCelebrationScene = lazy(() =>
+  import('@/shared/components/three/CelebrationScene').then((mod) => ({ default: mod.CelebrationScene }))
+)
 
 interface StudyFinishedProps {
   handleFinish: () => void
@@ -8,9 +14,18 @@ interface StudyFinishedProps {
 }
 
 export function StudyFinished({ handleFinish, handleResetSession }: StudyFinishedProps) {
+  const isDesktop = useMediaQuery('(min-width: 768px)')
+  const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
+  const show3D = isDesktop && !prefersReducedMotion
+
   return (
-    <div className='min-h-screen bg-background flex items-center justify-center p-4'>
-      <Card className="w-full max-w-md shadow-2xl border-0 bg-card backdrop-blur-sm">
+    <div className='relative min-h-screen bg-background flex items-center justify-center p-4'>
+      {show3D && (
+        <Suspense fallback={null}>
+          <LazyCelebrationScene className="absolute inset-0 opacity-50" />
+        </Suspense>
+      )}
+      <Card className="relative z-10 w-full max-w-md shadow-2xl border-0 bg-card/95 backdrop-blur-lg">
         <CardContent className="p-8 text-center space-y-8">
           <div className="mx-auto w-24 h-24 bg-gradient-to-br from-warning to-warning/80 rounded-full flex items-center justify-center shadow-lg">
             <Trophy className="h-12 w-12 text-primary-foreground" />

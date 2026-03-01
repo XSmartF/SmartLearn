@@ -3,7 +3,7 @@ import { toast } from 'sonner'
 import { useCreateBlockNote } from '@blocknote/react'
 
 import { parseNoteContent } from '@/features/notes/utils/parseNoteContent'
-import { noteRepository } from '@/shared/lib/repositories/NoteRepository'
+import { noteRepository } from '@/shared/services'
 import { useNote, useNoteFavorites } from '@/shared/hooks/useNotes'
 
 export interface OutlineItem {

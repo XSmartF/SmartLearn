@@ -32,7 +32,7 @@ export default function Notifications() {
   } = useNotificationCenterView()
 
   return (
-    <div className="space-y-8 sm:space-y-12">
+    <div className="space-y-5">
       <PageHeader
         title="Trung tâm thông báo"
         eyebrow="Thông báo & yêu cầu"

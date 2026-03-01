@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { cardFlagRepository, type CardFlag } from '@/shared/lib/repositories/CardFlagRepository'
-import { cardRepository } from '@/shared/lib/repositories/CardRepository'
-import { libraryRepository } from '@/shared/lib/repositories/LibraryRepository'
+import { cardFlagRepository, type CardFlag } from '@/shared/services'
+import { cardRepository } from '@/shared/services'
+import { libraryRepository } from '@/shared/services'
 import type { Card as EngineCard, LibraryMeta } from '@/shared/lib/models'
-import { PageHeader } from '@/shared/components/PageHeader'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Badge } from '@/shared/components/ui/badge'
 import { Button } from '@/shared/components/ui/button'
@@ -163,36 +162,26 @@ export default function ReviewPage() {
   }
 
   return (
-    <div className="space-y-8 sm:space-y-12">
-      <PageHeader
-        title="Ôn tập thông minh"
-        description="Tập trung luyện lại các thẻ bạn đã đánh dấu quan trọng hoặc đánh giá là khó trong quá trình học."
-        eyebrow="Chế độ ôn tập"
-        icon={<Sparkles className="h-5 w-5 text-primary" />}
-        actions={
-          <>
-            <Button size="lg" onClick={() => handleReview(reviewItems)} disabled={!anyReady}>
-              Ôn tập tất cả ({readyCount})
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => handleReview(hardItems)}
-              disabled={!hardCount}
-            >
-              Ôn tập thẻ khó ({hardCount})
-            </Button>
-            <Button
-              size="lg"
-              variant="ghost"
-              onClick={() => handleReview(starredItems)}
-              disabled={!starredCount}
-            >
-              Ôn tập thẻ đánh dấu ({starredCount})
-            </Button>
-          </>
-        }
-      />
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-center gap-3">
+        <Button onClick={() => handleReview(reviewItems)} disabled={!anyReady}>
+          Ôn tập tất cả ({readyCount})
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => handleReview(hardItems)}
+          disabled={!hardCount}
+        >
+          Ôn tập thẻ khó ({hardCount})
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => handleReview(starredItems)}
+          disabled={!starredCount}
+        >
+          Ôn tập thẻ đánh dấu ({starredCount})
+        </Button>
+      </div>
 
       <Card className="border border-border/60 bg-card/60 shadow-sm">
         <CardContent className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-4">

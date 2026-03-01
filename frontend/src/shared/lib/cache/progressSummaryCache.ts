@@ -1,4 +1,4 @@
-import type { ProgressSummaryLite } from '@/shared/lib/firebase';
+import type { ProgressSummaryLite } from '@/shared/services';
 
 const cache = new Map<string, ProgressSummaryLite>();
 

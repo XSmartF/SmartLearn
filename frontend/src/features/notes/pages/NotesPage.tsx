@@ -49,7 +49,7 @@ export default function NotesPage() {
   const errorMessage = error?.message ?? 'Đã xảy ra lỗi';
 
   return (
-    <div className="space-y-8 sm:space-y-12">
+    <div className="space-y-5">
       <NotesHeader summary={highlightSummary} onCreateNote={openCreateDialog} />
 
       <PageSection

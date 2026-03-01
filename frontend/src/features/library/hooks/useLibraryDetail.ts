@@ -6,13 +6,13 @@ import { idbGetItem, idbSetItem } from '@/shared/lib/indexedDB';
 import { useFavoriteLibraries } from '@/shared/hooks/useFavorites';
 import { useLibraryProgress } from '@/shared/hooks/useLibraryProgress';
 import { useProgressSummary } from '@/shared/hooks/useProgressSummary';
-import { libraryRepository } from '@/shared/lib/repositories/LibraryRepository';
-import { cardRepository } from '@/shared/lib/repositories/CardRepository';
-import { cardFlagRepository } from '@/shared/lib/repositories/CardFlagRepository';
-import { shareRepository } from '@/shared/lib/repositories/ShareRepository';
-import { userRepository } from '@/shared/lib/repositories/UserRepository';
+import { libraryRepository } from '@/shared/services';
+import { cardRepository } from '@/shared/services';
+import { cardFlagRepository } from '@/shared/services';
+import { shareRepository } from '@/shared/services';
+import { userRepository } from '@/shared/services';
 import type { Card as EngineCard, LibraryMeta, LibraryShare } from '@/shared/lib/models';
-import type { AccessRequestDoc } from '@/shared/lib/repositories/UserRepository';
+import type { AccessRequestDoc } from '@/shared/services';
 import { BarChart3, BookOpen, Target } from 'lucide-react';
 import { getStudyPath, ROUTES } from '@/shared/constants/routes';
 
@@ -399,10 +399,10 @@ export function useLibraryDetail({ libraryId, loaderLibrary }: LibraryDetailDepe
         }
 
         try {
-          const authMod = await import('@/shared/lib/firebase');
-          const auth = authMod.getFirebaseAuth();
-          if (!cancelled && auth.currentUser) {
-            setCurrentUserId(auth.currentUser.uid);
+          const authMod = await import('@/shared/services');
+          const currentUserId = authMod.getCurrentUserId();
+          if (!cancelled && currentUserId) {
+            setCurrentUserId(currentUserId);
           }
         } catch (error) {
           console.error('Không thể lấy thông tin người dùng hiện tại:', error);

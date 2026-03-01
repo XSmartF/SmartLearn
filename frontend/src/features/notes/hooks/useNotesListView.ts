@@ -9,7 +9,7 @@ import type {
   NoteVisibility,
 } from '../types';
 import { useUserNotes, useNoteFavorites } from '@/shared/hooks/useNotes';
-import { noteRepository } from '@/shared/lib/repositories/NoteRepository';
+import { noteRepository } from '@/shared/services';
 import { useAuth } from '@/shared/hooks/useAuthRedux';
 
 export interface NoteEditorDraft {

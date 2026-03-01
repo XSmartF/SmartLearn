@@ -24,7 +24,7 @@ import {
   mergeUserSettings,
   type UserSettings,
   type UserSettingsUpdate,
-} from '@/shared/lib/repositories/UserRepository';
+} from '@/shared/services';
 import { useAuth } from '@/shared/hooks/useAuthRedux';
 
 type SettingsSectionKey = keyof Required<UserSettings>;
@@ -116,7 +116,7 @@ export default function SettingsPage() {
   }, [setTheme, updateSettingsState]);
 
   return (
-    <div className="space-y-8 sm:space-y-12">
+    <div className="space-y-5">
       <PageHeader
         title="Cài đặt"
         eyebrow="Tùy chỉnh tài khoản"

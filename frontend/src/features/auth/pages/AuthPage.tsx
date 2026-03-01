@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import {
   Sparkles,
   Play,
@@ -28,10 +28,22 @@ import {
 } from "@/shared/components/ui/dialog";
 import { SmartImage } from "@/shared/components/ui/smart-image";
 import { Avatar } from "@/shared/components/ui/avatar";
+import { useMediaQuery } from "@/shared/hooks/useMediaQuery";
+
+const LazyAuthBackgroundScene = lazy(() =>
+  import("@/shared/components/three/AuthBackgroundScene").then((mod) => ({ default: mod.AuthBackgroundScene }))
+);
+
+const LazyHeroScene = lazy(() =>
+  import("@/shared/components/three/HeroScene").then((mod) => ({ default: mod.HeroScene }))
+);
 
 export default function AuthPage() {
   const view = useAuthView();
   const [isDialogOpen, setDialogOpen] = useState(false);
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const shouldRenderThreeScene = isDesktop && !prefersReducedMotion;
 
   const journeySteps = useMemo(
     () => [
@@ -162,6 +174,11 @@ export default function AuthPage() {
       <div className="relative isolate min-h-dvh overflow-hidden bg-gradient-to-br from-[#e3e8ff] via-[#f0e6ff] to-[#d7e3ff] text-slate-900">
         <div className="pointer-events-none absolute inset-0 -z-10">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(93,148,255,0.32),_transparent_62%)]" />
+          {shouldRenderThreeScene ? (
+            <Suspense fallback={null}>
+              <LazyAuthBackgroundScene className="opacity-55" />
+            </Suspense>
+          ) : null}
           <AuthHero model={view.hero} variant="background" className="absolute inset-0 opacity-45" />
           <div className="absolute -top-20 left-1/3 h-80 w-80 rounded-full bg-primary/25 blur-3xl" />
           <div className="absolute bottom-16 right-24 h-96 w-96 rounded-full bg-sky-300/40 blur-3xl" />
@@ -266,14 +283,20 @@ export default function AuthPage() {
                         {view.hero.illustration.badge}
                       </span>
                     )}
-                    <SmartImage
-                      src={view.hero.illustration.src}
-                      alt={view.hero.illustration.alt}
-                      className="block w-full"
-                      imageClassName="aspect-[4/5] object-contain"
-                      rounded="rounded-[26px]"
-                      loading="lazy"
-                    />
+                    {shouldRenderThreeScene ? (
+                      <Suspense fallback={null}>
+                        <LazyHeroScene className="aspect-[4/5] w-full rounded-[26px]" />
+                      </Suspense>
+                    ) : (
+                      <SmartImage
+                        src={view.hero.illustration.src}
+                        alt={view.hero.illustration.alt}
+                        className="block w-full"
+                        imageClassName="aspect-[4/5] object-contain"
+                        rounded="rounded-[26px]"
+                        loading="lazy"
+                      />
+                    )}
                     {view.hero.illustration.caption && (
                       <p className="mt-4 text-sm text-slate-500">{view.hero.illustration.caption}</p>
                     )}

@@ -8,17 +8,17 @@ export const DASHBOARD_LAYOUT: DashboardSectionLayout[] = [
   {
     id: "flashcards",
     className: "lg:col-span-2 lg:row-span-2",
-    minHeightClassName: "min-h-[600px] sm:min-h-[700px] md:min-h-[800px] lg:min-h-0"
+    minHeightClassName: ""
   },
   {
     id: "productivity",
     className: "lg:col-span-2",
-    minHeightClassName: "min-h-[480px] sm:min-h-[560px] md:min-h-[640px] lg:min-h-0"
+    minHeightClassName: ""
   },
   {
     id: "events",
     className: "lg:col-span-2",
-    minHeightClassName: "min-h-[520px] sm:min-h-[600px] md:min-h-[680px] lg:min-h-0"
+    minHeightClassName: ""
   }
 ];
 

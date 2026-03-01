@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Gamepad2, Brain, Target, Zap, Settings, CheckCircle, Shuffle, Mic, FileText, RotateCcw } from 'lucide-react';
 
@@ -8,6 +8,11 @@ import { Badge } from '@/shared/components/ui/badge';
 import { PageHeader } from '@/shared/components/PageHeader';
 import { PageSection } from '@/shared/components/PageSection';
 import { ROUTES } from '@/shared/constants/routes';
+import { useMediaQuery } from '@/shared/hooks/useMediaQuery';
+
+const LazyGamesScene = lazy(() =>
+  import('@/shared/components/three/GamesScene').then((mod) => ({ default: mod.GamesScene }))
+);
 
 interface Game {
   id: string;
@@ -114,14 +119,29 @@ export default function GamesPage() {
     navigate(game.settingsRoute);
   };
 
+  const isDesktop = useMediaQuery('(min-width: 768px)');
+  const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
+  const show3D = isDesktop && !prefersReducedMotion;
+
   return (
-    <div className="space-y-8 sm:space-y-12">
-      <PageHeader
-        title="Trung tâm trò chơi"
-        eyebrow="Trò chơi học tập"
-        description="Kết hợp học và chơi với các mini game giúp bạn ôn luyện kiến thức một cách nhẹ nhàng và hiệu quả."
-        icon={<Gamepad2 className="h-6 w-6 text-primary" />}
-      />
+    <div className="space-y-5">
+      <div className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/5 via-background to-background p-6">
+        <div className="relative z-10">
+          <PageHeader
+            title="Trung tâm trò chơi"
+            eyebrow="Trò chơi học tập"
+            description="Kết hợp học và chơi với các mini game giúp bạn ôn luyện kiến thức một cách nhẹ nhàng và hiệu quả."
+            icon={<Gamepad2 className="h-6 w-6 text-primary" />}
+          />
+        </div>
+        {show3D && (
+          <div className="pointer-events-none absolute right-0 top-0 h-full w-1/3 opacity-40 sm:w-2/5">
+            <Suspense fallback={null}>
+              <LazyGamesScene className="h-full w-full" />
+            </Suspense>
+          </div>
+        )}
+      </div>
 
       <PageSection
         heading="Danh sách trò chơi"

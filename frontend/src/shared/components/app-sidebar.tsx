@@ -36,7 +36,7 @@ import { NavFavoriteNotes } from "@/shared/components/nav-favorite-notes"
 import { useFavoriteLibraries } from '@/shared/hooks/useFavorites';
 import { useNoteFavorites } from '@/shared/hooks/useNotes';
 import { NavMain } from "@/shared/components/nav-main"
-import { userRepository } from '@/shared/lib/repositories/UserRepository'
+import { userRepository } from '@/shared/services'
 import {
   Sidebar,
   SidebarContent,

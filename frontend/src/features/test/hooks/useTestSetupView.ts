@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { cardRepository } from "@/shared/lib/repositories/CardRepository";
-import { libraryRepository } from "@/shared/lib/repositories/LibraryRepository";
+import { cardRepository } from "@/shared/services";
+import { libraryRepository } from "@/shared/services";
 import { idbSetItem } from "@/shared/lib/indexedDB";
 import { loadTestQuestionGenerator } from "@/shared/lib/lazyModules";
 import { QUESTION_TYPE_OPTIONS } from "@/features/test/constants";

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { userRepository } from "@/shared/lib/repositories/UserRepository";
+import { userRepository } from "@/shared/services";
 import type { LibraryMeta } from "@/shared/lib/models";
 
 export interface DashboardOwnerProfile {

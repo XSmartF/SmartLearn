@@ -7,6 +7,7 @@ export interface AuthAdapter {
   getCurrentUser(): Promise<UserProfile | null>;
   signInEmailPassword(email: string, password: string): Promise<UserProfile>;
   signUpEmailPassword(email: string, password: string, displayName?: string): Promise<UserProfile>;
+  signInWithGoogle(): Promise<UserProfile>;
   signOut(): Promise<void>;
   onAuthStateChanged(cb: (user: UserProfile | null) => void): () => void;
 }
@@ -54,6 +55,10 @@ export class InMemoryAuth implements AuthAdapter {
   async signOut() {
     this.current = null;
     this.notify();
+  }
+
+  async signInWithGoogle(): Promise<UserProfile> {
+    throw new Error('Google sign-in is not available in InMemoryAuth');
   }
 
   onAuthStateChanged(cb: (user: UserProfile | null) => void) {

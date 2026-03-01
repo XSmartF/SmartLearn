@@ -1,4 +1,6 @@
 import { getDb, getFirebaseAuth } from '@/shared/lib/firebase/client';
+import type { ICardFlagRepository } from '@/shared/services/contracts';
+import type { CardFlagDoc, CardFlag, FlagMap } from '@/shared/types';
 import {
   collection,
   deleteDoc,
@@ -15,22 +17,7 @@ import {
 const CARD_FLAGS = 'card_flags';
 const db = getDb();
 
-export interface CardFlagDoc {
-  userId: string;
-  libraryId: string;
-  cardId: string;
-  starred?: boolean;
-  difficulty?: 'easy' | 'medium' | 'hard';
-  updatedAt?: unknown;
-}
-
-export interface CardFlag extends CardFlagDoc {
-  id: string;
-}
-
-type FlagMap = Record<string, { starred?: boolean; difficulty?: 'easy' | 'medium' | 'hard' }>
-
-export class CardFlagRepository {
+export class CardFlagRepository implements ICardFlagRepository {
   private requireUserId(): string {
     const user = getFirebaseAuth().currentUser;
     if (!user) throw new Error('Not authenticated');

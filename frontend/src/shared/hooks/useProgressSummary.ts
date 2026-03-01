@@ -1,67 +1,60 @@
 import { useEffect, useState } from 'react';
-import { loadProgressSummary, listenProgressSummary, type ProgressSummaryLite } from '@/shared/lib/firebase';
+import { loadProgressSummary, listenProgressSummary, type ProgressSummaryLite } from '@/shared/services';
 import {
   getCachedProgressSummary,
   setCachedProgressSummary,
 } from '@/shared/lib/cache/progressSummaryCache';
 
-function summariesEqual(a: ProgressSummaryLite | null, b: ProgressSummaryLite) {
+function summariesEqual(a: ProgressSummaryLite | null, b: ProgressSummaryLite): boolean {
   if (!a) return false;
-  return (
-    a.total === b.total &&
-    a.mastered === b.mastered &&
-    a.learning === b.learning &&
-    a.due === b.due &&
-    a.percentMastered === b.percentMastered &&
-    a.accuracyOverall === b.accuracyOverall &&
-    a.sessionCount === b.sessionCount &&
-    a.lastAccessed === b.lastAccessed &&
-    a.updatedAt === b.updatedAt
-  );
+  return a.total === b.total && a.mastered === b.mastered && a.learning === b.learning
+    && a.due === b.due && a.percentMastered === b.percentMastered
+    && a.accuracyOverall === b.accuracyOverall && a.sessionCount === b.sessionCount
+    && a.lastAccessed === b.lastAccessed && a.updatedAt === b.updatedAt;
+}
+
+function updateIfChanged(incoming: ProgressSummaryLite | null) {
+  return (prev: ProgressSummaryLite | null) => {
+    if (!incoming) return prev ? null : prev;
+    return summariesEqual(prev, incoming) ? prev : incoming;
+  };
 }
 
 export function useProgressSummary(libraryId?: string) {
   const [summary, setSummary] = useState<ProgressSummaryLite | null>(() =>
-    libraryId ? getCachedProgressSummary(libraryId) : null
+    libraryId ? getCachedProgressSummary(libraryId) : null,
   );
-  const [loading, setLoading] = useState(() => (libraryId && !getCachedProgressSummary(libraryId)) || false);
+  const [loading, setLoading] = useState(() => !!(libraryId && !getCachedProgressSummary(libraryId)));
+
   useEffect(() => {
     if (!libraryId) return;
     let unsub = () => {};
     let cancelled = false;
+
     const cached = getCachedProgressSummary(libraryId);
-    if (cached) {
-      setSummary((prev) => (summariesEqual(prev, cached) ? prev : cached));
-    } else {
-      setSummary((prev) => (prev ? null : prev));
-    }
-    const hasCached = Boolean(cached);
-    setLoading(!hasCached);
+    setSummary(updateIfChanged(cached));
+    setLoading(!cached);
+
     (async () => {
-      if (!hasCached) setLoading(true);
       try {
         const initial = await loadProgressSummary(libraryId);
         if (!cancelled) {
-          if (initial) {
-            setCachedProgressSummary(libraryId, initial);
-          }
-          setSummary((prev) => {
-            if (initial && summariesEqual(prev, initial)) return prev;
-            return initial;
-          });
+          if (initial) setCachedProgressSummary(libraryId, initial);
+          setSummary(updateIfChanged(initial));
         }
-      } finally { if (!cancelled) setLoading(false); }
-      unsub = listenProgressSummary(libraryId, (s) => {
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+
+      unsub = listenProgressSummary(libraryId, s => {
         if (cancelled) return;
-        if (s) {
-          setCachedProgressSummary(libraryId, s);
-          setSummary((prev) => (summariesEqual(prev, s) ? prev : s));
-        } else {
-          setSummary((prev) => (prev ? null : prev));
-        }
+        if (s) setCachedProgressSummary(libraryId, s);
+        setSummary(updateIfChanged(s));
       });
     })();
+
     return () => { cancelled = true; unsub(); };
   }, [libraryId]);
+
   return { summary, loading };
 }

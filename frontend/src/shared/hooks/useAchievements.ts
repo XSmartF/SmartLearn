@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { loadProgressSummary, type ProgressSummaryLite } from '@/shared/lib/firebase';
+import { loadProgressSummary, type ProgressSummaryLite } from '@/shared/services';
 import { useAllLibraries } from './useLibraries';
 import type { QueryResult } from '@/shared/types/query';
 
@@ -29,12 +29,12 @@ export function useAchievements(): AchievementsResult {
     const fetchAll = async () => {
       setLoading(true);
       try {
-  const libs = libraries;
-        // Load summaries sequentially (small scale). Could parallelize with Promise.allSettled.
-        const summaries: Record<string, ProgressSummaryLite> = {};
-        for (const lib of libs) {
-          try { const s = await loadProgressSummary(lib.id); if (s) summaries[lib.id] = s; } catch {/* ignore */}
-        }
+  const summaries: Record<string, ProgressSummaryLite> = {};
+        const results = await Promise.allSettled(libraries.map(async lib => {
+          const s = await loadProgressSummary(lib.id);
+          if (s) summaries[lib.id] = s;
+        }));
+        void results; // all errors handled via allSettled
         const totalMastered = Object.values(summaries).reduce((acc,s)=> acc + s.mastered, 0);
         const totalCards = Object.values(summaries).reduce((acc,s)=> acc + s.total, 0);
         const totalSessions = Object.values(summaries).reduce((acc,s)=> acc + (s.sessionCount||0), 0);

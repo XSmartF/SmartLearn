@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from "@/shared/components/ui/dialog";
 import { useAllLibraries } from "@/shared/hooks/useLibraries";
-import { updateStudyEventStatus } from "@/shared/lib/firebase";
+import { calendarRepository } from "@/shared/services";
 import { getStatusColor, getStatusText, updateEventStatus } from "../utils/calendarUtils";
 import type { StudyEvent, CreateStudyEventInput } from '../types/calendar';
 
@@ -82,7 +82,7 @@ export function EventDialog({ isOpen, onClose, onSave, editingEvent, viewOnly = 
     if (!editingEvent || !onStatusUpdate) return;
     
     try {
-      await updateStudyEventStatus(editingEvent.id, 'completed');
+      await calendarRepository.updateEventStatus(editingEvent.id, 'completed');
       onStatusUpdate(editingEvent.id, 'completed');
     } catch (error) {
       console.error('Error updating event status:', error);

@@ -11,7 +11,7 @@ import { useOwnerProfiles } from "../hooks/useOwnerProfiles";
 import { useProgressSummaries } from "../hooks/useProgressSummaries";
 import type { DashboardChartPalette } from "../types";
 import type { LibraryMeta } from "@/shared/lib/models";
-import type { ProgressSummaryLite } from "@/shared/lib/firebase";
+import type { ProgressSummaryLite } from "@/shared/services";
 import type { StudyEvent } from "@/features/study/types/calendar";
 import type { DashboardOwnerProfile } from "../hooks/useOwnerProfiles";
 

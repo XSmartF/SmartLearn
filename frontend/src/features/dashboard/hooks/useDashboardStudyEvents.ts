@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { listenUserStudyEvents } from "@/shared/lib/firebase";
+import { calendarRepository } from "@/shared/services";
 import type { StudyEvent } from "@/features/study/types/calendar";
 
 export function useDashboardStudyEvents(): StudyEvent[] {
   const [events, setEvents] = useState<StudyEvent[]>([]);
 
   useEffect(() => {
-    const unsubscribe = listenUserStudyEvents(setEvents);
+    const unsubscribe = calendarRepository.listenUserEvents(setEvents);
     return unsubscribe;
   }, []);
 

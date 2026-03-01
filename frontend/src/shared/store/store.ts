@@ -1,15 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { api } from './api';
 import { authReducer } from './authSlice.ts';
 import { sidebarReducer, SIDEBAR_STORAGE_KEY, hydrateSidebar } from './sidebarSlice.ts';
 
 export const store = configureStore({
   reducer: {
-    [api.reducerPath]: api.reducer,
-  auth: authReducer,
-  sidebar: sidebarReducer,
+    auth: authReducer,
+    sidebar: sidebarReducer,
   },
-  middleware: (getDefault) => getDefault().concat(api.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

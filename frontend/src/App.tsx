@@ -76,7 +76,7 @@ const router = createBrowserRouter([
             loader: async ({ params }) => {
               if (!params.id) return null
               try {
-                const { libraryRepository } = await import('@/shared/lib/repositories/LibraryRepository')
+                const { libraryRepository } = await import('@/shared/services')
         const meta = await libraryRepository.getLibraryMeta(params.id)
         return { library: meta }
               } catch {
