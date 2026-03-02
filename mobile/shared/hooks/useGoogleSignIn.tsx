@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import * as Google from 'expo-auth-session/providers/google';
 import { makeRedirectUri } from 'expo-auth-session';
-import { authService } from '@/shared/services/authService';
+import { authService } from '@/shared/services';
 
 // Hook that returns { request, response, promptAsync } and auto-signs into Firebase
 export function useGoogleSignIn() {

@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="SmartLearn.Api/SmartLearn.Api.csproj" />
+  <Project Path="SmartLearn.Application/SmartLearn.Application.csproj" />
+  <Project Path="SmartLearn.Domain/SmartLearn.Domain.csproj" />
+  <Project Path="SmartLearn.Infrastructure/SmartLearn.Infrastructure.csproj" />
+</Solution>

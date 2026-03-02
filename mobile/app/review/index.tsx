@@ -5,7 +5,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
 
 import type { MobileCardFlag, MobileCard, MobileLibrary } from '@/shared/models/app';
-import { mobileDataService } from '@/shared/services';
+import { cardFlagRepository, libraryRepository } from '@/shared/services';
 import { useI18n } from '@/shared/i18n';
 import { Brand, Colors, NeuShadow, Radius } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -41,7 +41,7 @@ export default function ReviewScreen() {
   const loadFlags = useCallback(async () => {
     setLoading(true);
     try {
-      const list = await mobileDataService.listReviewFlags();
+      const list = await cardFlagRepository.listReviewFlags();
       setFlags(list);
     } catch (err) {
       console.error('Cannot load review flags:', err);
@@ -59,7 +59,7 @@ export default function ReviewScreen() {
     let cancelled = false;
 
     (async () => {
-      const libs = await mobileDataService.listLibraries();
+      const libs = await libraryRepository.listLibraries();
       const libMap: Record<string, MobileLibrary> = {};
       libs.forEach((l) => { libMap[l.id] = l; });
 
@@ -68,7 +68,7 @@ export default function ReviewScreen() {
 
       for (const libId of libIds) {
         try {
-          const detail = await mobileDataService.getLibraryDetail(libId);
+          const detail = await libraryRepository.getLibraryDetail(libId);
           if (detail) {
             detail.cards.forEach((c) => { cardResults[c.id] = c; });
           }

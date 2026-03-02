@@ -5,7 +5,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
 
 import type { MobileLibrary } from '@/shared/models/app';
-import { mobileDataService } from '@/shared/services';
+import { libraryRepository } from '@/shared/services';
 import { useI18n } from '@/shared/i18n';
 import { Brand, Colors, NeuShadow, Radius } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -28,7 +28,7 @@ export default function TestConfigScreen() {
   const [questionCount, setQuestionCount] = useState(10);
 
   useEffect(() => {
-    mobileDataService.listLibraries().then((data) => {
+    libraryRepository.listLibraries().then((data) => {
       setLibs(data);
       if (data.length > 0) setSelectedLib(data[0].id);
     });

@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 
 import type { AppLanguage } from '@/shared/models/app';
 import { useSession } from '@/shared/auth/session';
-import { mobileDataService } from '@/shared/services';
+import { userRepository } from '@/shared/services';
 
 const vi = {
   nav_auth_title: 'Đăng nhập',
@@ -330,7 +330,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       };
     }
 
-    mobileDataService
+    userRepository
       .getSettings()
       .then((settings) => {
         if (!cancelled) {

@@ -5,7 +5,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import type { MobileCard } from '@/shared/models/app';
-import { mobileDataService } from '@/shared/services';
+import { libraryRepository } from '@/shared/services';
 import { useI18n } from '@/shared/i18n';
 import { Brand, Colors, NeuShadow, Radius } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -44,7 +44,7 @@ export default function StudySessionScreen() {
   /* ── Load library cards & init engine ── */
   useEffect(() => {
     if (!libraryId) return;
-    mobileDataService.getLibraryDetail(libraryId).then((detail) => {
+    libraryRepository.getLibraryDetail(libraryId).then((detail) => {
       if (!detail || detail.cards.length === 0) {
         setPhase('finished');
         return;
@@ -123,7 +123,7 @@ export default function StudySessionScreen() {
   const handleRestart = () => {
     if (!libraryId) return;
     setPhase('loading');
-    mobileDataService.getLibraryDetail(libraryId).then((detail) => {
+    libraryRepository.getLibraryDetail(libraryId).then((detail) => {
       if (!detail || detail.cards.length === 0) {
         setPhase('finished');
         return;

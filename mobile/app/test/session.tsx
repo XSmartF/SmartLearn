@@ -5,7 +5,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import type { MobileTestQuestion } from '@/shared/models/app';
-import { mobileDataService } from '@/shared/services';
+import { testRepository } from '@/shared/services';
 import { useI18n } from '@/shared/i18n';
 import { Brand, Colors, NeuShadow, Radius } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -37,7 +37,7 @@ export default function TestSessionScreen() {
   /* ── Load questions ── */
   useEffect(() => {
     if (!libraryId) return;
-    mobileDataService
+    testRepository
       .buildTestSession(libraryId, Number(questionCount) || 10)
       .then((qs) => {
         setQuestions(qs);
@@ -188,7 +188,7 @@ export default function TestSessionScreen() {
                 setUserAnswer('');
                 setResults([]);
                 setPhase('loading');
-                mobileDataService
+                testRepository
                   .buildTestSession(libraryId!, Number(questionCount) || 10)
                   .then((qs) => { setQuestions(qs); setPhase(qs.length > 0 ? 'answering' : 'result'); });
               }}

@@ -5,7 +5,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
 
 import type { MobileNote } from '@/shared/models/app';
-import { mobileDataService } from '@/shared/services';
+import { noteRepository } from '@/shared/services';
 import { useI18n } from '@/shared/i18n';
 import { Brand, Colors, NeuShadow, Radius } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -23,14 +23,14 @@ export default function NotesTabScreen() {
   const [notes, setNotes] = useState<MobileNote[]>([]);
 
   const loadNotes = useCallback(async () => {
-    const data = await mobileDataService.listNotes();
+    const data = await noteRepository.listNotes();
     setNotes(data);
   }, []);
 
   useEffect(() => { loadNotes().catch(console.error); }, [loadNotes]);
 
   const createNote = async () => {
-    const created = await mobileDataService.createNote({ title: t('notes_default_title'), content: '', tags: [] });
+    const created = await noteRepository.createNote({ title: t('notes_default_title'), content: '', tags: [] });
     await loadNotes();
     router.push({ pathname: '/notes/[id]', params: { id: created.id } });
   };

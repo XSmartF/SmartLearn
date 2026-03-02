@@ -4,7 +4,7 @@ import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 import type { MobileGameMode } from '@/shared/models/app';
-import { mobileDataService } from '@/shared/services';
+import { gameRepository } from '@/shared/services';
 import { useI18n } from '@/shared/i18n';
 import { Brand, Colors, Radius } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -32,7 +32,7 @@ export default function GamesScreen() {
 
   useEffect(() => {
     let cancelled = false;
-    mobileDataService.listGameModes().then((data) => { if (!cancelled) setModes(data); });
+    gameRepository.listGameModes().then((data) => { if (!cancelled) setModes(data); });
     return () => { cancelled = true; };
   }, []);
 

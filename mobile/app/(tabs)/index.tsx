@@ -5,7 +5,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
 
 import type { MobileDashboardSnapshot } from '@/shared/models/app';
-import { mobileDataService } from '@/shared/services';
+import { dashboardRepository } from '@/shared/services';
 import { useI18n } from '@/shared/i18n';
 import { useSession } from '@/shared/auth/session';
 import { Brand, Colors, NeuShadow, Radius } from '@/constants/theme';
@@ -50,7 +50,7 @@ export default function DashboardScreen() {
 
   useEffect(() => {
     let cancelled = false;
-    mobileDataService.getDashboardSnapshot().then((data) => {
+    dashboardRepository.getDashboardSnapshot().then((data) => {
       if (!cancelled) setSnapshot(data);
     });
     return () => { cancelled = true; };

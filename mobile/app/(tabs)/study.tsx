@@ -5,7 +5,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
 
 import type { MobileStudyEvent, MobileLibrary } from '@/shared/models/app';
-import { mobileDataService } from '@/shared/services';
+import { studyEventRepository, libraryRepository } from '@/shared/services';
 import { useI18n } from '@/shared/i18n';
 import { Brand, Colors, NeuShadow, Radius } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -26,13 +26,13 @@ export default function StudyTabScreen() {
   const [title, setTitle] = useState('');
 
   const loadEvents = useCallback(async () => {
-    const data = await mobileDataService.listStudyEvents();
+    const data = await studyEventRepository.listStudyEvents();
     setEvents(data);
   }, []);
 
   useEffect(() => {
     loadEvents().catch(console.error);
-    mobileDataService.listLibraries().then(setLibraries).catch(() => {});
+    libraryRepository.listLibraries().then(setLibraries).catch(() => {});
   }, [loadEvents]);
 
   const createEvent = async () => {
@@ -40,13 +40,13 @@ export default function StudyTabScreen() {
     if (!trimmed) return;
     const startAt = new Date().toISOString();
     const endAt = new Date(Date.now() + 45 * 60 * 1000).toISOString();
-    await mobileDataService.createStudyEvent({ title: trimmed, startAt, endAt });
+    await studyEventRepository.createStudyEvent({ title: trimmed, startAt, endAt });
     setTitle('');
     await loadEvents();
   };
 
   const setStatus = async (eventId: string, status: 'completed' | 'missed') => {
-    await mobileDataService.updateStudyEventStatus(eventId, status);
+    await studyEventRepository.updateStudyEventStatus(eventId, status);
     await loadEvents();
   };
 

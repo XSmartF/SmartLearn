@@ -5,7 +5,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import type { MobileLibrary, MobileCard } from '@/shared/models/app';
-import { mobileDataService } from '@/shared/services';
+import { libraryRepository } from '@/shared/services';
 import { useI18n } from '@/shared/i18n';
 import { Brand, Colors, NeuShadow, Radius } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -31,7 +31,7 @@ export default function LibraryDetailScreen() {
 
   const fetchData = useCallback(() => {
     if (!id) return;
-    mobileDataService.getLibraryDetail(id).then((res) => {
+    libraryRepository.getLibraryDetail(id).then((res) => {
       if (res) { setLibrary(res.library); setCards(res.cards); }
     });
   }, [id]);
@@ -40,7 +40,7 @@ export default function LibraryDetailScreen() {
 
   const handleAdd = async () => {
     if (!front.trim() || !back.trim() || !id) return;
-    await mobileDataService.addCard(id, { front: front.trim(), back: back.trim() });
+    await libraryRepository.addCard(id, { front: front.trim(), back: back.trim() });
     setFront(''); setBack('');
     fetchData();
   };

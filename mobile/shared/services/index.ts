@@ -1,9 +1,37 @@
-import { resolveMobileDataService } from './provider';
-import { authService } from './authService';
+import { resolveDataServices } from './provider';
 
-export type { MobileDataService } from './contracts';
-export { resolveMobileDataService };
-export type { MobileAuthUser } from './authService';
-export { authService };
+// ── Re-export types ─────────────────────────────────────────────
 
-export const mobileDataService = resolveMobileDataService();
+export type { MobileDataServices } from './contracts';
+export type {
+  MobileAuthUser,
+  IAuthService,
+  ILibraryRepository,
+  INoteRepository,
+  IStudyEventRepository,
+  INotificationRepository,
+  IUserRepository,
+  ITestRepository,
+  ICardFlagRepository,
+  IGameRepository,
+  IDashboardRepository,
+} from './contracts';
+
+export { resolveDataServices };
+
+// ── Resolve & destructure ───────────────────────────────────────
+
+const dataServices = resolveDataServices();
+
+export const {
+  authService,
+  libraryRepository,
+  noteRepository,
+  studyEventRepository,
+  notificationRepository,
+  userRepository,
+  testRepository,
+  cardFlagRepository,
+  gameRepository,
+  dashboardRepository,
+} = dataServices;

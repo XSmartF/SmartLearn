@@ -5,7 +5,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
 
 import type { MobileLibrary } from '@/shared/models/app';
-import { mobileDataService } from '@/shared/services';
+import { libraryRepository } from '@/shared/services';
 import { useI18n } from '@/shared/i18n';
 import { Brand, Colors, NeuShadow, Radius } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -26,7 +26,7 @@ export default function LibrariesTabScreen() {
   const [description, setDescription] = useState('');
 
   const loadLibraries = useCallback(async () => {
-    const data = await mobileDataService.listLibraries();
+    const data = await libraryRepository.listLibraries();
     setLibraries(data);
   }, []);
 
@@ -37,7 +37,7 @@ export default function LibrariesTabScreen() {
   const onCreateLibrary = async () => {
     const trimmed = title.trim();
     if (!trimmed) return;
-    await mobileDataService.createLibrary({ title: trimmed, description });
+    await libraryRepository.createLibrary({ title: trimmed, description });
     setTitle('');
     setDescription('');
     await loadLibraries();

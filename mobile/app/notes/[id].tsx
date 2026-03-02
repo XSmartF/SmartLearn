@@ -5,7 +5,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import type { MobileNote } from '@/shared/models/app';
-import { mobileDataService } from '@/shared/services';
+import { noteRepository } from '@/shared/services';
 import { useI18n } from '@/shared/i18n';
 import { Brand, Colors, NeuShadow, Radius } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -28,7 +28,7 @@ export default function NoteDetailScreen() {
 
   useEffect(() => {
     if (!id) return;
-    mobileDataService.getNote(id).then((res) => {
+    noteRepository.getNote(id).then((res) => {
       if (res) { setNote(res); setTitle(res.title); setContent(res.content); }
     });
   }, [id]);
@@ -37,7 +37,7 @@ export default function NoteDetailScreen() {
     if (!id || saving) return;
     setSaving(true);
     try {
-      await mobileDataService.updateNote(id, { title: title.trim(), content: content.trim() });
+      await noteRepository.updateNote(id, { title: title.trim(), content: content.trim() });
       router.back();
     } finally { setSaving(false); }
   };

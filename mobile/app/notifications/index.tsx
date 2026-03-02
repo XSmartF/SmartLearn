@@ -4,7 +4,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 import type { MobileNotification } from '@/shared/models/app';
-import { mobileDataService } from '@/shared/services';
+import { notificationRepository } from '@/shared/services';
 import { useI18n } from '@/shared/i18n';
 import { Brand, Colors, NeuShadow, Radius } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -21,14 +21,14 @@ export default function NotificationsScreen() {
   const [items, setItems] = useState<MobileNotification[]>([]);
 
   const load = useCallback(async () => {
-    const data = await mobileDataService.listNotifications();
+    const data = await notificationRepository.listNotifications();
     setItems(data);
   }, []);
 
   useEffect(() => { load().catch(console.error); }, [load]);
 
   const markAll = async () => {
-    await mobileDataService.markAllNotificationsRead();
+    await notificationRepository.markAllNotificationsRead();
     await load();
   };
 

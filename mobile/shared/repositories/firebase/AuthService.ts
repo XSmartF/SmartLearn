@@ -10,13 +10,7 @@ import {
 } from 'firebase/auth';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { getDb, getFirebaseAuth } from '@/shared/firebase/client';
-
-export interface MobileAuthUser {
-  id: string;
-  email: string;
-  displayName?: string;
-  avatarUrl?: string;
-}
+import type { IAuthService, MobileAuthUser } from '@/shared/services/contracts';
 
 function mapUser(user: User | null): MobileAuthUser | null {
   if (!user) return null;
@@ -28,7 +22,7 @@ function mapUser(user: User | null): MobileAuthUser | null {
   };
 }
 
-export class FirebaseMobileAuthService {
+export class FirebaseAuthService implements IAuthService {
   private readonly auth = getFirebaseAuth();
   private readonly db = getDb();
 
@@ -47,8 +41,16 @@ export class FirebaseMobileAuthService {
     return mapped;
   }
 
-  async signUpEmailPassword(email: string, password: string, displayName?: string): Promise<MobileAuthUser> {
-    const credential = await createUserWithEmailAndPassword(this.auth, email.trim(), password);
+  async signUpEmailPassword(
+    email: string,
+    password: string,
+    displayName?: string,
+  ): Promise<MobileAuthUser> {
+    const credential = await createUserWithEmailAndPassword(
+      this.auth,
+      email.trim(),
+      password,
+    );
 
     if (displayName?.trim()) {
       await updateProfile(credential.user, { displayName: displayName.trim() });
@@ -62,7 +64,7 @@ export class FirebaseMobileAuthService {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       },
-      { merge: true }
+      { merge: true },
     );
 
     const mapped = mapUser(credential.user);
@@ -70,11 +72,16 @@ export class FirebaseMobileAuthService {
     return mapped;
   }
 
-  async signInWithGoogle(idToken: string, accessToken?: string | null): Promise<MobileAuthUser> {
-    const credential = GoogleAuthProvider.credential(idToken, accessToken ?? undefined);
+  async signInWithGoogle(
+    idToken: string,
+    accessToken?: string | null,
+  ): Promise<MobileAuthUser> {
+    const credential = GoogleAuthProvider.credential(
+      idToken,
+      accessToken ?? undefined,
+    );
     const result = await signInWithCredential(this.auth, credential);
 
-    // ensure user document exists/updated
     await setDoc(
       doc(this.db, 'users', result.user.uid),
       {
@@ -83,7 +90,7 @@ export class FirebaseMobileAuthService {
         avatarUrl: result.user.photoURL ?? null,
         updatedAt: serverTimestamp(),
       },
-      { merge: true }
+      { merge: true },
     );
 
     const mapped = mapUser(result.user);
@@ -96,4 +103,4 @@ export class FirebaseMobileAuthService {
   }
 }
 
-export const authService = new FirebaseMobileAuthService();
+export const firebaseAuthService = new FirebaseAuthService();

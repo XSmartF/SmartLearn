@@ -4,7 +4,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 
-import { mobileDataService } from '@/shared/services';
+import { userRepository } from '@/shared/services';
 import { useI18n } from '@/shared/i18n';
 import { Brand, Colors, NeuShadow, Radius } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -25,14 +25,14 @@ export default function ProfileScreen() {
 
   useEffect(() => {
     (async () => {
-      const profile = await mobileDataService.getProfile();
+      const profile = await userRepository.getProfile();
       setDisplayName(profile.displayName);
       setEmail(profile.email);
     })();
   }, []);
 
   const save = async () => {
-    await mobileDataService.updateProfile({ displayName });
+    await userRepository.updateProfile({ displayName });
     Alert.alert(t('settings_title'), locale === 'vi' ? 'Đã lưu thay đổi.' : 'Changes saved.');
   };
 
