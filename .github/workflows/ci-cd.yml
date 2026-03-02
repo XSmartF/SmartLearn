@@ -105,13 +105,16 @@ jobs:
           } | ConvertTo-Json -Depth 3
           Set-Content -Path "publish/appsettings.Production.json" -Value $json
 
-      - name: Deploy via Web Deploy
-        uses: SamKirkland/web-deploy@v1
-        with:
-          target-url: https://${{ secrets.DEPLOY_PUBLISH_URL }}:8172/msdeploy.axd
-          username: ${{ secrets.DEPLOY_USERNAME }}
-          password: ${{ secrets.DEPLOY_PASSWORD }}
-          source-path: publish/
+      - name: Deploy via MSDeploy
+        shell: pwsh
+        run: |
+          $msdeploy = "C:\Program Files\IIS\Microsoft Web Deploy V3\msdeploy.exe"
+          & $msdeploy `
+            -verb:sync `
+            -source:contentPath="${{ github.workspace }}\publish" `
+            -dest:contentPath="${{ secrets.DEPLOY_SITE_NAME }}",computerName="https://${{ secrets.DEPLOY_PUBLISH_URL }}:8172/msdeploy.axd",userName="${{ secrets.DEPLOY_USERNAME }}",password="${{ secrets.DEPLOY_PASSWORD }}",authType="Basic" `
+            -enableRule:AppOffline `
+            -allowUntrusted
 
   # ═══════════════════════════════════════════════
   #  FRONTEND
