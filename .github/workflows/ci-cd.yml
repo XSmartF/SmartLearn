@@ -11,41 +11,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # ───────────────────────────────────────────────
-  # 1) Detect which parts of the monorepo changed
-  # ───────────────────────────────────────────────
-  changes:
-    name: Detect Changes
-    runs-on: ubuntu-latest
-    outputs:
-      backend: ${{ steps.filter.outputs.backend }}
-      frontend: ${{ steps.filter.outputs.frontend }}
-      mobile: ${{ steps.filter.outputs.mobile }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Check paths
-        id: filter
-        uses: dorny/paths-filter@v3
-        with:
-          filters: |
-            backend:
-              - 'backend/**'
-            frontend:
-              - 'frontend/**'
-              - 'firebase.json'
-            mobile:
-              - 'mobile/**'
-
   # ═══════════════════════════════════════════════
   #  BACKEND
   # ═══════════════════════════════════════════════
 
   backend-build:
     name: "Backend: Build"
-    needs: changes
-    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -122,8 +93,6 @@ jobs:
 
   frontend-check:
     name: "Frontend: Lint & Build"
-    needs: changes
-    if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -216,8 +185,6 @@ jobs:
 
   mobile-check:
     name: "Mobile: Lint & Type-check"
-    needs: changes
-    if: needs.changes.outputs.mobile == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
